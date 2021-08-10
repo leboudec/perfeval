@@ -32,7 +32,7 @@ These and other questions are the topic of this book, which began as a set of le
 
 ### Download this book
 
-* [Official Publisher's version](https://infoscience.epfl.ch/record/146812/files/perfPublisherVersion_1.pdf?version=1) (pdf, non printable); [Errata](./errata/errata.pdf) for the publisher's version
+* [Official publisher's version](https://infoscience.epfl.ch/record/146812/files/perfPublisherVersion_1.pdf?version=1) (pdf, non printable); [Errata](./errata/errata.pdf) for the publisher's version
 * [Latest version](./book/perf.pdf) (less fancy formatting, but with bug fixes, printable.)
 
 ### Complementary Resources
