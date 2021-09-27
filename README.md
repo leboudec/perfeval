@@ -10,7 +10,9 @@ ISBN: 978-2-940222-40-7,2010
         title={Performance Evaluation of Computer and Communication Systems},
         author={Le Boudec, Jean-Yves},
         year={2010},
-        publisher={EPFL Press, Lausanne, Switzerland}
+        publisher={EPFL Press, Lausanne, Switzerland},
+        isbn={978-2-940222-40-7},
+        doi={10.1201/b16328}
         }
 ```
 
