@@ -1,0 +1,824 @@
+\label{sp-crashcourse}
+%
+%\begin{minipage}[b]{0.5\textwidth}
+Here we review all we need to know for
+\cref{ch-forecast} about causal digital filters. It is
+a very small subset of signal processing, without any
+Fourier transform. See for example
+\cite{prandoni-08,Oppenheim-book} for a complete and
+traditional course.
+%\end{minipage}
+%
+%\hfill HERE COMES A DRAWING\\
+%
+\minitoc
+\section{Calculus of Digital
+Filters}
+\subsection{Backshift Operator}
+We consider data sequences of finite, but arbitrary
+length and call $\calS$ the set of all such sequences
+(i.e. $\calS=\bigcup_{n=1}^{\infty}\Reals^n$). We
+denote with $\mbox{length}(X)$ the number of elements
+in the sequence $X$.
+
+The \nt{backshift} operator is the mapping $B$ from
+$\calS $ to itself defined by:
+ \bearn
+ \mbox{length}(BX) &=&\mbox{length}(X)\\ (BX)_1 &=&0\\
+ (BX)_t &=& X_{t-1} \;\;\;\;\; t=2,...,\mbox{length}(X)
+ \eearn
+
+We usually view a sequence $X \in \calS$ as a column
+vector, so that we can write: \be B\bmat{c}
+ X_1\\
+ X_2\\
+ \ldots\\
+ X_n
+\emat
+ =
+ \bmat{c}
+ 0\\
+ X_1\\
+ \ldots\\
+ X_{n-1}
+ \emat
+  \ee
+when $\mbox{length}(X)=n$.
+
+If we know that $\mbox{length}(X)\leq n$, we can
+express the backshift operator as a matrix
+multiplication:
+ \be
+ BX=B_nX
+ \ee where $B_n$ is the $n\times n$ matrix:
+ \ben
+ B_n=\bmat{ccccc}
+ 0&0&\cdots&&0\\
+ 1&0&0&&\\
+0&1&0&&\vdots\\
+\vdots&&\ddots&0&0\\
+0&\hdots&0&1&0
+ \emat
+ \een
+
+Obviously, if $n=\mbox{length}(X)$ then applying $B$
+$n$ times to $X$ gives a sequence of $0$s; in matrix
+form: \be (B_n)^n=0\ee
+
+\subsection{Filters}
+\begin{definition}A \nt{filter} (also called ``causal filter", or
+``realizable filter") is any mapping, say $F$, from
+$\calS$ to itself that has the following properties.
+\begin{enumerate}
+    \item A sequence of length $n$ is mapped to a sequence of same
+    length.
+    \item There exists an infinite sequence of numbers $h_m$,
+$m=0,1,2,...$ (called the filter's \nt{impulse
+ response}) such that for any $X \in \calS$
+\be
+ (FX)_t= h_0 X_t + h_1 X_{t-1} + ... + h_{t-1}X_1
+ \;\;\;\;\; t=1,...,\mbox{length}(X) \label{eq-filter}
+ \ee
+\end{enumerate}
+\label{def-fil}
+\end{definition}
+\begin{exnn}{}The backshift operator $B$ is the filter with
+$h_0=0,h_1=1,h_2=h_3=\cdots=0$.
+
+The identical mapping, $\I$, is the filter with
+$h_0=1,h_1=h_2=\ldots=0$.
+
+The de-seasonalizing filter of order $s$, $R_s$, is
+the filter with $h_0=\ldots=h_{s-1}=1$, $h_m=0$ for
+$m\geq s$.
+
+The differencing filter at lag $s$, $\Delta_s$, is the filter
+with $h_0=1, h_s=-1$ and $h_m=0$ for $m \neq 0$ and $m \neq s$.
+\end{exnn}
+
+\eref{eq-filter} can also be expressed as
+ \be
+ F= \sum_{m=0}^{\infty} h_mB^m \label{eq-filter2}
+ \ee
+ where $B^0=\I$. Note that the summation is only apparently infinite,
+ since for a sequence $X$ in $\calS$ of length $n$ we have $FX= \sum_{m=0}^{n-1}h_m B^m
+ X$.
+
+In matrix form, if we know that $\mbox{length}(X) \leq
+n$ we can write \eref{eq-filter} as
+  \be
+  FX = \bmat{ccccc}
+  h_0&0&\hdots&0 &0\\
+  h_1&h_0& &\vdots&\vdots\\
+  h_2&h_1&\ddots&&\\
+  \vdots&\vdots&\ddots&h_0&0\\
+  h_{n-1}&h_{n-2}&\hdots&h_1&h_0
+  \emat X
+  \label{eq-fil-mat}
+   \ee
+
+A filter is called \nt{Finite Impulse Response (FIR)}
+if $h_n=0$ for $n$ large enough. Otherwise, it is
+called \nt{Infinite Impulse Response}.
+\subsection{Impulse response and Dirac Sequence}
+Define the \nt{Dirac sequence} of length $n$
+\be\delta_n=\bmat{c}1\\0\\\ldots\\0\emat\ee The
+impulse response of a filter satisfies
+ \be
+\bmat{c}h_0\\ h_1\\\ldots\\ h_{n-1}\emat=F\delta_n
+ \label{eq-imp}
+ \ee
+This is used to compute the impulse response if we
+know some algorithm to compute $FX$ for any $X$.
+\subsection{Composition of Filters, Commutativity}
+Let $F$ and $F'$ be filters. The composition of $F$
+and $F'$, denoted with $F F'$, is defined as the
+mapping from $\calS$ to $\calS$ obtained by applying
+$F'$ first, then $F$, i.e. such that for any sequence
+$X$ \be (FF')(X)=F(F'(X))\ee
+
+It can easily be seen that $FF'$ is a filter.
+Furthermore, \imp{the composition of filters commute},
+i.e.
+ \be
+ FF' = F'F
+ \ee
+The first $n$ terms of the impulse response of $FF'$
+can be obtained by
+ \be \bmat{c}g_0\\g_1\\\ldots\\g_{n-1}\emat=(FF')\delta_n=
+F(F'\delta_n)=(F'F)\delta_n=F'(F\delta_n) \ee
+
+\begin{exnn}{}Let us compute the impulse response of $FF'$ when
+$F=\I -B$ (differencing at lag 1) and $F'=\I -B^5$
+(differencing at lag $5$). Let $n$ be large:
+%
+ \bearn
+ F' \delta_n &=& (1,0,0,0,0,-1,0,0,0,0,0,\cdots)^T\\
+ F(F' \delta_n)&=&(1,-1,0,0,0,-1,1,0,0,0,0,\cdots)^T
+ \eearn
+ thus the impulse response $g$ of $FF'$ is given by
+ \be \bracket{g_0=g_6=1\\g_1=g_5=-1\\ \melse g_m=0 }\label{eq-filt-ex-1}\ee
+Alternatively, we can compute in the reverse order and
+obtain the same result:
+ \bearn
+ F \delta_n &=& (1,-1,0,0,0,0,0,0,0,0,0,\cdots)^T\\
+ F'(F \delta_n)&=&(1,-1,0,0,0,-1,1,0,0,0,0,\cdots)^T
+ \eearn
+ \end{exnn}
+
+\subsection{Inverse of Filter} Since the matrix in \eref{eq-fil-mat} is
+triangular, it is invertible if and only if its diagonal terms
+are non zero, i.e. if $h_0 \neq 0$, where $h_0$ is the first
+term of its impulse response. If this holds, it can also be
+seen that the reverse mapping $F^{-1}$ is a filter, i.e it
+satisfies the conditions in Definition~(\ref{def-fil}). Thus
+\imp{a filter $F$ is invertible if and only if $h_0 \neq 0$ }.
+
+For example, the inverse filter of the filter with
+impulse response $h_m=1$ for $m\geq 0$ (integration
+filter) is the filter with impulse response $h_0=1$,
+$h_1=-1$, $h_m=0$ for $m\geq 2$ (differencing filter).
+This can also be written as
+ \be
+ \left(\sum_{n=0}^{\infty}B^n\right)^{-1} = \I - B
+ \label{eq-inv-dif}
+ \ee
+
+ \subsection{AR($\infty$) Representation of Invertible
+ Filter}
+Let $F$ be an invertible filter and $Y=FX$. Let $g_0,
+g_1, \ldots$ be the impulse response of $F^{-1}$. We
+have $X=F^{-1}Y$ thus for $t \geq 1$
+ \be
+X_t = g_0 Y_t + g_1 Y_{t-1} + \ldots + g_{t-1}Y_1
+ \ee
+Note that $g_0=1/h_0$, thus
+ \be
+Y_t = c_0 X_t +c_1 Y_{t-1} +\ldots + c_{t-1}Y_1
+\label{eq-ar-infty}
+ \ee
+with
+ \be\bracket{
+c_0 =\frac{1}{g_0}=h_0\\
+ c_m=-\frac{g_m}{g_0}=-g_m h_0 \mfor m=1,2, \ldots
+ }\label{eq-coef-ar}\ee
+The sequence $c_0, c_1, c_2, \ldots$ used in
+\eref{eq-ar-infty} is called the \nt{AR($\infty$)}
+\footnote{AR stands for
+ ``Auto-Regressive"} representation of $F$.
+It can be used to compute the output $Y_t$ as a
+function of the past output and the current
+ input $X_t$. This applies to any invertible filter.
+
+If $F^{-1}$ is FIR, then there is some $q$ such that
+$c_m=0$ for $m \geq q$. The filter $F$ is called
+\nt{auto-regressive} of order $q$ (AR($q$)).
+
+\subsection{Calculus of Filters}
+When the filter $F'$ is invertible, the composition $F (F'^{-1})$ is
+also noted $\frac{F}{F'}$. There is no ambiguity since composition
+is commutative, namely
+ \be
+\frac{F}{F'}= F (F'^{-1}) = (F'^{-1})F
+ \ee
+
+We have thus defined the product and division of filters. It is
+straightforward to see that the addition and subtraction of filters
+are also filters. For example, the filter $F+F'$ has impulse
+response $h_m+h'_m$ and the filter $-F$ has impulse response $-h_m$.
+
+It is customary to denote the identity filter with
+$1$. With this convention, we can write the
+differencing filters as
+ \be
+ \Delta_s = 1-B^s
+ \ee
+and the de-seasonalizing filter as
+ \be
+ R_s = 1 + B + \ldots + B^{s-1}
+ \ee
+We can also rewrite \eref{eq-inv-dif} as
+ \ben
+ \frac{1}{\sum_{n=0}^{\infty}B^n}=1-B
+ \een
+ or
+ \be
+ \frac{1}{1-B}=\sum_{n=0}^{\infty}B^n
+\label{eq-dif-fil}
+ \ee
+The usual manipulations of fractions work as expected,
+and can be combined with the usual rules for addition,
+subtraction,multiplication and division (as long as
+the division is valid, i.e. the filter at the
+denominator is invertible). Thus, if $F$ and $F'$ are
+invertible, the inverse of
+ $F\over F'$ is $F'\over F$:
+ \ben
+ \frac{1}{\frac{F}{F'}}=\frac{F'}{F}
+ \een
+\begin{exnn}{}
+    We can recover \eref{eq-filt-ex-1} as follows:
+ \ben FF'=(1-B)(1-B^5)=1-B-B^5+B^6
+ \een
+    \end{exnn}\begin{exnn}{} \be
+ \frac{\Delta_5}{\Delta_1}=
+ \frac{1-B^5}{1-B}=\frac{(1-B)(1+B+B^2+B^3+B^4)}{1-B}=1+B+B^2+B^3+B^4
+ = R_5
+ \label{eq-ex-fir}\ee
+\end{exnn}
+
+If $F$ and $G$ are FIR, then $FG$, $F+G$ and $F-G$ are
+also FIR, but $F/G$ is (generally) not.
+
+
+\subsection{$z$ Transform}
+\label{sec-z-tr} \index{z-transform (signal processing)}It is
+customary in signal processing to manipulate transforms rather
+than the filters themselves. By definition, the \nt{Transfer
+Function} of the filter with impulse response $h$ is the power
+series \be H(z)=h_0 z + h_1 z^{-1}+ h_1 z^{-2}+... \ee i.e. it
+is the $z$ transform of the impulse response. This is
+considered as a formal series, i.e. there is no worry about its
+convergence for any value of $z$. Note the use of $z^{-1}$
+(customary in signal processing) rather than $z$ (customary in
+maths).
+
+It follows from the rules on the calculus of filters
+that using transfer functions is the same as replacing
+$B$ by $z^{-1}$ everywhere.
+ \begin{exnn}{} The
+transfer function of the filter \be F=\frac{Q_0 + Q_1
+B + \cdots + Q_q B^q}{P_0 +P_1 B + \cdots + P_p B^p}
+   \label{eq-def-frtf}\ee
+   with $P_0 \neq 0$ is precisely
+\be H(z)=\frac{Q_0  + Q_1 z^{-1} + \cdots + Q_q
+z^{-q}}{P_0 +P_1 z^{-1}+ \cdots + P_p z^{-p}}
+   \label{eq-def-frtf2}\ee
+\end{exnn}
+
+You may find it more convenient to use $z$-transforms
+and thus transfer functions if you do not feel
+comfortable manipulating the backshift operator $B$
+(and vice-versa: if you do not like transfer
+functions, use the backshift operator instead).
+
+\section{Stability} A filter $F$ with impulse
+response $h_n$ is called \nt{stable}\footnote{or
+Bounded Input, Bounded Output (BIBO) -stable} iff
+ \be
+ \sum_{n=0}^{\infty}|h_n| < + \infty
+ \ee
+For a sequence $X\in\calS$, let
+$\norm{X}_{\infty}=\max_{t=1\ldots
+\mbox{length}(X)}|X_t|$. If $F$ is stable and $Y=FX$
+then
+ \be
+ \norm{Y}_{\infty} \leq M \norm{X}_{\infty}
+ \ee where
+$M=\sum_{n=0}^{\infty}|h_n|$. In other words, if the
+input to the filter has a bounded magnitude, so does
+the output. In contrast, if $F$ is not stable, the
+output of the filter may become infinitely large as
+the length of the input increases. A stable filter has
+an impulse response $h_n$ that decays quickly as $n
+\to \infty$.
+
+For example, the filter in \eref{eq-ex-fir} is stable
+(as is any FIR filter) and the filter in
+\eref{eq-dif-fil} is not stable.
+
+In practice, if a filter is not stable, we may
+experience numerical problems when computing its
+output (\fref{fig-unstable}).
+
+
+\section{Filters with Rational Transfer Function}
+\subsection{Definition} Filters with Rational Transfer Function
+are filters of the form in \eref{eq-def-frtf}, or,
+equivalently, whose transfer function has the form in
+\eref{eq-def-frtf2}, with $P_0 \neq 0$. Many filters
+used in practice are of this type. Note that
+ \ben \frac{Q_0 + Q_1 B + \cdots + Q_q B^q}{P_0 +P_1 B +
+\cdots + P_p B^p}=\frac{Q'_0 + Q'_1 B + \cdots + Q'_q
+B^q}{1 +P'_1 B + \cdots + P'_p B^p}
+ \een
+ with $Q'_m=\frac{Q_m}{P_0}$ and
+ $P'_m=\frac{P_m}{P_0}$, so we can always assume that
+ $P_0=1$.
+
+A filter with rational transfer function can always be
+expressed as a \nt{Linear constant-coefficient
+difference} equation. Indeed, consider $F$ as in
+\eref{eq-def-frtf} with $P_0 \neq 0$ and let $Y = F
+X$. Recall that this is equivalent to
+ \ben
+ Y =\left(P_0 +P_1 B + \cdots + P_p
+B^p\right)^{-1} \left(Q_0 + Q_1 B + \cdots + Q_q
+B^q\right)X\een i.e.
+ \ben
+\left(P_0 +P_1 B + \cdots + P_p B^p\right)Y=\left(Q_0
++ Q_1 B + \cdots + Q_q B^q\right)X
+ \een
+Thus for $t=1\ldots\mbox{length}(X)$:
+ \be
+ P_0 Y_t + P_1 Y_{t-1}+\hdots +P_p Y_{t-p}  = Q_0 X_t + Q_1
+ X_{t-1}+\hdots+Q_q X_{t-q}
+ \label{eq-def-frtf3}
+ \ee
+ with the usual convention $Y_t=X_t=0$ for $t \leq 0$.
+Since $P_0 \neq 0$, this equation can be used to
+iteratively compute
+ $Y_1=Q_0X_1/P_0 $, $Y_2=(Q_0 X_2 + Q_1 X_1)/P_0$ etc.
+
+The \imp{impulse response} of $F$ is usually computed by
+applying \pro{filter} to a Dirac sequence. It may also be
+computed by Taylor series expansion, using classical rules for
+Taylor series of functions of one real variable.
+\begin{exnn}The impulse response of the filter
+$G=\frac{1-2B}{1-B^2}$ is obtained as follows. We use
+the rule $\frac{1}{1-x}=1+x+x^2+\ldots$ and obtain:
+ \bearn
+ \frac{1-2B}{1-B^2}&=&(1-2B)\left(1+B^2+B^4+\ldots\right)\\
+ &=&1+B^2+B^4+B^6+\ldots -2B-2B^3-2B^5-\ldots\\
+ &=&1-2B+B^2-2B^3+B^4-2B^5 \ldots
+ \eearn
+ thus the impulse response of $G$ is
+ $(1,-2,1,-2,1,-2\ldots)$.
+\end{exnn}
+
+Note that, in general, a filter with rational transfer
+function has an infinite impulse response.
+
+The \imp{inverse} of the filter $F$ exists if $Q_0\neq
+0$ and is
+ \be
+ F^{-1}=\frac
+{P_0 +P_1 B + \cdots + P_p B^p}{Q_0 + Q_1 B +\cdots +
+Q_q B^q}
+ \ee
+ i.e. is obtained by exchanging numerator and
+ denominator.
+
+\subsection{Poles and Zeroes}By
+definition, the \nt{Poles} of a filter with rational
+transfer functions are the values of $z$, other than
+$0$, for which the transfer function is not defined.
+If the transfer function is in a form that cannot be
+simplified\footnote{i.e. of the form
+$\frac{p(z^{-1})}{q(z^{-1})}$ where $p,q$ are
+polynomials with no common root} the poles are the
+zeroes of the denominator. Similarly, the \nt{Zeroes}
+of the filter are the values of $z\neq 0$ such that
+$H(z)=0$.
+
+A filter with rational transfer function is stable iff
+it has no pole or its \imp{poles are all inside the
+unit disk}, i.e. have modulus less than 1. This
+follows from the definition of stability and standard
+results on the theory of Taylor series of rational
+fractions in one variable.
+
+The location of zeroes is useful to assess stability
+of the reverse filter. Indeed, if the filter is
+invertible (i.e. $Q_0 \neq0$), then the inverse filter
+is stable iff all zeroes of the original filter are
+within the unit disk.
+%
+ \begin{figure}\begin{center}\subfigure{\Ifignc{filtres1a}{0.8}{0.4}}
+ \subfigure{\Ifignc{filtres1b}{0.8}{0.3}}\end{center}
+ \mycaption{Numerical illustration of the filter $F =
+\frac{0.1 + 0.2 B +0.3 B^2}{1- 0.2 B}$. Top: a random
+input sequence $X$ (thin line), the corresponding
+output $Y=FX$ (thick line), obtained by the matlab
+command \pro{Y=filter([0.1 0.2 0.3],[1 -0.2],X)} and
+the reconstructed input $F^{-1}Y$ obtained by
+\pro{filter([1 -0.2],[0.1 0.2 0.3],Y)} (small disks).
+Bottom left: poles (x) and zeroes (o) of $F$, obtained
+by \pro{zplane([0.1 0.2 0.3],[1 -0.2])}. The filter
+$F$ is stable (poles within unit disk) but $F^{-1}$ is
+not (at least one zero outside the unit disk). Bottom
+middle and right: impulse response of $F$
+(\pro{h=filter([0.1 0.2 0.3],[1 -0.2],D)}, where
+\pro{D} is a dirac sequence) and $F^{-1}$
+(\pro{h=filter([1 -0.2],[0.1 0.2 0.3],D)}).
+Reconstruction of $X$ as $F^{-1}Y$ fails for $t \geq
+60$; this is a symptom of $F^{-1}$ being unstable.}
+ \label{fig-unstable}
+ \end{figure}
+%
+\begin{figure}\begin{center}\subfigure{\Ifignc{filtres2a}{0.8}{0.4}}
+ \subfigure{\Ifignc{filtres2b}{0.8}{0.3}}\end{center}
+ \mycaption{Numerical illustration of the filter  $G =
+G = 0.5 + 0.3 B +0.2B^2$. Top: a random input sequence
+$X$ (thin line), the corresponding output $Z=GX$
+(thick line) and the reconstructed input $G^{-1}Z$
+(small disks). Bottom left: poles (x) and zeroes (o)
+of $G$. Depending on the conventions, the origin may
+or may not be considered as a pole. With our
+conversion, there is no pole but the software used
+shows a pole of multiplicity 2 at $0$. The filter $G$
+and its inverse are stable (poles and zeroes are
+within the unit disk). Bottom middle and right: impulse
+response of $G$ and $G^{-1}$. Reconstruction works
+perfectly.}
+ \label{fig-stable}
+ \end{figure}
+\begin{ex}{Numerical Stability of Inverse Filter}
+Consider the filter
+ \be F =
+\frac{0.1 + 0.2 B +0.3 B^2}{1- 0.2 B}
+ \ee
+ We apply the filter to an input sequence $X$ (thin line on \fref{fig-unstable}) and obtain
+ the output sequence $Y$ (thick line). $F$ is a filter
+ with rational transfer function, and is equivalent to
+ the linear constant-coefficient difference equation:
+ \ben
+ Y_t = 0.1 X_t + 0.2 X_{t-1} + 0.3 X_{t-2} + 0.2
+ Y_{t-1}
+ \een
+The poles are the zeroes of $1- 0.2 z^{-1}$, which are the same
+as the zeroes of $z -0.2$ (i.e $z=0.2$).
+
+The poles lie inside the unit disk, so the filter is stable.
+Its impulse response quickly decays to $0$. The filter is
+invertible but the inverse is not stable as the zeroes are not
+all inside the unit disk. The impulse response of the inverse
+filter does not decay. We also compute $F^{-1}(Y)$ which
+should, in theory, be equal to $X$ (small disks); however, the
+inverse filter in not stable and can be difficult to apply in
+practice; we see indeed that rounding errors become significant
+for $t \geq 60$.
+
+If we consider instead $G = 0.5 + 0.3 B +0.2B^2$ then
+both the filter and its inverse are stable, and
+ there are no numerical errors in the reconstruction (\fref{fig-stable}).
+ \end{ex}
+
+\section{Predictions}
+We use filter to model time series and perform
+predictions. Many formulas in \cref{ch-forecast} are
+based on the following result.
+\subsection{Conditional Distribution Lemma}
+\begin{lemma}Let $(X_1, X_2)$, $(Y_1, Y_2)$ be two random
+vectors, both with values in the space
+$\Reals^{n_1}\times \Reals^{n_2}$, and such that
+ \bearn
+Y_1&=&F_1 X_1\\Y_2 &=& F_{21}X_1 +F_{22}X_2\eearn
+where $F_1, F_{21}, F_{22}$ are non random linear
+operators and $F_{1}$ is invertible.
+
+Let $X'_2$ be a random sample drawn from the
+conditional distribution of $X_2$ given that $X_1=x_1$
+and \bearn y_1&=&F_1 x_1\\Y'_2 &=& F_{21}x_1
++F_{22}X'_2\eearn The law of $Y'_2$ is the conditional
+distribution of $Y_2$ given that
+$Y_1=y_1$.\label{lem-cdl}
+\end{lemma}
+\subsection{Predictions}Let $X_t, Y_t$ be two real valued random
+sequences (not necessarily iid), defined for $t\geq
+1$. Assume that $Y=FX$ where $F$ is an invertible
+filter with impulse response $h_0,h_1,h_2\ldots$ and
+AR($\infty$) representation $c_0, c_1, c_2 \ldots$.
+The following theorem says that making a prediction
+for $X$ is equivalent to making a prediction for $Y$.
+It is a direct consequence of \lref{lem-cdl}.
+ \begin{theorem}[Conditional Distribution of Futures]
+ Assume that $(y_1,\ldots,y_t)^T = F
+ (x_1,\ldots,x_t)^T$ and let
+ $\ell \geq 1$.
+
+ Assume
+ that $(X'_{t+1},\ldots,X'_{t+\ell})$ is a random sample drawn from
+ the conditional distribution of
+ $(X_{t+1},\ldots,X_{t+\ell})$ given that
+ $X_1=x_1,\ldots,X_t=x_t$. Let
+ \ben
+(y_1,\ldots,y_t,Y'_{t+1},\ldots,Y'_{t+\ell})^T = F
+(x_1,\ldots,x_t,X'_{t+1},\ldots,X'_{t+\ell})^T
+ \een
+ then
+ $(Y'_{t+1},\ldots,Y'_{t+\ell})$ is distributed
+ according to the
+ conditional distribution of $(Y_{t+1},\ldots,Y_{t+\ell})$ given that
+ $Y_1=y_1,\ldots,Y_t=y_t$. \label{theo-pred-filter}
+ \end{theorem}
+We can derive explicit formulae for point predictions.
+ \begin{corollary}[Point Prediction] Define the $\ell$-point-ahead
+predictions by
+ \bearn
+ \hat{X}_t(\ell) &=&\E(X_{t+\ell}|X_1=x_1,\ldots,X_t=x_t)\\
+ \hat{Y}_t(\ell) &=&\E(Y_{t+\ell}|Y_1=y_1,\ldots,Y_t=y_t)
+ \eearn
+ then
+ \be
+(y_1,\ldots,y_t,\hat{Y}_t(1),\ldots,\hat{Y}_t(\ell))^T
+=
+F(x_1,\ldots,x_t,\hat{X}_t(1),\ldots,\hat{X}_t(\ell))^T
+ \ee and in particular
+ \be
+ \hat{Y}_t(\ell) = h_0 \hat{X}_t(\ell) + h_1
+ \hat{X}_t(\ell-1) + \ldots + h_{\ell -1}
+ \hat{X}_t(1) + h_{\ell -1} x_t + \ldots +h_{t -1} x_1
+\ee and
+ \be
+\hat{Y}_t(\ell)= c_0 \hat{X}_t(\ell) + c_1
+\hat{Y}_t(\ell -1) +\ldots + c_{\ell-1} \hat{Y}_t(1)+
+c_{\ell} y_t+\ldots+c_{t-1}y_1 \label{eq-pred-mean-ar}
+ \ee
+\label{coro-pred-filter-mean}
+ \end{corollary}
+
+ In the frequent case where $X_t$ is assumed to be
+ iid, we can deduce more explicit results for the point prediction and mean
+square prediction errors:
+\begin{corollary}
+Assume in addition that $X_t$ is iid with mean
+$\mu=\E(X_t)$ and variance $\sigma^2=\var{X_t}$.
+Then\begin{enumerate}
+ \item (Point Predictions)\be
+(y_1,\ldots,y_t,\hat{Y}_t(1),\ldots,\hat{Y}_t(\ell))^T
+= F(x_1,\ldots,x_t,\mu,\ldots,\mu)^T
+ \ee and in particular
+ \be
+ \hat{Y}_t(\ell) = (h_0  + h_1
+  + \ldots + h_{\ell -1})\mu +
+ h_{\ell -1} x_t + \ldots +h_{t -1} x_1
+\ee and
+ \be
+\hat{Y}_t(\ell)= c_0 \mu + c_1 \hat{Y}_t(\ell -1) +\ldots +
+c_{\ell-1} \hat{Y}_t(1)+ c_{\ell} y_t+\ldots+c_{t-1}y_1
+\label{eq-pred-mean-ar-2}
+ \ee
+ \item (Mean Square Prediction Error) Define \bearn
+\mbox{MSE}^2_t(\ell)&\eqdef&\var\left(Y_{t+\ell}\right|\left.Y_1=y_1,\ldots,Y_t=y_t\right)\\
+&=&\E\left((Y_{t+\ell}-\hat{Y}_t(\ell))^2 |
+Y_1=y_1,\ldots,Y_t=y_t\right) \eearn then
+ \be
+\mbox{MSE}^2_t(\ell)=\sigma^2 \left(h_0^2 + \hdots +
+  h_{\ell-1}^2\right) \label{eq-var-mse-f}
+ \ee
+
+ \end{enumerate}\label{coro-pred-filter}
+\end{corollary}
+
+
+\begin{corollary}[Innovation Formula] For $t\geq 2$:
+ \be
+ Y_{t}-\hat{Y}_{t-1}(1) = h_0 (X_{t}-\mu)
+ \ee
+\end{corollary}
+
+This is called innovation formula as it can be used to
+relate $X_t$ (the ``innovation") to the prediction
+error.
+
+\section{Log Likelihood of Innovation}
+Let $X_t, Y_t$ be two real valued random
+sequences (not necessarily iid), defined for
+$t\geq 1$. Assume that $Y=FX$ where $F$ is an
+invertible filter with impulse response
+$h_0,h_1,h_2\ldots$. Also assume that for any
+$n$, the random vector $(X_1, ...,X_n)$ has a PDF
+$f_{\vec{X}_n}(x_1,...,x_n)$.
+
+\begin{theorem}
+Assume that the impulse response of $F$ is such
+that $h_0=1$. Then for all $n$ the random vector
+$(Y_1, ...,Y_n)$ has a PDF equal to
+ \ben
+f_{\vec{Y}_n}(y_1,...,y_n)=
+f_{\vec{X}_n}(x_1,...,x_n) \een
+
+with $(y_1, ...,y_n)^T = F(x_1,...,x_n)^T$
+\label{theo-mle-filter}
+\end{theorem}
+
+\thref{theo-mle-filter} can be used for
+estimation in the context of ARMA models, where
+$X_t$ is the non observed innovation, assumed to
+be iid. The theorem says that the log-likelihood
+of the model is the same as if we had observed
+the innovation; estimation methods for iid
+sequences can then be applied, as in
+\exref{ex-joe-sa-caisse}.
+
+
+
+
+
+\section{Matlab Commands} \label{sec-cs-matlab}
+\begin{description}
+\item[filter]
+%
+$Y=$\pro{filter}$([Q_0 Q_1 \hdots Q_q], [P_0 P_1
+\hdots P_p], X)$ with $P_0 \neq 0$ applies the filter
+   \be\frac{Q_0  + Q_1 B + \cdots + Q_q B^q}{P_0 +P_1 B + \cdots + P_p B^p}
+\label{eq-fil-ex}
+   \ee
+   %\be\frac{Q_0  + Q_1 B + \cdots + Q_q B^q}{P_0 +P_1 B + \cdots + P_p B^p}
+%\label{eq-fil-ex}
+%   \ee
+to the input sequence $X$ and produces an output
+sequence $Y$ of same length as $X$.
+%
+\item[poles and zeroes] can be obtained with \pro{zplane}
+%
+\item[de-seasonalizing] The de-seasonalizing filter
+with period $s$ is $R_s=\sum_{i=1}^{s-1}B^i$; $X=R_sY$
+can be obtained using \bp
+ R \>=\>ones(1,s)\\
+X \>=\>filter(R,1,Y) \ep
+%
+\item[differencing filter] $X=\Delta_s Y$ can be obtained  by
+ \bp
+ X = filter([1,0,...,0,-1],[1],Y)
+ \ep
+ where \pro{-1} is at position $s+1$.
+The inverse filter is obtained by exchanging the
+ first two arguments:
+ \bp
+ Y = filter([1],[1,0,...,0,-1],X)
+ \ep
+and the terms $h_0,h_1, ...,h_{\ell}$ of the impulse
+response of $\Delta_s^{-1}$ are obtained by the
+command: \bp
+ h = filter([1],[1,0,...,0,-1],[1,0,...,0])
+ \ep
+where the last vector has $\ell$ zeroes.
+
+The command \pro{Y=diff(X,s)} also applies the
+differencing filter $\Delta_s$ to $X$ but it removes
+the first $s$ entries instead of setting them to $0$
+as \pro{filter} does
+
+\item[impulse response]
+\pro{impz}$([P_0 P_1 \hdots P_p], [Q_0 Q_1 \hdots
+Q_q],n)$ gives the first $n$ terms of the impulse
+response of the filter in \eref{eq-fil-ex}. It is
+equivalent to using \pro{filter}$([P_0 P_1 \hdots
+P_p], [Q_0 Q_1 \hdots Q_q]$\pro{, deltan)} with
+\pro{deltan} equal to the sequence \pro{[1 0 ... 0]}
+(with $n-1$ zeroes).
+
+\item[parameter estimation] of an ARMA model can be
+done with direct application of \thref{theo-mle-arma}
+and \pro{lsqnonlin} for the solution of the non linear
+optimization problem. For simple ARMA models, it can
+be done in one step with \pro{armax}.
+
+\item[convolution]  \pro{c=conv(a,b)} computes the
+sequence of length
+$\mbox{length}(a)+\mbox{length}(b)-1$ such that
+$c_k=\sum_i a_i b_{k-i}$, where the sum is for $i$
+such that $a_i$ and $b_{k-i}$ are defined. The command
+\pro{Y = filter(P1,Q1,filter(P2,Q2,X))} is equivalent
+to
+\bp P\>= conv(P1,P2)\\
+   Q\>= conv(Q1,Q2) \\
+ X \>= filter(P,Q, X) \ep
+%
+\item[simulation] of an ARMA process as defined in \dref{def-arma} can be done with
+\bp
+ e \>=\> sigma * randn(n,1)\\
+ x \>=\> mu + filter(A,C,e)
+\ep
+\end{description}
+
+%\section{Appendix: Gaussian Processes}
+%\label{sec-pacf} Def
+%
+%calcul de densite
+%
+%loi conditionnelle
+%
+%covariance conditionnelle
+%
+%PACF
+
+
+%\subsection{Matlab commands}
+
+%\subsection{Wold's Lemma}
+%\label{app-wold}
+%
+%\subsection{ACF}
+%\label{sec-acf}
+%\subsection{PACF}
+
+\section{Proofs}
+\begin{petit}
+\paragraph{\lref{lem-cdl}}  The characteristic function of $Y'_2$
+is
+ \bear
+ \phi_{Y'_2}(\omega_2) &=&
+ \E\left(
+ e^{-j\left(
+ < \omega_2,F_{21}x_1> + < \omega_2,F_{22}X'_2>
+ \right)}
+ \right)=e^{-j
+ < \omega_2,F_{21}x_1>}\E\left(
+ e^{-j< \omega_2,F_{22}X'_2>}\right)\nonumber \\
+ &=&e^{-j
+ < \omega_2,F_{21}x_1>}\E\left(
+ e^{-j< \omega_2,F_{22}X_2>}| X_1=x_1\right) \nonumber \\
+&:=&
+ e^{-j
+ < \omega_2,F_{21}x_1> }h(x_1)
+:= f(x_1)  \label{eq-def-f-kjsdsd}
+ \eear where $< \cdot,\cdot>$ is the inner product.
+ Now let $g(y_1):= f(F_1^{-1}y_1)$. We want to show that
+  \be g(y_1)=\E\left( e^{-j
+ < \omega_2,Y_2>}| Y_1=y_1\right)\ee
+ By definition of a conditional probability,
+ this is equivalent to showing that for any $\omega_1
+ \in \Reals^{n_1}$:
+ \be
+ \E\left(e^{-j
+ < \omega_1,Y_1>}g(Y_1)
+ \right)
+  =
+\E\left(e^{-j
+ < \omega_1,Y_1>}e^{-j
+ < \omega_2,Y_2>}\right)
+ \label{eq-kjkjkjasdkjsdlkj9}
+ \ee
+Now by the definition of $g()$ \bearn
+ \E\left(e^{-j
+ < \omega_1,Y_1>}g(Y_1)
+ \right)
+  &=&
+\E\left(e^{-j
+ < \omega_1,Y_1>}e^{-j
+ < \omega_2,F_{21}F_1^{-1}Y_1>}h(F_1^{-1}Y_1)
+ \right)\\
+ &=&
+ \E\left(e^{-j
+ < \omega_1,F_1 X_1>}e^{-j
+ < \omega_2,F_{21}X_1>}h(X_1)
+ \right)
+ \\
+ &=&
+ \E\left(e^{-j
+ < \omega_1,F_1 X_1>}e^{-j
+ < \omega_2,F_{21}X_1>} e^{-j< \omega_2,F_{22}X_2>}
+ \right)
+ \eearn
+where the last equality is by the definition of $h()$
+as a conditional expectation in
+\eref{eq-def-f-kjsdsd}. This shows
+\eref{eq-kjkjkjasdkjsdlkj9} as desired.
+
+Note that the proof is simpler if $X_1,X_2$ has a
+density, but this may not always hold, even for
+gaussian processes.
+
+\paragraph{\thref{theo-mle-filter}} The random vector $\vec{Y}_n=
+(Y_1, ...,Y_n)^T$ is derived from the random vector
+$\vec{X}_n=(X_1,...,X_n)^T$ by $\vec{Y}_n= H_n \vec{X}_n $
+where $H_n$ is the matrix in \eref{eq-fil-mat}, with $h_0=1$.
+By the formula of change of variable, we have
+ \ben f_{\vec{X}_n}(x_1,...,x_n) = \left|\det(H_n)\right|f_{\vec{Y}_n} (y)
+ \een
+and $\det(H_n)=1$.
+
+\end{petit}

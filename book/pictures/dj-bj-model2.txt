@@ -1,0 +1,49 @@
+========================================
+ITSM::(Maximum likelihood estimates)
+========================================
+
+Method: Maximum Likelihood
+
+
+ARMA Model:
+X(t) = .3772 X(t-1)
+     + Z(t) - .9297 Z(t-1)
+
+WN Variance = .140684
+
+AR Coefficients
+       .377236
+
+Standard Error of AR Coefficients
+       .166161
+
+MA Coefficients
+      -.929743
+
+Standard Error of MA Coefficients
+       .112450
+
+(Residual SS)/N = .140684
+
+AICC = 65.535640
+BIC  = 64.791045
+
+-2Log(Likelihood) = 59.148544
+
+============================================
+ITSM::(Tests of randomness on residuals)
+============================================
+
+Ljung - Box statistic = 27.726 Chi-Square ( 20 ), p-value = .11606
+
+McLeod - Li statistic = 15.466 Chi-Square ( 22 ), p-value = .84148
+
+# Turning points = 41.000~AN(42.667,sd = 3.3780), p-value = .62174
+
+# Diff sign points = 32.000~AN(32.500,sd = 2.3629), p-value = .83242
+
+Rank test statistic = .95200E+03~AN(.10725E+04,sd = 90.349), p-value = .18230
+
+Jarque-Bera test statistic (for normality) = 3.3661 Chi-Square (2), p-value = .18581
+
+Order of Min AICC YW Model for Residuals = 0

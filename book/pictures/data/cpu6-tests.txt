@@ -1,0 +1,17 @@
+============================================
+ITSM::(Tests of randomness on residuals)
+============================================
+
+Ljung - Box statistic = 14.694 Chi-Square ( 20 ), p-value = .79366
+
+McLeod - Li statistic = 13.766 Chi-Square ( 20 ), p-value = .84214
+
+# Turning points = 87.000~AN(84.000,sd = 4.7364), p-value = .52648
+
+# Diff sign points = 64.000~AN(63.500,sd = 3.2787), p-value = .87879
+
+Rank test statistic = .40870E+04~AN(.40640E+04,sd = .24275E+03), p-value = .92452
+
+Jarque-Bera test statistic (for normality) = 2.7760 Chi-Square (2), p-value = .24958
+
+Order of Min AICC YW Model for Residuals = 7

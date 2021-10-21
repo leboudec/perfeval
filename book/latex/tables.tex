@@ -1,0 +1,127 @@
+ \mylabel{sec-ci}
+% \begin{minipage}[b]{0.5\textwidth}
+ The following tables can be used to determine confidence
+ intervals for quantiles (including median),
+ according to
+ \thref{theo-conf-ci-median}.
+%\end{minipage}
+%
+%\hfill HERE COMES A DRAWING\\
+For a sample of $n$ iid data points
+$x_1,...,x_n$, the tables give a confidence
+interval at the confidence level $\gamma=0.95$ or
+$0.99$ for the $q$-quantile with $q=0.5$
+(median), $q=0.75$ (quartile) and $q=0.95$. The
+confidence interval is $[x_{(j)},x_{(k)}]$, where
+$x_{(j)}$ is the $j$th data point sorted in
+increasing order.
+
+The confidence intervals for $q=0.05$ and $q=0.25$ are not given
+in the tables. They can be deduced by the following rule. Let
+$[x_{(j)},x_{(k)}]$ be the confidence interval for the
+$q$-quantile given by the table.  A confidence interval for the
+$1-q$-quantile is $[x_{(j')},x_{(k')}]$ with
+ \bearn
+ j' = n+1 -k \\
+ k' = n+1 -j
+ \eearn
+ For example, with $n=50$, a confidence interval for the third quartile
+ ($q=0.75$) at confidence level $0.99$ is $[x_{(29)},x_{(45)}]$,
+ thus a confidence interval for the first quartile ($q=0.25$) at
+ confidence level $0.99$ is $[x_{(6)},x_{(22)}]$.
+
+For small values of $n$ no confidence interval is
+possible. For large $n$, an approximate value is
+given, based on a normal approximation of the
+binomial distribution.
+
+\begin{petiteNote} The tables give $p$, the actual confidence
+level obtained, as it is not possible to obtain a
+confidence interval at exactly the required
+confidence levels. For example, for $n=10$ and
+$\gamma=0.95$ the confidence interval given by
+the table is $ \left[X_{(2)},X_{(9)}\right]$; the
+table says that it is in fact a confidence
+interval at level $0.979$.
+
+The values of $j$ and $k$ are chosen such that
+$j$ and $k$ are as symmetric as possible around
+$\frac{n+1}{2}$. For example, for $n=31$ the
+table gives the interval
+$\left[X_{(10)},X_{(22)}\right]$. Note that this
+is not the only interval that can be obtained
+from the theorem. Indeed, we have:\begin{quote}
+\begin{tabular}{c c c}
+  % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
+  $j$ & $k$ &  $\P\left(X_{(j)}< m_{0.5} < X_{(k)}\right)$\\
+  \hline
+  \input{bin31ci.dat}%
+\end{tabular}%
+  \nfs{binomial.m}%
+\end{quote}
+Thus we have \imp{several} possible confidence
+intervals. The table simply picked one for which
+the indices are closest to
+ being symmetrical around the estimated median, i.e. the indices $j$ and $k$ are equally
+ spaced around $\frac{n+1}{2}$, which is used for estimating the median. In some cases,
+  like $n=32$, we do not find such an interval exactly; we have for instance:
+  \begin{quote}
+\begin{tabular}{c c c}
+  % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
+  $j$ & $k$ &  $\P\left(X_{(j)}< m_{0.5} < X_{(k)}\right)$\\
+  \hline
+  \input{bin32ci.dat}
+\end{tabular}%
+  \nfs{binomial.m}%
+\end{quote}
+Here, the table arbitrarily picked the former.
+\end{petiteNote}
+
+
+\input{tablesCI}
+%\center \footnotesize
+%\begin{tabular}{|c||c|c|c|}\hline
+% $n$ & $j$ & $k$ & $p$ \\ \hline \hline
+%\input{binlist95.dat}
+% \hline
+%$n \geq 50$ & $\frac{n}{2}- 0.980\sqrt{n}$ &$\frac{n}{2}+1+
+%0.980\sqrt{n}$ & 0.95 \\ \hline
+%\end{tabular}
+%\hspace{0.0cm}
+%\begin{tabular}{|c|c|c|}\hline
+%$j$ & $k$ & $p$ \\ \hline  \hline
+%\input{binlist99.dat}
+% \hline
+% $\frac{n}{2}- 1.288\sqrt{n}$ &$\frac{n}{2}+1+ 1.288\sqrt{n}$ &
+%0.99 \\ \hline
+%
+%\end{tabular}\mycaption{Confidence Interval
+%for the median at confidence levels at least $0.95$ (left) and
+%$0.99$ (right). For a sample of $n$ iid data points $x_1,...,x_n$,
+%a confidence interval for the median is $[x_{(j)},x_{(k)}]$, where
+%$x_{(j)}$ is the $j$th data point in increasing order: $p$ is the
+%actual confidence level obtained (it is not possible to obtain a
+%confidence interval at exactly the required confidence levels).
+%Cells marked ``n/a" mean that no confidence interval is possible
+%($n$ is too small).}
+% \mylabel{tab-conf-medianci}
+%\end{table}Table of confidence intervals for median:
+%\nfs{Tables completes
+%\begin{table}
+%\begin{tabular}{|c|c|c|c||c|c|c|c|c|c|c|}
+%\hline  $n$ & $j$ & $k$ & $p$ & $j$ & $k$ & $p$& $j$ & $k$ & $p$ & Best\\
+%\hline \hline
+%\input{binlist95-tout.dat}
+%\hline
+%
+%\end{tabular} \mycaption{0.95}
+%\end{table}
+%\begin{table}
+%\begin{tabular}{|c|c|c|c||c|c|c|c|c|c|c|}
+%\hline  $n$ & $j$ & $k$ & $p$ & $j$ & $k$ & $p$& $j$ & $k$ & $p$ & Best\\
+%\input{binlist99-tout.dat}
+%\hline
+%
+%\end{tabular} \mycaption{0.99}
+%\end{table}
+%}

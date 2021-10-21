@@ -1,0 +1,369 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%TABLES OF DISTRIBS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\pbt}[1]{\parbox{3.5cm}{#1}}
+\begin{table}[htb]
+  \centering
+ \begin{tabular}{|cccc|}
+ \hline
+ \emph{Distribution}
+ &
+ Standard Normal $N_{0,1}$
+ &
+ Standard Laplace
+ &
+ Standard Lognormal
+ \\
+ \hline\hline
+ \emph{Parameters} & none & none &   $\sigma >0$\\ \hline
+ \emph{Comment}
+ &
+\pgref{def-normal}
+ &
+ \pgref{def-laplace}
+ &
+ \pgref{def-lognormal}
+ \\
+
+ \hline
+ %
+ \emph{PDF}
+ %
+ &
+ $\frac{1}{\sqrt{2 \pi}} e^{-\frac{x^2}{2}}$
+ &
+ $\frac{1}{2}e^{-\abs{ x}}$
+ &
+ $\frac{1}{\sqrt{2 \pi} \sigma x} e^{-\frac{(\ln x)^2}{2 \sigma^2}}\ind{x>0}$
+ \\
+ \hline
+ \emph{support}
+ &
+ $\Reals$
+ &
+ $\Reals$
+ &
+ $[0, + \infty) $
+ \\
+ \hline
+ %
+ \emph{CDF}
+ %
+ &
+ \parbox{4cm}{
+ $1-Q(x)$\\ (by definition of $Q()$)%\\
+% $=1/2+1/2\mbox{erf}(x/\sqrt{2})$ for $x\geq 0$
+ }
+ &
+ \pbt{$0.5 e^{-\abs{x}}$ for $x \leq 0$\\
+    $1 -  0.5 e^{-\abs{x}}$ for $x \geq 0$
+    }
+ &
+ $\lp 1-Q \lp \frac{\ln x}{\sigma}\rp \rp \ind{x>0}$
+ \\
+ \hline
+ %
+ \pbt{\emph{characteristic function}}
+ %
+ &
+ $e^{-\frac{\omega^2}{2}}$
+ &
+ $\frac{1}{1+\omega^2}$
+ &
+ \\
+ \hline
+ %
+ \emph{mean}
+ %
+ &
+ 0
+ &
+ 0
+ &
+ $e^{\frac{\sigma^2}{2}}$
+ \\
+\hline
+ %
+ \emph{variance}
+ %
+ &
+ 1
+ &
+ 2
+ &
+ $\lp e^{\sigma^2} -1 \rp  e^{\sigma^2}$
+ \\
+\hline
+ %
+ \emph{median}
+ %
+ &
+ 0
+ &
+ 0
+ &
+ 1
+ \\
+\hline
+ %
+ \emph{skewness index}
+ %
+ &
+0 & 0 & $ \sqrt{e^{\sigma^2}-1}\lp
+e^{\sigma^2}+2\rp  $
+\\
+\hline
+ %
+ \emph{kurtosis index}
+ %
+ &
+0 & 3 & $e^{4 \sigma^2} + 2 e^{3 \sigma^2} + 3
+e^{2 \sigma^2} - 6 $
+\\
+\hline
+ %
+ \emph{hazard rate}
+ %
+ &
+$\sim x$
+ &
+ $=1$
+ &
+$\sim \frac{\ln x}{\sigma^2 x} $
+ \\
+ \hline
+
+ \end{tabular}
+%%%%%%%%%%%
+\vspace{1cm}
+%%%% change of variable
+\begin{tabular}{|ccc|}
+ \hline
+ \multicolumn{3}{|c|}{Effect of change of scale and
+ location}
+ \\
+ \hline
+ \hline
+ & \emph{Original Distribution}
+ & \emph{Shifted and Re-scaled}
+ \\
+ \hline
+ &
+ Distribution of $X$
+ &
+ Distribution of $Y=sX + m$
+ \\
+ \hline
+ \emph{Parameters}
+ &
+ & \pbt{same plus \\$m \in \Reals$ (location), \\$s>0$
+ (scale)}
+ \\
+ \hline
+ \emph{PDF}
+ &
+ $f_X(x)$
+ & $\frac{1}{s}f_X\lp \frac{x-m}{s}\rp$
+ \\
+ \hline
+ \emph{CDF}
+ &
+ $F_X(x)$
+ &
+$F_X\lp \frac{x-m}{s}\rp$
+ \\
+ \hline
+ \pbt{\emph{characteristic function}}
+ & $\Phi_X(\omega)$
+ & $e^{j \omega m}\Phi_X(s\omega)$
+ \\ \hline
+ \emph{mean}
+ & $\mu$
+ & $\mu + m$
+\\ \hline
+\emph{variance}
+ & $\sigma^2$
+ & $s^2 \sigma^2$
+\\ \hline
+\emph{median}
+ & $\nu$
+ & $\nu + m$
+\\ \hline
+\emph{skewness index}
+ &
+ & same
+\\ \hline\emph{kurtosis index}
+ &
+ & same
+\\ \hline\emph{hazard rate}
+ &$\la_X(x)$
+ &$\frac{1}{s}\la_X\lp \frac{x-m}{s}\rp$
+\\ \hline
+ \end{tabular}
+
+
+\mycaption{Catalog of Distributions used in this chapter
+(continued on \tref{tab-distrib2}). The characteristic function
+is defined as $\E\lp e^{j\omega X}\rp$ and is given only when
+tractable. The notation
+ $a(x)\sim b(x)$ means $\limit{x}{\infty} \frac{a(x)}{b(x)}=1$.
+ Only parameters that affect the shape of the
+distribution are considered in the table. Other
+distributions in the same families can be derived
+by a change of scale and location, using the
+formulas given in the bottom part of the
+table.}\label{tab-distrib1}
+\end{table}
+
+
+%%%%%%%% Part 2 of Table %%%%%%%%%%%%%%%%
+\begin{table}[t]
+\centering
+\newcommand{\sgn}{\mathrm{sgn}}
+\begin{tabular}{|cccc|}
+ \hline
+ \emph{Distribution}
+ &
+ Standard Weibull
+ &
+ Standard Pareto
+ &
+ \pbt{Standard Stable with index $p<2$}
+ \\
+ \hline\hline
+ \emph{Parameters} & $c>0$ & $0<p $ & \pbt{$0 <p< 2$, $-1\leq \beta\leq
+ 1$}.
+  \\ \hline
+  \emph{Comment}&
+ \pbt{\pgref{def-weibull}; called exponential for $c=1$ }
+ & \pgref{def-pareto}
+ & \pbt{The stable definition is also defined for
+ $p=2$, in which case it is equal to the normal distribution
+ $N_{0,2}$. See
+ \pgref{def-stable}}
+ \\
+ \hline
+ %
+ \emph{PDF}
+ %
+ &
+ $c x^{c-1}e^{-\lp x^c\rp} \ind{x \geq 0}$
+ &
+ $\frac{p}{x^{p+ 1}}\ind{x\geq 1}$
+ &
+\pbt{well defined but usually not tractable}
+ \\
+ \hline
+ \emph{support}
+ &
+ $[0, + \infty) $
+ &
+ $[1, + \infty) $
+ &
+ \pbt{$\Reals$ except when $\beta=\pm 1$ }
+ \\
+ \hline
+ %
+ \emph{CDF}
+ %
+ &
+ $\lp 1-e^{-\lp x^c\rp}\rp \ind{x \geq 0}$
+ &
+ $\lp 1-\frac{1}{x^p}\rp\ind{x\geq 1}$
+ &
+\pbt{well defined but usually not tractable}
+ \\
+ \hline
+ %
+ \parbox{3cm}{\center \emph{
+ characteristic function}}
+ %
+ &
+ $\frac{1}{1-j\omega}$ for $c=1$
+ &
+ &
+ \parbox{4cm}{\beln
+ \exp\lb-\abs{\omega}^p\left(1+A\right)  \rb\\
+ \mbox{with } A=\\-j\beta\sgn(\omega) \tan\frac{p \pi}{2}
+ \\\;\;\mfor p \neq 1\\
+   \frac{2j \beta}{\pi}\sgn(\omega)\ln|\omega|\\\;\;\mfor
+   p=1
+\eeln }
+ %$\exp\lb-\abs{\omega}\left(1+\frac{2j \beta}{\pi}\sgn(\omega)\ln|\omega|\right)\rb$
+% $A=\frac{2j \beta}{\pi}\sgn(\omega)\ln|\omega|$ for $p=1$ }
+ \\
+ \hline
+ %
+ \emph{mean}  $\mu$
+ %
+ &
+ $\Gamma\lp\frac{c+1}{c}\rp$
+ &
+ $\frac{p}{p-1}$ for $p>1$
+ &
+ \pbt{$0$ for $p>1$ else undefined}
+ \\
+\hline
+ %
+ \emph{variance} $\sigma^2$
+ %
+ &
+ $\Gamma\lp\frac{c+2}{c}\rp -\mu^2$
+ &
+ $\frac{1}{(p-1)^2(p-2)}$ for $p>2$
+ &
+ \pbt{undefined}
+ \\
+\hline
+ %
+ \emph{median}
+ %
+ &
+ $\lp\ln(2)\rp^{1/c}$
+ &
+ $2^{1/p}$
+ &
+ \pbt{$0$ when $\beta= 0$, else untractable}
+ \\
+\hline
+ %
+\pbt{\emph{ skewness index} $\gamma_1 $ }
+ %
+ &
+ \pbt{$\frac{\Gamma\lp\frac{c+3}{c}\rp-3 \mu \sigma^2
+ -\mu^3}{\sigma^3}$ }
+  &
+  \pbt{$\frac{2(1+p)}{p-3}\sqrt{\frac{p-2}{p}}$ for $p>3$ }&
+  \pbt{undefined}
+\\
+\hline
+ %
+ \emph{kurtosis index}
+ %
+ &
+  \parbox{4cm}{$\frac{\Gamma\lp\frac{c+4}{c}\rp-4 \gamma_1 \mu \sigma^3 -6
+ \mu^2 \sigma^2 -\mu^4}{\sigma^4}$ \\$-3$ }
+ &
+ \pbt{$\frac{6(p^3+p^2-6p-2)}{p(p-3)(p-4)}$
+ for $p>4$ }
+& \pbt{undefined}
+\\
+\hline
+ %
+ \emph{hazard rate}
+ %
+ &
+$= c x^{c-1}$
+ &
+ $=\frac{p}{x}$
+ &
+$\sim\frac{p}{x}$
+ \\
+ \hline
+
+ \end{tabular}
+\mycaption{Continuation of \tref{tab-distrib1}. $\Gamma()$ is
+the gamma function, defined as $\Gamma(x)=\int_0^{\infty}e^{-t}
+t^{x-1} dt$; if $x \in \Nats$,
+$\Gamma(x)=(x-1)!$}\label{tab-distrib2}
+\end{table}

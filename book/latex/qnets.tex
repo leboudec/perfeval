@@ -1,0 +1,4511 @@
+\section{Definitions for Queuing Networks}\label{sec-qn}
+
+Realistic models of information and communications systems
+involve interconnected systems, which can be captured by a
+queuing networks. In general, not much can be said about a
+queuing network. Even the stability conditions are not known in
+general, and there is no equivalent of Loynes'theorem for
+networks. Indeed, the natural condition that the utilization
+factor is less than 1 is necessary for stability but may not be
+sufficient -- see \cite{bramson1994instability} for an example
+of a multi-class queuing network, with FIFO queues, Poisson
+arrivals and exponential service times, which is unstable with
+arbitrarily small utilization factor.
+
+Fortunately, there is a broad class of queuing
+networks, the so called \nt{multi-class product
+form queuing networks} for which there are simple
+and exhaustive results, given in this and the
+following section. These networks have the
+property that their stationary probability has
+product form. They were developed as \nt{BCMP
+networks}
+ in reference to the authors of \cite{baskett1975open}
+or \nt{Kelly networks} in reference to
+\cite{kelly1979reversibility}. When there is only one class of
+customers they are also called \nt{Jackson} networks in the
+open case \cite{jackson1963jobshop} and Gordon and Newell
+networks in the closed case \cite{gordon1967closed}. For a
+broader perspective on this topic, see the recent books
+\cite{serfozo1999introduction} and \cite{chao1999queueing}.
+This latter reference presents in particular extensions to
+other concepts, including the ``negative customers" introduced
+in \cite{gelenbe1991product}. A broad treatment, including
+approximate analysis for non product form queuing networks can
+also be found in \cite{van1993queueing}.
+%
+%
+%\subsection{
+%Definition of Multi-Class Product Form Queuing Networks}
+%
+
+We now give the common assumptions required by
+multi-class product form queuing networks (we
+defer a formal definition of the complete process
+that describes the network to
+\sref{sec-q-form-def}).
+
+\subsection{Classes, Chains and Markov Routing}
+\label{q-qnet-routing}
+We consider a network of queues, labeled $s=1,
+...,S$, also called \nt{stations}. Customers
+visit stations and queue or receive service
+according to the particular station service
+discipline, and once served, move to another
+station or leave the network. Transfers are
+instantaneous (delays must be modeled explicitly
+by means of delay stations, see below).
+
+Every customer has an attribute called
+\nt{class}, in a finite set $\lc 1,...,C\rc $. A
+customer may change class in transit between
+stations, according to the following procedure
+(called \nt{Markov routing} in
+\cite{walrand1988introduction}).There is a fixed
+non-negative \nt{routing matrix} $Q=\lp
+q^{s,s'}_{c,c'}\rp_{s,s',c,c'}$ such that for all
+$s,c$: $\sum_{s',c'}q^{s,s'}_{c,c'}\leq 1$. When
+a class$-c$ customer leaves station $s$ (because
+her service time is completed), she does a random
+experiment such that: with probability
+$q^{s,s'}_{c,c'}$ she joins station $s'$ with
+class $c'$; with probability
+$1-\sum_{s',c'}q^{s,s'}_{c,c'}$ she leaves the
+network. This random experiment is performed
+independently of all the past and present states
+of the network. In addition, there are fresh
+independent Poisson arrivals, also independent of
+the past and present states of the network;
+$\nu_c^s$ is the intensity of the Poisson process
+of arrivals of class$-c$ customers at station
+$s$. We allow $\nu_c^s= 0$ for some or all $s$ and
+$c$.
+
+We say that two classes $c, c'$ are \nt{chain
+equivalent} if $c=c'$ or if it is possible for a
+class $c$-customer to eventually become a class
+$c'$ customer, or vice-versa. This defines an
+equivalence relation between classes, the
+equivalence classes are called \nt{chains}. It
+follows that a customer may change class but
+always remains in the same chain.
+
+A chain $\calC$ is called \nt{closed} if the
+total arrival rate of customers $\sum_{c \in
+\calC, s}\la^s_c$ is $0$. In such a case we
+require that the probability for a customer of
+this chain to leave the network is also $0$, i.e.
+$\sum_{c',s'}q^{s,s'}_{c,c'}=1$  for all $c\in
+\calC$ and all $s$. The number of customers in a
+closed chain is constant.
+
+A chain that is not closed is called \nt{open}. We assume that
+customers of an open chain cannot cycle forever in the
+network, i.e. every customer of this chain eventually leaves
+the network.
+
+A network where all chains are closed is called a
+\nt{closed  network}, one where all chains are
+open is called an \nt{open network} and otherwise
+it is a \nt{mixed network}.
+
+We define the numbers $\theta^s_c$ (\nt{visit
+rates}) as one solution to
+  \be
+  \theta^s_{c} = \sum_{s',c'}\theta^{s'}_{c'}
+  q^{s',s}_{c',c} + \nu^s_c
+  \label{eq-q-visitRatios}
+  \ee
+If the network is open, this solution is unique
+and $\theta^s_{c}$ can be
+interpreted\footnote{This interpretation is valid
+when the network satisfies the stability
+condition in \thref{theo-q-pf}} as the number of
+arrivals per time unit of class-$c$ customers at
+station $s$. If $c$ belongs to a closed chain,
+$\theta^s_c$ is determined only up to one
+multiplicative constant per chain. We assume that
+the array $\lp \theta^s_c\rp_{s,c}$ is one non
+identically zero, non negative solution of
+\eref{eq-q-visitRatios}.
+
+Chains can be used to model different customer
+populations while a class attribute may be used
+to model some state information, as illustrated
+in \fref{fig-q-chains}.
+
+\begin{figure}[htbp]
+  \insfig{pfqn}{0.9}
+ \mycaption{A Simple Product Form queuing network with 2 chains of
+  customers, representing a machine with dual core
+  processor. Chain 1 consists of classes 1, 2 and 3. Chain 2 consists of class 4.}
+  \mylabel{fig-q-chains}
+\end{figure}
+
+It is possible to extend Markov routing to state-dependent
+routing, for example, to allow for some forms of capacity
+limitations; see \sref{sec-q-qnets-blocking}.
+
+%
+%\paragraph{Networks with Blocking}
+%It is possible to extend Markov routing to
+%state-dependent routing, In particular, it is
+%possible to allow for some (limited) forms of
+%blocking, as follows. Assume that there are some
+%constraints on the network state, for example,
+%there may be an upper limit to the number of
+%customers in one station. A customer finishing
+%service, or, for an open chain, a customer
+%arriving from the outside, is denied access to a
+%station if accepting this customer would violate
+%any of the constraints. Consider the following
+%two cases:
+%  \begin{description}
+%    \item[Transparent Stations with Capacity Limitations]
+%    The constraints on the network state are
+%    expressed by $L$
+%capacity limitations of the form
+%  \be
+%  \sum_{(s,c) \in \calH_{\ell}}n^s_c \leq
+%  \Gamma_{\ell},
+%  \;\; \ell=1...L
+%  \label{eq-q-qnet-caplim}
+%  \ee
+%where $n^s_c$ is the number of class $c$
+%customers present at station $c$, $ \calH_{\ell}$
+%is a subset of $\lc 1,...,S \rc  \times
+%  \lc 1,...C\rc $ and $\Gamma_{\ell}\in \Nats$.
+%In other words, some stations or groups of
+%stations may put limits on the number of
+%customers of some classes or groups of classes.
+%
+%
+%    If a customer is
+%    denied access to station $s$, she continues
+%    her journey through the network, using Markov
+%    routing with the fixed matrix $Q$, until she
+%    finds a station that accepts her or until she leaves the
+%    the network.
+%    \item[Partial Blocking with Arbitrary Constraints] The constraints can
+%    be of any type. Further, If a customer finishes service
+%    and is
+%    denied access to station $s$, she stays
+%    blocked in service. More precisely,
+%    we assume that service
+%    distributions are mixtures of exponentials, and the
+%    customer resumes the last completed service stage.
+%    If the customer was arriving from the
+%    outside, she is dropped.
+%
+%    Further, we need to assume that Markov
+%    routing is \nt{reversible}, which means that
+%    \be
+%       \theta^s_c q^{s,s'}_{c,c'}
+%       =
+%       \theta^{s'}_{c'}q^{s',s}_{c',c}
+%       \label{eq-q-qnet-rev}
+%    \ee for all $s,s',c,c'$. Reversibility is a
+%    constraint on the topology; bus and star
+%    networks give reversible routing, but ring
+%    networks do not.
+%  \end{description}
+%These two forms of routing with blocking are
+%acceptable for multi-class product form queuing
+%networks, i.e. the results in this chapter
+%continue to apply
+%\cite{pittel1979closed,leny,kelly1979reversibility}.
+%There are other cases, too, see
+%\cite{balsamo2000product} and references therein.
+
+\subsection{Catalog of Service Stations}
+\label{sec-q-qnet-cat} There are some constraints
+on the type of service stations allowed in
+multi-class product form queuing networks.
+Formally, the service stations must satisfy the
+property called ``local balance in isolation"
+defined in \sref{sec-q-form-def}, i.e., the stationary
+probability of the station in the configuration of \fref{sec-isolation}
+must satisfy \eref{eq-q-qnet-lb1} and \eref{eq-q-qnet-lb2}.
+
+In this section we give a catalog of
+station types that are known to satisfy this
+property. There are only two categories of
+stations in our list (``insensitive", and
+``MSCCC"), but these are fairly general
+categories, which contain many examples such as
+Processor Sharing, Delay, FIFO, Last Come First
+Serve etc. Thus, in practice, if you have to
+determine whether a given station type is allowed
+in multi-class product form queuing networks, a
+simple solution is to look up the following
+catalog.
+
+We use the following definitions. Every station
+type is defined by
+%
+\begin{itemize}
+   \item a \nt{discipline}: this specifies how arriving
+       customers are queued, and which customers receive
+       service at any time.
+    We also assume that there is a \nt{station buffer}: this is where
+    customers are placed while waiting or
+    receiving service, and is represented with
+    some form of data structure such that
+    every position in the station buffer can be
+    addressed by an index $i\in\calI$ where
+    $\calI$ is some enumerable set. If $\calB$ is the state of
+    the station buffer at a given time, $\calB_i$ is the class of the
+    customer present at position $i$ (equal to
+    $-1$ if there is no customer present).
+    Further we will make use of
+    two operations.
+
+    $\calB' = \mathrm{add}(\calB,i,c)$ describes the
+    effect of adding a customer of class
+    $c$ at position indexed by $i$ into the station buffer described by
+    $\calB$.
+
+     $\calB' = \mathrm{remove}(\calB,i)$ describes the
+    effect of removing the customer present at
+    position $i$, if any (if there is no customer
+    at position $i$,
+    $\mathrm{remove}(\calB,i)=\calB$).
+
+
+    For example, if the service discipline is
+    FIFO: the data structure is a linear list such as
+    $\calB=(c_1, c_2, ...,c_n)$ where $c_i$ is
+    the class of the $i$th customer (labeled in
+    arrival order); the index set is
+    $\calI=\Nats$; $\mathrm{add}(\calB,i,c)=
+    (c_1, ...c_{i-1}, c, c_i,..., c_n)$ and
+    $\mathrm{remove}(\calB,i) = (c_1, ...c_{i-1}, c_{i+1},...,
+    c_n)$.
+
+   We call $\abs{\calB}$ the number of customers present in
+   the buffer; we assume that it is always finite (but
+unbounded).
+  \item a \nt{service requirement}, also called \nt{service
+      time}. For example, if a customer is a job, the
+      service requirement may be the number of CPU cycles
+      required; if it is a packet or a block of data, it
+      may be the time to transmit it on a link. We assume
+      that service requirements are random and drawn
+      independently from anything else when a customer
+      joins the service station. Unless otherwise
+      specified, the distribution of service requirements
+      may depend on the station and the class. Allowing
+      service requirements to depend on the class is very
+      powerful: it allows for example to model service
+      times that are correlated from one visit to the next.
+  \item a \nt{service rate}: this is the speed at which the server operates,
+  which may depend on the customer class. If the service rate is $1$, the service duration is equal to the service requirement (but the response time may be larger, as it includes waiting time).
+  %In \sref{sec-q-sq} the
+%      service rate was always $1$. For multi-class
+%      networks, there may be interest in allowing state
+%      dependent service rates.
+%For example, in a processor sharing service station, the
+%     service rate is
+%      inversely proportional to the number of customers
+%present in the queue.
+The service rate may be
+used to model how resources are shared between
+classes at a station.
+\end{itemize}
+
+
+\paragraph{Category 1: \nt{Insensitive
+Station} or \nt{Kelly-Whittle} Stations}~\\
+
+This category of stations is called
+``insensitive" or ``Kelly-Whittle", for reasons
+that become clear below. We first give a formal,
+theoretical definition, then list the most
+frequent instances.
+
+\textbf{\sc Formal Definition.} \noitemsep
+\begin{enumerate}
+  \item The service requirement may be any phase type
+      distribution; in practice, this may approximate any
+      distribution, see \sref{sec-q-ph}. The service
+      distribution may be dependent on the class.
+
+    \item (\nt{Insertion Probability}) There is an array of numbers
+$\gamma(i,\calB)\geq 0$  defined for any index $i
+\in \calI$ and any station buffer state $\calB$,
+such that: when a class $c$ customer arrives and
+finds the station buffer in state $\calB$ just
+before arrival, the position at which this
+customer is added is drawn at random, and the
+probability that this customer is added at
+position indexed by $i$ is
+  \be
+  \gamma\lp i, \mathrm{add}\lp \calB,i,c\rp\rp
+ \label{eq-q-q-net-ins-hjkdf}
+  \ee
+The same happens whenever a customer finishes a
+service phase (from the phase type service
+distribution), at which time the customer is
+treated as a new arrival.
+
+We assume to avoid inconsistencies that $\sum_{i
+\in \calI}\gamma\lp i, \mathrm{add}\lp
+\calB,i,c\rp\rp=1$ and $\gamma(i,\calB)=0$ if
+there is no customer
+    at position $i$ in $\calB$.
+    \item (\nt{Whittle Function}) There is a function
+        $\Psi()$, called the Whittle Function, defined over
+        the set of feasible station buffer states, such
+        that $\Psi(\calB)> 0$ and the service
+    rate allocated to a user in position $i$ of
+    the station buffer is
+    \be
+    \gamma(i,\calB)
+    \frac{
+    \Psi\lp \mathrm{remove}\lp \calB, i\rp\rp
+    }
+    {
+    \Psi\lp \calB\rp
+    }
+    \label{eq-def-sr}
+    \ee if there is a customer present at
+    position $i$, and $0$ otherwise.
+%
+Note that any positive function may be taken as
+Whittle function; the converse is not true, i.e.
+any rate allocation algorithm does not
+necessarily derive from a Whittle function.
+
+One frequently considers the case where  \be
+    \Psi(\calB) = \Phi(\vn) \ee where $\vn =(n_1,...,n_C)$
+with $n_c$ the number of class-$c$ customers in $\calB$,
+and $\Phi()$ is an arbitrary positive function defined on
+$\Nats^C$. In other words, the Whittle function in such
+cases depends on the state of the station only through the
+numbers of customers (not their position in the buffer).
+The function $\Phi$ is called the \nt{balance function};
+the quantity $\frac{\Phi(\vn - \vone_c)}{\Phi(\vn)}$ is the
+rate allocated to class $c$. As with Whittle function, any
+positive $\Phi$ may be taken as balance function, but the
+converse is not true, any rate allocation does not
+necessarily derive from a balance function.
+%
+
+
+  \item We assume that for any index $i$, class $c$ and
+  station buffer state $\calB$
+  \be
+  \bracket{
+  \mathrm{remove}
+       \lp
+         \mathrm{add}
+         \lp
+           \calB, i, c
+         \rp,
+         i
+       \rp
+       =
+       \calB
+       \\
+       \mbox{if }\calB_i \mbox{ is not empty: }
+       \mathrm{add}
+         \lp
+           \mathrm{remove}(\calB,i), i, \calB_i
+         \rp = \calB
+         }
+         \label{eq-q-sym-whi}
+  \ee
+%
+%  \be
+%  \lp \mathrm{remove}(\calB',i) = \calB \mand \calB'_i=c \rp \Leftrightarrow
+%  \lp\calB' = \mathrm{add}(\calB,i,c)\rp \label{eq-q-sym-whi}
+%  \ee
+%which is equivalent to $\mathrm{remove}
+%       \lp
+%         \mathrm{add}
+%         \lp
+%           \calB, i, c
+%         \rp,
+%         i
+%       \rp
+%       =
+%       \calB
+%      $ and $\mathrm{add}
+%         \lp
+%           \mathrm{remove}(\calB,i), i, \calB_i
+%         \rp = \calB, $
+i.e. a state remains unchanged if one adds a customer
+ and immediately removes it, or vice-versa.
+ %Furthermore, we assume that there is only state $\calB'$ such
+% that $\mathrm{remove}(\calB',i)=\calB$ and $\calB'_i=c$ (this state is necessarily
+% $\mathrm{add}(\calB,i,c)$).
+\end{enumerate}
+
+This formal definition may seem fairly appalling,
+but, as we show next, it is rarely necessary to
+make use of the formal definition. Instead, it
+may be easier to look up the next list of
+examples.
+
+\textbf{\sc Examples of Insensitive Stations.}
+
+For each of these examples, the service
+requirement distribution may be any phase type
+distribution, and may be class dependent.
+
+\begin{description}
+    \item[\nt{Global PS (Processor Sharing)}] The station
+        is as in the Processor Sharing queue of
+        \sref{sec-q-ps}. All customers present in the
+        station receive service, at a rate equal to
+        $\frac{1}{n}$ when there are $n$ customers of any
+        class present at the station.
+
+This is a Kelly-Whittle station by taking as
+    station buffer the ordered list of
+    customer classes $\calB=(c_1, ..., c_n)$. Adding
+    a customer at position $i$ has the effect that existing
+    customers at positions $\geq i$ are shifted by one
+position, thus \eref{eq-q-sym-whi} holds. When a
+customer arrives, it is added at any position
+$1$ to $n+1$  with equal probability
+$\frac{1}{n+1}$, i.e. $
+    \gamma(i,\calB)=\frac{1}{\abs{\calB}} $ (recall that
+    $\abs{\calB}$ is the total number of customers in when
+    the buffer state is $\calB$).
+The Whittle function is simply $\Psi(\calB)=1$
+for every $\calB$. Thus the
+    service rate allocated to a customer is
+    $\frac{1}{n}$, as required.
+
+
+\item[\nt{Global LCFSPR}] This service station is \nt{Last
+    Come First Serve, Preemptive Resume} (\nt{LCFSPR}).
+    There is one global queue; an arriving customer is
+    inserted at the head of the queue, and only this
+    customer receives service. When an arrival occurs, the
+    customer in service is preempted (service is
+    suspended); preempted customers resume service where
+    they left it, when they eventually return to service.
+
+
+This is a Kelly-Whittle station by taking as
+station buffer the ordered list of customer
+classes $\calB=(c_1, ..., c_n)$ as in the
+previous example. When a
+    customer arrives, it is added at position $1$, i.e.
+    $
+    \gamma(i,\calB)=\ind{i=1}
+    $.
+The Whittle function is also $\Psi(\calB)=1$ for
+every $\calB$. Thus the service rate allocated to
+a customer is $1$ to the customer at the head of
+the queue, and $0$ to all others, as required.
+
+
+\item[\nt{Per-Class Processor Sharing}] This is a variant
+    of the Processor Sharing station, where the service rate is divided
+    between customers of the same class, i.e. a customer receives service
+    at rate $\frac{1}{n_c}$, where $n_c$ is the number of class $c$ customers
+    present in the system.
+
+This is a Kelly-Whittle station by taking as
+station buffer a collection of
+    $C$ lists, one per class. Only customers of class $c$
+    may be present in the $c$th list. An index is a
+    couple $i=(c,j)$ where $c$ is a class index
+    and $j$ an integer. Adding
+    a customer at position $i=(c,j)$ has the effect that existing
+    customers in the $c$th list at positions $\geq j$ are shifted by one
+    position, and others do not move thus \eref{eq-q-sym-whi} holds.
+
+    When a class $c$ customer arrives, it is
+    inserted into the $c$th list, at any position
+    $1$ to $n_c+1$, with equal probability. Thus
+    $\gamma((c,j),\calB)=0$ if the customer at
+    position $(c,j)$ is not of class $c$, and
+    $\frac{1}{n_c}$ otherwise.
+    We take as Whittle function
+    $\Psi(\calB)=1$ for every $\calB$. It follows
+    that the service rate allocated to a
+    customer of class $c$ is $\frac{1}{n_c}$ as
+    claimed above.
+
+
+    \item[\nt{Per-Class LCFSPR}] This is a variant
+    of the LCFSPR station, where one
+    customer per class may be served, and this customer is the last arrived
+    in this class.
+
+    This is a Kelly-Whittle station by taking as
+station buffer a collection of $C$ lists, one per class as
+    for per-class PS. When a class $c$ customer arrives, it
+    is added at the head of the $c$th queue, thus
+    $\gamma(i,\calB)=1$ if $i=(c,1)$ and the class at the
+    head of the $c$th queue in $\calB$ is $c$, otherwise
+    $0$. It follows that the service rate allocated to a
+    customer is $0$ unless it at the head of a queue, i.e.
+    this customer is the last arrived in its class. We take
+    as Whittle function $\Psi(\calB)=1$ for every $\calB$.
+    It follows that this station is equivalent to a
+    collection of $C$ independent LCFSPR service stations,
+    one per class, with unit service rate in each.
+
+\item[\nt{Infinite Server} (\nt{IS}) or \nt{Delay}
+    station] There is no queuing, customers
+    start service immediately.
+
+This is a Kelly-Whittle station by taking the
+same  station buffer and insertion probability as
+for Global PS, but with Whittle function
+     $
+     \Psi(\calB)=\frac{1}{n!}
+     $ where $n= \abs{\calB}$ is the total number
+     of customers present in the station.
+     It follows that the service rate allocated to any
+     customer present in the station is $1$, as
+required.
+%%%%%%%%%%%%%%%%%%%%%%
+
+
+\item[PS, LCFSPR and IS with \nt{class dependent
+    service rate}]
+
+Consider any of the previous examples, but assume
+that the service rate is class dependent, and
+depends on the number of customers of this class
+present in the station (call $r_c(n_c)$ the
+service rate for class $c$).
+
+Thus, for Global PS, the service rate allocated
+to a class $c$ customer is $\frac{r_c(n_c)}{n}$;
+for Per-Class PS, it is $\frac{r_c(n_c)}{n_c}$.
+For Global LCFSPR, the service rate allocated to
+the unique customer in service is $r_c(n_c)$; for
+Per Class LCFSPR, the service rate allocated to
+the class $c$ customer in service is $r_c(n_c)$.
+For IS the rate allocated to every class $c$
+customer is $r_c(n_c)$.
+
+This fits in the framework of Kelly-Whittle
+stations as follows. For PS and LCFSPR (per-class
+or global) replace the Whittle function by:
+ \ben
+   \Psi(\calB)=
+   \prod_{c=1}^C \frac{1}{r_c(1)r_c(2)... r_c(n_c)}
+ \een
+ so that
+ \ben
+      \frac{
+    \Psi\lp \mathrm{remove}\lp \calB, i\rp\rp
+    }
+    {
+    \Psi\lp \calB\rp
+    } = r_c(n_c)
+      \een as required.
+For IS, replace $\Psi$ by
+$
+   \Psi(\calB)=
+   \frac{1}{n!}
+   \prod_{c=1}^C \frac{1}{r_c(1)r_c(2)... r_c(n_c)}
+$ in order obtain the required service rate.
+
+
+\item[PS, LCFSPR and IS with \nt{queue size dependent
+    service rate}]
+Consider any of the first five previous examples,
+but assume that the service rate is class
+independent, and depends on the total number of
+customers $n$  present in the station (call
+$r(n)$ the service rate ). Thus for Global PS,
+the service rate allocated to one customer is
+$\frac{r(n)}{n}$ if this customer is of class
+$c$; for Per-Class PS, it is $\frac{r(n)}{n_c}$.
+For Global LCFSPR, the service rate allocated to
+the unique customer in service is $r(n)$; for Per
+Class LCFSPR, the service rate allocated to every
+customer ahead of its queue is $r(n)$. For IS,
+the service rate for every customer is $r(n)$.
+
+This fits in the framework of Kelly-Whittle
+stations as follows. For PS and LCFSPR (per-class
+or global) replace the Whittle function by:
+ \ben
+   \Psi(\calB)= \frac{1}{r(1)r(2)... r(n)}
+    \een
+so that
+ \ben
+      \frac{
+    \Psi\lp \mathrm{remove}\lp \calB, i\rp\rp
+    }
+    {
+    \Psi\lp \calB\rp
+    } = r(n)
+ \een
+as required. For IS, replace $\Psi$ by $
+\Psi(\calB)= \frac{1}{n!}\frac{1}{r(1)r(2)...
+r(n)}$ in order obtain the required service rate.
+
+    \item \nt{Symmetric Station}, also called \nt{Kelly
+    station}:
+    This is a generic type introduced by Kelly in \cite{kelly1979reversibility} under the name of
+        ``symmetric" service discipline.
+
+    The station buffer is an ordered list as in the first
+    example above. For an arriving
+    customers who finds $n$ customers present in the station,
+    the probability to join position $i$ is
+    $p(n+1,i)$, where
+    $\sum_{i=1}^{n+1}p(n+1,i)=1$ (thus
+    $\gamma(\calB,i)=p(\abs{\calB},i)$). The rate
+    allocated to a customer in position $i$ is
+    $p(n,i)$ when there are $n$ customers
+    present. The name ``symmetric" comes
+    from the fact that the same function is used to
+    define the insertion probability and the
+    rate.
+
+This fits in the framework of Kelly-Whittle stations, with
+Whittle function equal to 1. The global PS and global
+LCFSPR stations are special cases of Kelly stations.
+%
+ \item[\nt{Whittle Network}] This is a
+    Per-Class Processor Sharing station where
+   the Whittle function is a balance function, i.e.
+   $\Psi(\calB) = \Phi(\vn)$.
+%
+It follows that the service rate for a class $c$
+customer is
+  \be
+  \frac{1}{n_c}\frac{\Phi(\vn - \vone_c)}{\Phi(\vn)} \ee
+ where $\vone_c=(0,..1,...0)$ with a
+$1$ in position $c$%
+\index{$\vone_c=(0,..1...0)$ }. This type of station is
+used in \cite{bonald2003insensitive} to model resource
+sharing among several classes.
+
+A network consisting of a single chain of classes
+and one single Whittle Station is called a
+Whittle Network. In such a network, customers of
+class $c$ that have finished service may return
+to the station, perhaps with a different class.
+
+A Whittle network can also be interpreted as a
+single class, multi-station network, as follows.
+There is one station per class, and customers may
+join only the station of their class. However,
+class switching is possible. Since knowing the
+station at which a customer resides entirely
+defines its class, there is no need for a
+customer to carry a class attribute, and we have
+a single class network.
+
+In other words, a Whittle Network is a single
+class network with PS service stations, where the
+rate allocated to station $c$ is $\frac{\Phi(\vn
+- \vone_c)}{\Phi(\vn)}$. The product form network
+in \thref{theo-q-pf} implies that the stationary
+probability that there are $n_c$ customers in
+station $c$ for all $c$ is
+ \be
+  %P(\vn) = \frac{1}{\eta} \Phi(\vn)\prod_{c=1}^C\frac{\bar{S}_c^{n_c} \theta_c^{n_c}}{n_c!}
+ P(\vn) = \frac{1}{\eta}
+\Phi(\vn)\prod_{c=1}^C\bar{S}_c^{n_c} \theta_c^{n_c}
+\label{eq-q-whi-sta}
+ \ee
+ where $\bar{S}_c$ is the expected service requirement
+ at station $c$, $\theta_c$ the
+ visit rate and $\eta$ a normalizing constant.
+
+\end{description}
+Note that the stationary probability in
+\eref{eq-q-whi-sta} depends
+ only on the traffic intensity $\rho_c=\bar{S}_c
+ \theta_c$, not otherwise on the distribution of
+ service times. This is the \nt{insensitivity}
+ property; it applies not only to Whittle networks, but more
+ generally to all service stations of Category 1,
+ hence the name.
+
+
+\paragraph{Category 2: \nt{MSCCC Station} }~\\
+
+This second category of station contains as
+special case the FIFO stations with one or any
+fixed number of servers. It is called
+\nt{Multiple Server with Concurrent Classes of
+Customers} in reference to
+\cite{chiola1988product,le1986bcmp,berezner1995quasi}.
+A slightly more general form than presented here can be found in
+\cite{adan98sum}.
+
+The service requirement \imp{must be}
+exponentially distributed with the same parameter
+for all classes at this station (but the
+parameter may be different at different
+stations). If we relax this assumption, this
+station is not longer admissible for multi-class
+product form queuing networks. Thus, unlike for
+category 1, this station type is \imp{sensitive}
+to the distribution of service requirements.
+
+The service discipline is as follows. There are
+$B$ servers and $G$ \nt{token pools}. Every class
+is associated with exactly one token pool, but
+there can be several classes associated to the
+same token pool. The size of token pool $g$ is an
+integer $T_g\geq 1$.
+
+A customer is ``eligible for service" when both one of the $B$
+servers becomes available and there is a free token in the pool
+$g$ that this customer's class is associated with. There is a
+single queue in which customers are queued in order of arrival;
+when a server becomes idle, the first eligible customer in the
+queue, or to arrive, starts service, and busies both one server
+and one token of the corresponding pool. The parameters such as
+$G$, $B$ and the mapping $\calG$ of classes to token pools may
+be different at every station.
+
+The FIFO queue with $B$ servers is a special case
+with $G=1$ token pool, and $T_1=B$.
+
+In addition, this station may have a variable
+service rate which depends on the total number of
+customers in the station. The rate must be the
+same for all classes  (rates that depend on the
+population vector are not allowed, unlike for
+Category 1 stations).
+
+\begin{ex}{A Dual Core
+Machine}\fref{fig-q-chains} illustrates a simple
+model of dual core processor. Classes 1, 2 or 3
+represent external jobs and class 4 internal
+jobs. All jobs use the dual core processor,
+represented by station 1. External jobs can cycle
+through the system more than once. Internal jobs
+undergo a random delay  and a variable delay due
+to communication.
+
+The processor can serve up to 2 jobs in parallel,
+but some jobs require exclusive access to a
+critical section and cannot be served together.
+This is represented by an MSCCC station with 2
+servers and 2 token pools, of sizes 1 and 2
+respectively. Jobs that require access to the
+critical section use a token of the first pool;
+other jobs use tokens of the second pool (the
+second pool has no effect since its size is as
+large as the number of servers, but is required
+to fit in the general framework of multi-class
+product form queuing networks).
+
+The delay of internal jobs is represented by
+station 2 (an ``infinite server" station) and the
+communication delay is represented by station 3
+(a ``processor sharing" station, with a constant
+rate server).
+
+Internal jobs always use the critical section.
+External jobs may use the critical section at
+most once. This is modelled by means of the
+following routing rules.
+\begin{itemize}
+    \item Jobs of classes 1, 2 or 3 are external
+    jobs. Jobs of class 1 have never used the
+    critical section in the past and do not use it ; jobs of class 2
+    use the critical section; jobs of class 3
+    have used the critical section in the past
+    but do not use it any more.
+
+    After service, a job of class 1
+    may either leave or return immediately as class 1 or 2. A job of
+    class 2 may either leave or return immediately as class 3. A
+    job of class 3 may either leave or return immediately as class
+    3.
+
+    \item Jobs of class 4 represent internal jobs. They go
+        in cycle through stations 1, 2, 3 forever.
+
+    \item At station 1, classes 2 and 4 are
+    associated with token pool 1 whereas classes 1
+    and 3 are associated with token pool 2, i.e. $\calG(1)=2, \calG(2)=1, \calG(3)=2$ and
+    $\calG(4)=1$. The constraints at station 1 are thus: there can be up to 2 jobs in
+    service, with at most one job of classes 2 or
+    4.
+\end{itemize}
+
+The routing matrix is
+ \ben
+ \bracket{
+ \barr{lcrlcrlcr}
+ q^{1,1}_{1,1}&=& \alpha_1; &
+ q^{1,1}_{1,2}&=& \beta_1;
+ \\
+ q^{1,1}_{2,3}&=& \alpha_2;  &
+ \\
+ q^{1,1}_{3,3}&=& \alpha_3;  &
+ \\
+ q^{1,2}_{4,4}&=&1; &
+ q^{2,3}_{4,4}&=&1; &
+ q^{3,1}_{4,4}&=&1;
+  \earr
+  \\
+ q^{s,s'}_{c,c'}=0\moth
+ }
+ \een
+ where all numbers are positive, $\alpha_i \leq 1$ and $\alpha_1+\beta_1\leq
+ 1$.
+
+There are two chains: $\lc 1, 2,3 \rc$ and $\lc
+4\rc$. The first chain is open, the second is
+closed, so we have a mixed network.
+
+  Let $\nu$ be the arrival rate of external jobs
+and $p_i$ the probability that an arriving job is
+of class $i$. The visit rates are
+ \ben
+ \barr{lrclrclrclrcl}
+\mbox{Class 1: } &
+ \theta^1_1 &=& \nu \frac{p_1}{1-\alpha_1};
+ &
+  \theta^2_1 &=& 0 ;&
+ \theta^3_1&=& 0;
+ \\
+ \mbox{Class 2: } &
+ \theta^1_2 &=& \nu \lp p_2 + \beta_1 \frac{p_1}{1-\alpha_1}\rp ;&
+ \theta^2_2 &=& 0 ;&
+ \theta^3_2 &=& 0;
+ \\
+ \mbox{Class 3: } &
+ \theta^1_3 &=& \nu \frac{1}{1-\alpha_3}
+  \lp
+  p_3 + \alpha_2 p_2 + \alpha_2 \beta_1 \frac{p_1}{1-\alpha_1}
+  \rp;
+&
+ \theta^2_3 &=& 0 ;&
+ \theta^3_3 &=& 0;
+ \\
+\mbox{Class 4: } &
+ \theta^1_4&=&1 ;&
+ \theta^2_4&=&1 ;&
+ \theta^3_4&=&1.
+ \earr
+ \een
+Note that the visit rates are uniquely defined
+for the classes in the open chain(1, 2 and 3); in
+contrast, for class 4, any constant can be used
+(instead of the constant $1$).
+\end{ex}
+%
+%
+%
+\subsection{The Station Function}
+\begin{figure}[htbp]
+  \insfig{qnetisol}{0.7}
+  \mycaption{Station $s$ in isolation.}
+  \mylabel{fig-q-st-isol}
+\end{figure}
+\label{sec-isolation}
+\subsubsection{Station in Isolation}
+
+The expression of the product form theorem uses
+the \nt{station function}, which depends on the
+parameter of the station as indicated below, and
+takes as argument
+ the vector $\vn =(n_1,...,n_C)$ where $n_c$ is the number of
+class-$c$ customers at this station. It can be
+interpreted as the stationary distribution of
+numbers of customers in the station in isolation,
+up to a multiplicative constant.
+
+More precisely, imagine a (virtual) closed
+network, made of this station and one external,
+auxiliary Per Class PS station with mean service
+time $1$ and service rate $1$ for all classes, as
+in \fref{fig-q-st-isol}. In this virtual network
+there is one chain per class and every class $c$
+has a constant number of customers $K_c$. The
+product form theorem implies that, for any values
+of the vector $\vK=(K_1,...,K_C)$, this network
+has a stationary regime, and the stationary
+probability that there are $n_1$ customers of
+class 1, ... $n_C$ customers of class $C$ is
+  \be
+  P^{\mathrm{isol}}(\vn) = \bracket{
+  0 \mif n_c > K_c \mfs c
+  \\
+  f(\vn) \frac{1}{\eta(\vK) }\moth
+  }
+  \label{eq-q-def-stat-fun}
+  \ee
+where $\eta(\vK)$ is a normalizing constant
+(independent of $\vn$).
+
+It is often useful to consider the \nt{generating function}
+$G()$ of the station function, defined as the \nt{$Z$
+transform} \index{Z-transform} of the station function, i.e.
+for $\vZ=(Z_1,...,Z_C)$:
+ \be
+ G(\vZ)=\sum_{\vn \geq
+ 0}f(\vn)\prod_{c=1}^C Z_c^{n_c}
+ \label{eq-q-def-stat-fun-2}
+ \ee
+(Note that, in signal processing, one often uses $Z^{-1}$
+instead of $Z$; we use the direct convention, called the
+``mathematician's $z$-transform"). The following interpretation
+of the generating function is quite useful. By
+\thref{theo-q-pf-open}, $G(\vZ)$ is the normalizing constant
+for the open network made of this station alone, fed by
+independent external Poisson processes of rates $Z_c$, one for
+each class $c$. Upon finishing service at this station,
+customers leave the network and disappear.
+
+
+
+In the rest of this section we give the station
+functions for the different stations introduced
+earlier.
+
+\subsubsection{Station Function for Category 1}
+
+Let $\mathrm{pop}(\calB)\eqdef (n_1, ...,
+ n_C)$ where $n_c$ is the number of class $c$ customers at this
+ station when the station buffer is in state
+ $\calB$ (i.e. $n_c=\sum_{i \in \calI} \ind{\calB_i=c}$).
+ The station function is
+ \be
+  f(\vn) =
+  \sum_{\mathrm{pop}(\calB)=\vn}\Psi(\calB)
+  \prod_{c=1}^C \bar{S}_c^{n_c}
+ \ee where the summation is over all station
+ buffer states $\calB$ for which the vector
+of populations is $\vn$, $\bar{S}_c$ is the mean
+service time for class $c$ at this station, and
+$\Psi$ is the Whittle function of this station.
+
+ Note that that the station function is \imp{independent of
+ the insertion
+ probabilities} $\gamma$. For example, the
+ stationary probability is the same whether the
+ station is PS or LCFSPR, since they differ only by
+ the insertion probabilities.
+
+ In the case where the Whittle function is a
+ balance function, i.e. $\Psi(\calB)=\Phi(\vn)$,
+ the summation may in some cases be computed.
+ \begin{enumerate}
+    \item If the station
+ uses global queuing as in the Global PS and
+ Global LCFSPR examples,
+ there are $\frac{n!}{n_1! ... n_C!}$ station buffer states for
+ a given population vector, with $n=\abs{\vn}=\sum_{c=1}^C n_c$.
+ The station function is
+   \be
+  f(\vn) = \frac{n!}{\prod_{c=1}^C n_c!}
+   \Phi(\vn)
+  \prod_{c=1}^C  \bar{S}_c^{n_c}
+  \label{eq-q-stf-t2ss}
+  \ee
+    \item If the station uses per class queuing as in the
+        Per Class PS and Per Class LCFSPR examples, there
+        is one station buffer state for one population
+        vector and the station function is
+  \be f(\vn) =
+   \Phi(\vn)
+  \prod_{c=1}^C  \bar{S}_c^{n_c}
+  \label{eq-q-stf-t2sspc}
+  \ee
+ \end{enumerate}
+
+
+\textbf{Global PS/Global LCFSPR/Kelly Station
+with constant rate.} In these cases we can assume
+that the service rate is 1; for all of these
+disciplines the station function is given by
+\eref{eq-q-stf-t2ss} with $\Phi(\vn)=1$. The
+generating function is
+ \be
+G(\vZ)=\frac{1}{1-\sum_{c=1}^C \bar{S_c
+}Z_c}\label{eq-q-stat-t2-z}
+ \ee
+
+ \textbf{Per Class PS/Per Class LCFSPR with
+constant rate.} Here too we can assume that the
+service rate is 1; the station function is given
+\eref{eq-q-stf-t2sspc} with $\Phi(\vn)=1$. The
+generating function is
+ \be
+G(\vZ)=\prod_{c=1}^C\frac{1}{1 - \bar{S_c
+}Z_c}\label{eq-q-stat-t2pc-z}
+ \ee
+
+\textbf{IS with constant rate. } Here too we can
+assume that the service rate is 1; the station
+function is given by \eref{eq-q-stf-t2ss} with
+$\Phi(\vn)=1/n!$. The generating function is
+ \be
+G(\vZ)=\mathrm{exp}\lp \sum_{c=1}^C \bar{S_c
+}Z_c\rp \label{eq-q-stat-t3-z}
+ \ee
+
+
+\subsubsection{Station Function for
+Category 2} For the general station in this category, the
+station function is a bit complex. However, for the special
+case of FIFO stations with one or more servers, it has a simple
+closed form, given at the end of this section.
+
+\textbf{General MSCCC Station} Recall that the
+station parameters are:\noitemsep
+\begin{itemize}
+ \item$r(i)$: service rate when the total number of customers is $i$
+ \item $\bar{S}$: the mean service time (independent of the class)
+ \item $B$: number of servers
+ \item $G$: number of token pools; $T_g$: size
+            of token pool $g$; $\calG$: mapping of class to
+            token pool, i.e. $\calG(c)=g$ when class $c$ is associated
+            with token pool $g$.
+ \end{itemize}
+The station function is
+ \be
+ f(\vn)   =  d(\vx)
+\frac{\bar{S}^{\abs{\vn}}}{\prod_{i=1}^{\abs{\vn}}r(i) }
+\frac{
+ \prod_{g=1}^G x_g !} {\prod_{c=1}^C n_c!
+  }\label{eq-q-stat-t1}
+  \ee
+  %
+with $\abs{\vn}=\sum_{c=1}^C
+ n_c$, $\vx=(x_1,...,x_G)$ and $x_g=\sum_{c:
+ \calG(c)=g}n_c$ (the number of customers associated with
+ token pool $g$). The function $d$ is a
+combinatorial function of $\vx \in\Ints^G$, recursively defined
+by $d(\vx)  =  0$ if $x_g \leq 0$ for some $g$, $d(0,...,0)  =
+1$ and
+%
+\be d(\vx) \times \mathrm{bs}(\vx) = \sum_{g =1}^G d(\vx -
+\vone_g) \label{eq-q-fn-phi}\ee
+%
+where $\mathrm{bs}(\vx)\eqdef\min
+      \lp
+   B,\sum_{g=1}^G \min \lp x_g, T_g\rp \rp $ is the number
+of busy servers and $\vone_g=(0,..1...0)$ with a $1$ in
+position $g$. Note that \ben \mif \sum_{g}\min\lp
+x_g,T_g\rp\leq B \mthen d(\vx)=\prod_{g=1}^G
+\frac{1}{\prod_{i=1}^{x_g}\min(i,T_g)}\een
+
+In general, though, there does not appear to be a closed form
+for $d$, except when the station is a FIFO station (see below).
+
+
+For the MSCCC station, the generating function cannot be
+computed explicitly, in general, but when the service rate is
+constant, i.e. $r(i)=1$ for all $i$, one may use the following
+algorithm. Let $D$ be the generating function of $d$, i.e. \be
+D(\vX)=\sum_{\vx \in \Nats^G}d(\vx) \prod_{g=1}^G X_g^{x_g}\ee
+with $\vX=(X_1...X_G)$. For $\vtau \in \lc 0...T_1\rc \times
+...\times \lc
+  0...T_G\rc$, let
+  \ben D_{\vtau}(\vX)\eqdef \sum_{\vx \geq 0, \min(x_g, T_g) = \tau_g, \forall g}d(\vx)
+ \prod_{g=1}^G X_g^{x_g}\een so that
+ $ D(\vX)= \sum_{\vtau \in \lc 0...T_1\rc \times ...\times
+\lc 0...T_G\rc} D_{\vtau}(\vX)$.  One can
+ compute $ D_{\vtau}()$ iteratively, using
+ $ D_{\vzero}(\vX)=1$,
+ $ D_{\vtau}(\vX) =  0$ if $\tau_g <0$ for some
+ $g$ and the following, which follows from
+ \eref{eq-q-fn-phi}:
+ \be
+  D_{\vtau}(\vX) =  \frac{1}{\mathrm{bs}(\vtau)- \sum_{g: \tau_g=T_g} X_g }
+  \sum_{g: \tau_g >0} X_g  D_{\vtau-\vone_g}(\vX)
+  \label{eq-comp-phidelta}
+   \ee
+   It is sometimes useful to note that
+   \be
+    D_{\vtau}(\vX)    =
+  \prod_{g=1}^G
+  \frac{X_g^{\tau_g}}
+  {\tau_g!\lp 1 -\frac{X_g}{T_g}\ind{\tau_g=T_g}\rp}
+%
+  \mif \vtau \geq 0 \mand \mathrm{bs}(\vtau) < B
+  \label{eq-q-ztr-simp}
+   \ee
+   The generating function of the MSCCC station with constant service rate is then given
+   by
+   \be
+   G(\vZ)  =    D
+   (X_1,...,X_G)
+   \label{eq-q-stat-t1-z}
+\ee with $X_g  =
+   \bar{S}\lp\sum_{c \mst \calG(c)=g}Z_c\rp$ for all token pool
+   $g$.
+
+\textbf{FIFO with $B$ servers.} This is a special
+case of MSCCC, with much simpler formulas than in
+        the general case. Here the parameters are
+    \begin{itemize}
+         \item$r(i)$: service rate when the total number
+             of customers is $i$
+         \item $\bar{S}$: the mean service time
+             (independent of the class)
+             \item $B$: number of servers
+\end{itemize}
+The station function is derived from \eref{eq-q-stat-t1} with
+$G=1$. One finds $\vx=(\abs{\vn})$ and $d(j)=
+\frac{1}{\prod_{i=1}^j \min(B,i)}$ for $j\geq 1$. Thus:
+
+\be f(\vn)   =
+\frac{\bar{S}^{\abs{\vn}}}{\prod_{i=1}^{\abs{\vn}}\lb
+r(i) \min(B,i)\rb } \frac{\abs{\vn} !}
+{\prod_{c=1}^C
+ n_c!
+  }\label{eq-q-stat-fifo}
+ \ee
+In the constant rate case, the generating
+function follows from \eref{eq-q-ztr-simp}:
+ \be
+G(\vZ) = 1 + X + \frac{X^2}{2!}
++...+\frac{X^{B-1}}{(B-1)!}+ \frac{X^B}{B!\lp
+1-\frac{X}{B} \rp}\label{eq-q-stat-fifo-z} \ee
+with $X=\bar{S}\sum_{c=1}^C Z_c$.
+
+In particular, for the \imp{FIFO station with one
+server
+ and constant rate}, the station function is \be f(\vn) =
+\frac{\bar{S}^{\abs{\vn}}\abs{\vn} !}
+{\prod_{c=1}^C n_c! }\label{eq-q-stat-fifo1}\ee
+and the generating function is
+ \be
+G(\vZ)=\frac{1}{1-\bar{S}\sum_{c=1}^C Z_c}
+\label{eq-q-qnet-gen-f-fifo}
+ \ee
+
+\begin{ex}{Dual Core Processor in \fref{fig-q-chains}}
+The station functions are (we use the notation
+$n_i$ instead of $n^1_i$):
+ \bearn
+ f^1(n_1, n_2, n_3, n_4) & = &
+ d(n_2+n_4, n_1+n_3)
+ \frac{(n_1+n_3)!(n_2+n_4)!}{n_1!n_2!n_3!n_4!}(\bar{S}^1)^{n_1+n_2+n_3+n_4}
+ \\
+ f^2(n^2_4) & = & (\bar{S}^2)^{n^2_4}\frac{1}{n^2_4 !}
+ \\
+ f^3(n^3_4) & = & (\bar{S}^3)^{n^3_4}
+ \eearn
+In the equation, $d$ corresponds to the MSCCC station and is
+defined by \eref{eq-q-fn-phi}. The generating functions for
+stations 2 and 3 follow immediately from (\ref{eq-q-stat-t3-z})
+and (\ref{eq-q-stat-t2pc-z}): \bearn
+  G^2(Z_1, Z_2, Z_3, Z_4) & = & e^{\bar{S}^2 Z_4}
+  \\
+  G^3(Z_1, Z_2, Z_3, Z_4) & = & \frac{1}{1-\bar{S}^3 Z_4}
+  \eearn
+
+For station 1, we need more work.
+
+First we compute the generating function $
+D(X,Y)\eqdef\sum_{m\geq0, n\geq 0}d(m,n)X^mY^n$, using
+\eref{eq-q-fn-phi}. One finds
+  \bearn
+     D_{0,0}(X,Y) & =  & 1
+    \\
+     D_{1,0}(X,Y) & =  & \frac{X}{1-X}
+    \\
+     D_{0,1}(X,Y) & =  & Y
+    \\
+     D_{1,1}(X,Y) & =  & \frac{1}{2-Y}\lp
+                 X D_{0,1} +Y D_{1,0} \rp
+                   =   \frac{XY}{1-X}
+    \\
+     D_{0,2}(X,Y) & =  & \frac{1}{2-X}Y D_{0,1}
+                   =   \frac{Y^2}{2-Y}
+    \\
+     D_{1,2}(X,Y) & =  &  \frac{1}{2-X-Y}
+     \lp X  D_{0,2} + Y D_{1,1} \rp
+                   =   \frac{XY^2 (3-X-Y)}{(2-X-Y)(2-Y)(1-X)}
+  \eearn
+and $ D$ is the sum of these 6 functions. After some algebra:
+ \be
+    D(X,Y)  =
+   \frac{1}{1-X} \lp
+   1 + Y + \frac{Y^2}{2-X-Y}
+     \rp
+ \label{eq-q-ex-phi-skl}
+ \ee
+Using \eref{eq-q-stat-t1-z}, it follows that the
+generating functions of station 1 is
+  \be
+  G^1(Z_1, Z_2, Z_3, Z_4)  =   D(\bar{S}^1
+  (Z_2+Z_4), \bar{S}^1 (Z_1+Z_3))
+  \label{eq-q-qnet-djjduetgsvdff}
+  \ee
+
+\label{ex-q-qnet-dslkjjdasflk}
+\end{ex}
+
+
+
+\mq{q-qn-aslkdksldoo}{Compare the station
+function for an IS station with constant service
+rate and equal mean service time for all classes
+with a FIFO station with constant rate and $B\to
+\infty$.}{Both are the same:
+\eref{eq-q-stat-fifo} and \eref{eq-q-stf-t2ss}
+with $\Phi(\vn)=1/n!$ give the same result:
+$f(\vn)= \frac{\bar{S}^{\abs{\vn}}}{\prod_{c=1}^C
+ n_c!}$.}
+\mq{q-q-qnets-st-isol}{What is the station
+function
+ $f^{\mathrm{aux}}()$
+  for the
+ auxiliary station used in the
+ definition of the station in isolation~?}{It is a Per Class PS station with
+ $\bar{S}_c=1$ for all $c$ thus $f^{\mathrm{aux}}(\vn)=1$.
+ The product form theorem
+ implies that the stationary probability to see $n_c$
+ customers
+  in the station of interest is $\eta f(\vn)$.}
+  %
+ \mq{q-qnet-djjsuuo}
+ {Verify  that $ D(X,0)$
+ [resp. $ D(0,Y)$]
+ is the generating function of a FIFO station with one server
+ [resp. 2 servers] (where
+ $ D()$ is given by \eref{eq-q-ex-phi-skl}); explain why.}
+ {We find $\frac{1}{1-X}$ and $1+Y+\frac{Y^2}{2-Y}$ as
+ given by \eref{eq-q-stat-fifo-z}.
+
+ The generating function $ D(X,Y)$ is the $z$-transform
+ of the station function with one class per token group, and
+ is also equal to the normalizing constant for the station fed
+  by a Poisson process with rate $X$ for group 1 and $Y$ for group 2.
+If $Y=0$ we have only group 1 customers,
+therefore the station is the same as a single
+server FIFO station with arrival rate $X$; if
+$X=0$, the station is equivalent to a FIFO
+station with 2 servers and arrival rate $Y$.}
+
+
+\section{The Product-Form Theorem}
+
+\subsection{Product Form} The following theorem
+gives the stationary probability of number of
+customers in explicit form; it is the main
+available result for queuing networks; the
+original proof is in \cite{baskett1975open};
+extension to any service stations that satisfies
+the local balance property is in \cite{MR563738}
+and \cite{kelly1979reversibility}; the proof that
+MSCCC stations satisfy the local balance property
+is in \cite{le1986bcmp,berezner1995quasi}. The
+proof that all Kelly-Whittle stations satisfy the
+local balance property is novel and is given in
+\sref{sec-q-proofs} (see \sref{sec-q-form-def} for more details).
+\begin{shadethm} Consider a multi-class network as defined
+above. In particular, it uses Markov routing and
+all stations are Kelly-Whittle or MSCCC. Assume that the
+aggregation condition in \sref{sec-aggreg} holds.
+
+Let $n^s_c$ be the number of class $c$ customers
+present in station $s$ and
+$\vn^s=(n^s_1,...,n^s_C)$. The stationary
+probability distribution of the numbers of
+customers, if it exists, is given by
+  \be
+  P(\vn^1, ...\vn^S) = \frac{1}{\eta} \prod_{s=1}^S \lp   f^s(\vn^s) \prod_{c=1}^C
+   \lp \theta^s_c\rp^{n^s_c} \rp
+   \label{eq-q-pf}
+  \ee
+  where $\theta^s_c$ is the visit rate in
+  \eref{eq-q-visitRatios}, $f^s()$ is the station function
+  and $\eta$ is a positive
+   normalizing constant.
+
+Conversely, let $\calE$ be the set of all feasible population
+vectors $\vn=(\vn^1,...,\vn^S)$. If
+ \be \sum_{\vn\in \calE} \prod_{s=1}^S \lp   f^s(\vn^s) \prod_{c=1}^C
+   \lp \theta^s_c\rp^{n^s_c} \rp < \infty \label{eq-q-pf-eta}
+   \ee
+there exists a stationary probability.
+ \label{theo-q-pf}
+\end{shadethm}
+In the open network case, any vector $(\vn^1, ...\vn^S)$ is
+feasible, whereas in the closed or mixed case, the set of
+feasible population vectors $\calE$ is defined by the
+constraints on populations of closed chains, i.e.
+ \ben
+ \sum_{c \in \calC}\sum_{s=1}^S n^s_c = K_{\calC}
+ \een
+for any closed chain $\calC$, where $K_{\calC}$ is the
+(constant) number of customers in this chain.
+
+Note that the station function depends only on
+the traffic intensities. In particular, the
+stationary distribution is not affected by the
+variance of the service requirement, for stations
+of Category 1 (recall that stations of Category 2
+must have exponential service requirement
+distributions).
+
+
+\mq{q-pf-qdsflkj}{What is the relationship between the sum in
+\eref{eq-q-pf-eta} and $\eta$ ?}{They are equal.}
+
+\subsection{Stability Conditions}
+
+In the open case, stability is not guaranteed and
+may depend on conditions on arrival rates.
+However, the next theorem says that stability can
+be checked at every station in isolation, and
+correspond to the natural conditions. In
+particular, pathological instabilities as
+discussed in the introduction of \sref{sec-qn}
+cannot occur for multi-class product form queuing
+networks.
+%
+\begin{shadethm}[Open Case] Consider a multi-class
+product form queuing network as defined above.
+Assume that it is \imp{open}. For every station
+$s$, $\vtheta^s=(\theta^s_1, ..., \theta^s_C)$ is
+the vector of visit rates, $f^s$ the station
+function and $G^s()$ its generating function,
+given in Equations~ (\ref{eq-q-stat-t2-z}),
+(\ref{eq-q-stat-t3-z}), (\ref{eq-q-stat-t1-z}),
+and (\ref{eq-q-stat-fifo-z}).
+
+The network has a stationary distribution if and only if for
+every station $s$
+  \be
+    G^s(\vtheta^s) < \infty
+  \ee
+
+If this condition holds, the normalizing constant of
+\thref{theo-q-pf} is $\eta =\prod_{s=1}^S G^s(\vtheta^s)$.
+Further, let $P^s(\vn^s)$ be the stationary probability of the
+number of customers in station $s$. Then
+ \be P(\vn^1,...\vn^S)=\prod_{s=1}^S P^s(\vn^s)\label{eq-q-pf-ind}\ee
+i.e. the numbers of customers in different stations are
+independent. The marginal stationary probability for station
+$s$ is :
+ \be
+ P^s(\vn^s) = \frac{1}{G^s(\vtheta^s)} f^s(\vn^s)
+ \ee
+ \label{theo-q-pf-open}
+\end{shadethm}
+%
+
+The proof follows from the fact that the existence of an
+invariant probability is sufficient for stability (as we assume
+that the state space is fully connected, by the aggregation
+condition). If the network is closed or mixed, then the
+corollary does not hold, i.e. the states in different stations
+are \imp{not independent}, though there is product-form. Closed
+networks are always stable but it may not be as simple to
+compute the normalizing constant; efficient algorithms exist,
+as discussed in \sref{q-pf-algo}.
+
+For mixed networks, which contain both closed and open chains,
+stability conditions depend on the rate functions, and since
+they can be arbitrary, not much can be said in general. In
+practice, though, the following sufficient conditions are quite
+useful. The proof is similar to that of the previous theorem.
+
+\begin{shadethm} (\emph{Sufficient Stability Condition for Mixed Networks}.)
+\label{theo-q-net-stabi-spec} Consider a
+multi-class product form queuing network as
+defined above. Assume that the network is mixed,
+with $C_c$ classes in closed chains and $C_o$
+classes in open chains. Let $\vm=(m_1, ...,
+m_{C_c})$ be the population vector of classes in
+closed chains, and $\vn=(n_1, ...,n_{C_o})$ the
+population vector of classes in open chains. For
+every station $s$ and $\vm$ define
+  \be
+  L^s(\theta|\vm) = \sum_{\vn \in \Nats^{C_o}}
+  f^s(\vm,\vn) \prod_{c=1}^{C_o}\lp \theta^s_c\rp^{n^s_{c}}
+  \ee
+ where  $f^s(\vm,\vn)$ is the station function.
+
+ If \ben L^s(\theta|\vm) < \infty, \; \forall \vm, \forall s \een
+the network has a stationary distribution.
+\end{shadethm}
+
+In simple cases, a direct examination of \eref{eq-q-pf-eta}
+leads to simple, natural conditions, as in the next theorem.
+Essentially, it says that for the networks considered there,
+stability is obtained when server utilizations are less than 1.
+\begin{shadethm}[Stability of a Simple Mixed Network]
+Consider a mixed multi-class product form queuing
+network and assume all stations are either Kelly
+stations (such as Global PS or Global LCFS), IS
+or MSCCC with constant rates.
+
+Let $\calC$ be the set of classes that belong to
+\imp{open} chains. Define the utilization factor
+$\rho^s$ at station $s$ by
+  \bearn
+  \rho^s =  \frac{ \bar{S}^s}{B^s }
+  \sum_{c \in \calC}\theta^s_c
+  & &\mbox{ if station } s \mbox{ is MSCCC } \mbox{ with } B^s \mbox{
+  servers, and mean service time }\bar{S}^s
+  \\
+  \rho^s  =  \sum_{c \in \calC}\theta^s_c \bar{S}^s_c
+   & & \mbox{ if station } s \mbox{ is a Kelly station with mean
+   service time } \bar{S}^s_c \mbox{ for class} c.
+  \eearn
+
+The network has a stationary distribution if and only if
+$\rho^s <1$ for every station Kelly or MSCCC station $s$. There
+is no condition on IS stations.
+\label{theo-q-net-stabi-spec-simp}.
+\end{shadethm}
+
+%
+%\mq{q-q-nc}{What is the normalizing constant
+%$\eta$ of \thref{theo-q-pf} in the case of
+%\coref{coro-q-pf-open}~?}{$\prod_{s=1}^S
+%G^s(\vtheta^s)$.}
+%%
+%
+%Formule de ma th\`{e}se:
+%
+%\bearn
+% f(\vn) & = &
+% \frac{n!}{\mu(1)...\mu(n)}\prod_{c=1}^C
+% \frac{\lp\theta_c w_c\rp^{n_c}}{n_c!}
+% \\
+% w_c & = & 1 \mfor \mathrm{ type 1}
+% \\
+% w_c & = & \mu/\mu_c \mand \mu(n) = \mu \mfor \mathrm{ type 2}
+% \\
+%w_c & = & \mu/\mu_c \mand \mu(n) = \mu n  \mfor
+%\mathrm{ type 3} \eearn
+%
+%Type 1 FIFO:
+%
+%  \bearn
+%  f(\vn) & = &
+% \frac{n!}{\mu(1)...\mu(n)}\prod_{c=1}^C
+% \frac{\lp\theta_c \rp^{n_c}}{n_c!}
+% \\
+% \mu(n) & = & \mu \; r(n)\;\min(B,n)
+%\eearn
+%
+%Type 2 PS
+% \bearn
+%  f(\vn) & = & n! \prod_{c=1}^C
+%\frac{\theta_c^{n_c}}{\mu_c(1)...
+%\mu_c(n_c)}\frac{1}{n_c !}
+% \\
+% \mu_c(i) & = & \mu_c r(i)
+%  \eearn
+%
+%  Type 3 IS
+% \bearn
+%  f(\vn) & = &  \prod_{c=1}^C
+%\frac{\theta_c^{n_c}}{\mu_c(1)...
+%\mu_c(n_c)}\frac{1}{n_c !}
+% \\
+% \mu_c(i) & = & \mu_c r(i)
+%  \eearn
+\begin{ex}{Dual Core Processor in \fref{fig-q-chains}}
+Let $q\in (0,1]$ be the probability that an external job uses
+the critical section and $r>0$ be the average number of uses of
+the processor outside the critical section by an external job.
+Thus $\theta^1_1+\theta^1_3= \nu r$ and $\theta^1_2=\nu q$. By
+\thref{theo-q-net-stabi-spec-simp}, the stability conditions
+are
+  \bearn
+  \nu (r +q ) \bar{S}^1 & \leq & 2 \\
+  \nu q \bar{S}^1& \leq & 1
+  \eearn
+where $\bar{S}^1$ is the average job processing
+time at the dual core processor. Note that we
+need to assume that the processing time is
+independent of whether it uses the critical
+section, and of whether it is an internal or
+external job. Thus the system is stable (has a
+stationary regime) for $\nu < \frac{2}{\bar{S}^1
+\lp q + \max\lp r,q\rp\rp}$. Note that the
+condition for stability bears only on external
+jobs.
+
+Let $K$ be the total number of class $4$ jobs; it
+is constant since class $4$ constitutes a closed
+chain. A state of the network is entirely defined
+by the population vector $(n_1, n_2, n_3,
+n_4,n^2_4)$; the number of jobs of class $4$ in
+station $3$ is $K-n_4-n^2_4$, and $n^s_c=0$ for
+other classes. The set of feasible states is
+ \ben
+ \calE = \lc (n_1, n_2, n_3, n_4, n^2_4) \in \Nats^5 \mst
+  n_4+ n^2_4 \leq K  \rc
+ \een
+
+ The
+joint stationary probability is
+  \bearn
+  \lefteqn{P(n_1, n_2, n_3, n_4,n^2_4)=\frac{1}{\eta(K)}
+ d(n_2+n_4, n_1+n_3)}\\
+ &&
+ \times \frac{(n_1+n_3)!(n_2+n_4)!}{n_1!n_2!n_3!n_4!}(
+ (\theta^1_1)^{n_1}(\theta^1_2)^{n_2}(\theta^1_3)^{n_3}
+ (\bar{S}^1)^{n_1+n_2+n_3+n_4}(\bar{S}^2)^{n^2_4}
+ \frac{1}{n^2_4!}(\bar{S}^3)^{K-n_4-n^2_4}
+   \eearn
+where we made explicit the dependency on $K$ in the normalizing
+constant. This expression, while explicit, is too complicated
+to be of practical use. In \exref{ex-dcp-th} we continue with
+this example and compute the throughput, using the methods in
+the next section. \label{ex-dcp-s}
+  \end{ex}
+\section{Computational Aspects}
+\label{q-pf-algo}
+
+As illustrated in\exref{ex-dcp-s}, the product form theorem,
+though it provides an explicit form, may require a lot of work
+as enumerating all states is subject to combinatorial
+explosion, and the normalizing constant has no explicit form
+when there are closed chains. Much research has been performed
+on providing efficient algorithms for computing metrics of
+interest for multi-class product form queuing networks. They
+are based on a number of interesting properties, which we now
+derive. In the rest of this section we give the fundamentals
+ideas used in practical algorithms; these ideas are not just
+algorithmic, they are also based on special properties of these
+networks that are of independent interest.
+
+ In the rest of this
+section we assume that the multi-class product form queuing
+network satisfies the hypotheses of the product form
+theorem~\ref{theo-q-pf} as described in \sref{sec-qn}, and has
+a stationary distribution (i.e. if there are open chains, the
+stability condition must hold -- if the network is closed there
+is no condition).
+
+\subsection{Convolution}
+
+\begin{shadethm}(\nt{Convolution Theorem}.)
+
+Consider a multi-class product form queuing
+network with closed and perhaps some open chains,
+and let $\vK$ be the \nt{chain population vector}
+of the \imp{closed} chains (i.e. $K_{\calC}$ is
+the number of customers of chain $\calC$; it is
+constant for a given network).
+
+Let $\eta(\vK)$ be the normalizing constant given
+in the product form theorem \ref{theo-q-pf}. Let
+$\vY$ a formal variable with one component per
+chain, and define
+ \ben
+ F_{\eta}(\vY)\eqdef \sum_{\vK \geq \vzero}\eta(\vK)
+\prod_{\calC}Y_{\calC}^{K_{\calC}}
+ \een
+
+Then
+ \be
+ F_{\eta}(\vY) = \prod_{s=1}^S G^s(\vZ^s)
+ \label{eq-q-qnet-convol-zt}
+ \ee
+ where $G^s$ is the generating function of the
+ station function for station $s$, and $\vZ^s$ is
+ a vector with one component per class, such that
+ \bearn
+ Z^s_c &=& Y_{\calC} \theta^s_c  \mbox{ whenever }
+ c \in\calC \mand \calC \mbox{ is closed}
+ \\
+ Z^s_c &=& \theta^s_c  \mbox{ whenever }
+ c \mbox{ is in an open chain}
+ \eearn
+\label{theo-gf-eta}
+\end{shadethm}
+
+The proof is a direct application of the product form theorem,
+using generating functions. \eref{eq-q-qnet-convol-zt} is in
+fact a \nt{convolution equation}, since convolution translates
+into product of generating functions. It is the basis for the
+\nt{convolution algorithm}, which consists in adding stations
+one after another, see for example \cite{balsamo2000product}
+for a general discussion and \cite{le1988multibus} for networks
+with MSCCC stations other than FIFO. We illustrate the method
+in \exref{ex-dcp-th} below.
+
+%
+%The convolution theorem \ref{theo-gf-eta} is
+%often interpreted in terms of the complement
+%network property, defined as follows. To an
+%arbitrary station $s_0$ we associate the
+%\nt{complement network} \cite{reiser1981mean}, in
+%which customers arriving at station $s_0$
+%instantly proceeding to the next station,
+%according to the routing matrix previously
+%defined. The chains and classes are the same as
+%in the in the original network; the visit rates
+%$\theta^{s}_c$ are the same in both networks. Be
+%careful that this is different from the procedure
+%used in the station in isolation. Here, we are
+%replacing station $s_0$ by a short-circuit, i.e.
+%a station where the service requirement is $0$;
+%in contrast, with the station in isolation, we
+%replace a network part by a station with unit
+%rate and unit service requirement.
+%
+%%\begin{shadethm}(\nt{Complement Network Theorem})
+%With the same assumptions and notation as in
+%\thref{theo-gf-eta}, fix some arbitrary station
+%$s_0$ and let $\eta()$ be the normalizing
+%constant for the original network and
+%$\eta^{[s_0]}()$ for the complement network of
+%station $s_0$.
+%
+%Then it follows immediately from
+%\eref{eq-q-qnet-convol-zt} that
+%  \be
+%  F_{\eta}(\vY) = G^{s_0}(\vZ^{s_0})F_{\eta^{[s_0]}}(\vY)
+%  \ee
+%This can also be written explicitly as
+% \be
+% \eta(\vK) =
+% \sum_{\vn^{s_0} \mst \vzero \leq\kappa(\vn^{s_0}) \leq \vK}
+% f^{s_0}(\vn^{s_0})\prod_{c=1}^C\lp
+% \theta^{s_0}_c\rp^{n^{s_0}_c} \eta^{[s]}\lp \vK-\kappa(\vn^{s_0})\rp
+% \label{eq-q-qnet-convolkjsaj}
+%  \ee
+%  where
+%$\kappa(\vn^{s_0})$ is the closed chain
+%population vector that corresponds to state
+%$\vn^{s_0}$, i.e.
+%$\kappa(\vn^{s_0})_{\calC}=\sum_{c \in \calC}
+%n_c$ (in particular, $\vK-\kappa(\vn^{s_0})$ is
+%the closed chain population vector obtained when
+%we remove $n^{s_0}_c$ customers of class $c$ for
+%every $c$). The notation $\vzero \leq
+%\kappa(\vn^{s_0}) \leq \vK$ means
+%  $0 \leq \kappa(\vn^{s_0})_{\calC}\leq K_{\calC}$
+%  for all chain $\calC$.
+%
+%The marginal probability distribution of station
+%$s_0$ satisfies can be derived: for any $s_{0}$:
+% \be
+% P^{s_0}\lp\vn^{s_0}\left|\vK\rp\right. =
+% f^{s_0}(\vn^{s_0})\prod_{c=1}^C\lp
+% \theta^{s_0}_c\rp^{n^{s_0}_c}
+% \frac{\eta^{[s_0]}\lp \vK-\kappa(\vn^{s_0})\rp}{\eta(\vK)}
+% \label{eq-qnet-convol}
+% \ee
+% %\label{theo-q-qnet-compnet}
+%%\end{shadethm}
+%
+%In particular the probability that station $s_0$
+%is empty is \be
+%P^{s_0}\lp\vzero\left|\vK\rp\right. =
+% \frac{\eta^{[s_0]}\lp \vK \rp}{\eta(\vK)}
+% \label{eq-q-convol-p0}
+% \ee
+\subsection{Throughput}
+\label{sec-q-pcth}
+Once the normalizing constants are computed, one
+may derive throughputs for class $c$ at station
+$s$, defined as the mean number of class $c$
+arrivals at (or departures from) station $s$:
+\begin{shadethm}(\nt{Throughput Theorem} \cite{buzen1973computational})
+The throughput for class $c$ of the closed chain
+$\calC$ at station $s$ is
+ \be
+ \la_c^s(\vK) = \theta_c^s \frac{\eta\lp \vK -\vone_{\calC}\rp}{\eta(\vK)}
+ \label{eq-q-th-f}
+ \ee
+ \label{theo-q-qnet-th}
+\end{shadethm}
+It follows in particular that, for closed chains, the
+throughputs at some station \imp{depend only on the throughput
+per class and the visit rates}. Formally, choose for every
+closed chain $\calC$ a station $s_0(\calC)$ effectively visited
+by this chain (i.e. $\sum_{c \in \calC}\theta^{s_0}_{c}>0$);
+define the \nt{per chain throughput} $\calC$ as the throughput
+at this station $\la_{\calC}(\vK)\eqdef\sum_{c
+\in\calC}\la^{s_0(\calC)}_{c}(\vK)$. Since for closed chains
+the visit rates $\theta^s_c$ are determined up to a constant,
+we may decide to let $\sum_{c \in
+\calC}\theta^{s_0(\calC)}_{c}=1$, and then for all class~$c\in
+\calC$ and station~$s$:
+  \be
+  \la^s_c(\vK) = \la_{\calC}(\vK)\theta^s_c
+\label{eq-q-qnet-dskjsdjkjkdf}
+  \ee
+Also, the equivalent of \eref{eq-q-th-f} for the
+per chain throughput is
+ \be
+ \la_{\calC}(\vK) = \frac{\eta\lp \vK -\vone_{\calC}\rp}{\eta(\vK)}
+ \label{eq-q-th-f-ch}
+ \ee
+ (which follows immediately by summation on $c
+ \in\calC$).
+%for every chain $\calC$, define the per chain
+%throughput at station $c$ by
+%$\la^s_{\calC}\eqdef\sum_{c \in \calC}\la^s_c$
+%and the per chain visit rate as
+%$\theta^s_{\calC}\eqdef\sum_{c \in
+%\calC}\theta^s_c$ station \be
+% \la_c^s(\vK) = \theta_c^s \la^s_{\calC}
+% \ee
+
+Note that the throughput for a class $c$ of an
+\emph{open} chain is simply the visit rate
+$\theta^s_c$.
+
+Last but not least, the throughput depends only
+on the normalizing constants and not on other
+details of the stations. In particular, stations
+that are different but have the same station
+function (such as FIFO with one server and
+constant rate Kelly function with class
+independent service time) give the same
+throughputs.
+
+The next example illustrates the use of the above
+theorems in the study of a general case (a mixed
+network with an MSCCC station). There are many
+optimizations of this method, see \cite{359020}
+and references therein.
+\begin{figure}
+\centering
+
+ \subfigure[$x=0.7$, $y=0.8$]{\ifig{throughput-x=0.7y=0.8}{0.5}}
+ \subfigure[$x=0.7$, $y=1$]{\ifig{throughput-x=0.7y=1}{0.5}}
+ \subfigure[$x=0.5$, $y=1.2$]{\ifig{throughput-x=0.5y=1.2}{0.5}}
+  \mycaption{Throughput $\la$ of internal jobs for the
+ dual core processor in \fref{fig-q-chains}, in jobs per millisecond,
+  as a function
+ of the number of internal jobs. Dotted curve:
+throughput that would be achieved if the internal
+jobs would not use the critical section, i.e. any
+job could use a processor when one is idle. $x$
+is the intensity of external traffic that uses
+the critical section and $y$ of other external
+traffic. There are two constraints : $x + \la
+\leq 1$ (critical section) and $x + y + \la \leq
+2$ (total processor utilization). For the dotted
+line only the second constraint applies. In the
+first panel, the first constraint is limiting and
+the difference in performance is noticeable. In
+the last panel, the second constraint is limiting
+and there is little difference. In the middle
+panel, both constraints are equally limiting.
+$\bar{S}^1=1, \bar{S}^2=5, \bar{S}^3=1$msec.
+}\label{fig-q-qnet-ex-dcp-th}
+\end{figure}
+
+
+\begin{ex}{Dual Core Processor in \fref{fig-q-chains}, Algorithmic Aspect}
+We continue \exref{ex-dcp-s}. Assume now that we
+let all parameters fixed except the arrival rate
+$\la$ of external jobs and the number $K$ of
+internal jobs; we would like to evaluate the
+throughput $\mu$ of internal jobs as a function
+of $\la$ and $K$ as well as the distribution of
+state of internal jobs.
+
+We can use the throughput theorem and obtain that
+the throughput $\la(K)$ for class $4$ is (we drop
+the dependency on $\la$ from the notation)  \be
+\la(K)
+=\frac{\eta(K-1)}{\eta(K)}\label{eq-q-ex-mu}\ee
+
+We now have to compute the normalizing constant
+$\eta(K)$ as a function of $K$. To this end, we
+use the convolution equation
+\eref{eq-q-qnet-convol-zt}:
+  \be
+  F_{\eta}(Y) = G^1(\vZ^1)G^2(\vZ^2)G^3(\vZ^3)
+  \ee
+  with
+  \bearn
+  \vZ^1 & = & (\theta^1_1, \theta^1_2,
+  \theta^1_3, Y)
+  \\
+  \vZ^2 & = & (0,0,0,Y)
+  \\
+  \vZ^3 & = & (0,0,0,Y)
+    \eearn
+The generating functions $G^1, G^2, G^3$ are
+given in \exref{ex-q-qnet-dslkjjdasflk}. It
+comes:
+ \be
+F_{\eta}(Y) =  D(Y\bar{S}^1+x,y) e^{\bar{S}^2Y}
+      \frac{1}{1-\bar{S}^3 Y}
+ \label{eq-q-qnet-sdjsduuepoowjhjdkjhfd}
+ \ee
+ %\bearn
+% F_{\eta}(Y) &= &  D\lp\bar{S}^1 (Y + \la q),
+% \bar{S}^1 \la r\rp
+%      e^{\bar{S}^2Y}
+%      \frac{1}{1-\bar{S}^3 Y}
+%      \\
+%      & = &
+%\frac{1}{2-x-y-Y \bar{S}^1}
+%  \lp
+%  \frac{2-y}
+%  {1-x-Y \bar{S}^1}+\frac{(2-x-Y \bar{S}^1)(2+y)}{2-y}-2
+%  \rp
+%  \frac{e^{\bar{S}^2Y}}{1-\bar{S}^3
+% Y}
+% \eearn
+with $x=\nu q \bar{S}^1$, $y=\nu r \bar{S}^1$ and $D()$
+defined in \eref{eq-q-ex-phi-skl}.
+
+We can compute $\eta(K)$ by performing a power series expansion
+(recall that $F_{\eta}(Y)=\sum_{K\in \Nats} \eta(K)Y^K$) and
+find $\eta(K)$ numerically. Alternatively, one can interpret
+\eref{eq-q-qnet-sdjsduuepoowjhjdkjhfd} as a convolution
+equation $\eta = \eta_1 \star \eta_2 \star\eta_3$ with
+$F_{\eta_1}(Y)=  \sum_{k \in \Nats}\eta_1(k) Y^k\eqdef
+ D(Y\bar{S}^1+x,y)$, $F_{\eta_2}(Y) =e^{\bar{S}^2Y}$,
+$F_{\eta_3}(Y) = \frac{1}{1-\bar{S}^3 Y}$ and use fast
+convolution algorithms or the \pro{filter} function as in
+\exref{ex-q-qnet-dsjkhuzewnnbasdio}. The throughput for
+internal jobs follows from \eref{eq-q-ex-mu} and is plotted in
+\fref{fig-q-qnet-ex-dcp-th}.
+ \label{ex-dcp-th}
+\end{ex}
+%
+%
+\subsection{Equivalent Service Rate} This is a
+useful concept, which hides away the details of a
+station and, as we show in the next section, can
+be used to aggregate network portions.
+Consider some arbitrary station $s$, of any
+category, with station function $f^s()$. We call
+\nt{equivalent service rate} for class $c$
+at station $s$ the quantity
+ \be
+  \mu^{*s}_c(\vn^s)\eqdef \frac{f^s(\vn^s -\vone_c)}{f^s(\vn^s)}
+\label{eq-q-qnet-eqsrvrat}
+   \ee
+It can be shown that
+$\mu^{*s}_c(\vn^s)$ is indeed the average rate at which customers of class $c$ depart from station $s$ when station $s$ is imbedded in a multi class queuing network and given that the numbers of customers at station $s$ is $\vn^s$, i.e.
+  \ben
+  \mu^{*s}_c(\vn^s)=\sum_{\ve \in \calE(s, \vn^s)}\sum_{\vf \in \calE'(s,\ve)}P(\ve) \mu(\ve,\vf)
+  \een
+where $\ve$ is a global micro state of the network (see \sref{sec-micro} for a definition), $\calE(s,\vn^s)$ is the set of global micro-states for which the population vector at station $s$ is $\vn^s$, $\calE'(s, \ve)$ is the set of of global micro-states such that the transition $\ve \to \vf$ is a departure from station $s$, $P()$ is the stationary probability of the network and $\mu(\ve,\vf)$ is the transition rate. This is true as long as the network satisfies the hypotheses of the product form theorem, and is a direct consequence of the local balance property.
+
+To $s$
+we associate a \emph{per class PS} station with unit service
+requirement for all classes and with balance function $f^s(\vn^s)$.
+ This virtual station
+is called the \nt{equivalent station} of station
+$s$. By construction, it is a category 1 station
+and, by \eref{eq-q-stf-t2sspc} the station functions
+of this virtual station and of $s$ are identical. Further, the rate of service allocated to customers of class $c$ is also $\mu^{*s}_c(\vn^s)$. Thus, as far as the stationary probability of
+customers is concerned, using the original
+station or the equivalent station inside a network make no
+difference. We have an even stronger result.
+
+\begin{shadethm}(Equivalent Station Theorem \cite{MR563738})
+In a multi-class product form queuing network any station can
+be replaced by its equivalent station, with equivalent service
+rate as in \eref{eq-q-qnet-eqsrvrat} so that the stationary
+probability and the throughput for any class at any station are
+unchanged.
+\end{shadethm}
+Note that the equivalent station and the
+equivalent service rate depend only on the
+station, not on the network in which the station
+is imbedded. It is remarkable that it is thus
+possible to replace \emph{any} station by a per
+class PS station. Note however that the
+equivalence is only for distributions of numbers
+of customers and for throughputs, not for delay
+distributions; indeed, delays depend on the
+details of the station, and stations with same
+station function may have different delay
+distributions.
+
+The equivalent service rates for a few frequently
+used stations are given in
+\tref{table-q-qnet-eqsrvrat}. For some stations
+such as the general MSCCC station there does not
+appear to be a closed form for the equivalent
+service rate.
+\begin{table}
+  \centering
+\begin{tabular}{|c|c|}
+  % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
+  \hline
+  \emph{Station $s$} & \emph{Equivalent Service Rate $\mu^{*s}_c(\vn^s)$} \\
+  \hline
+  \hline
+ \begin{minipage}[m]{0.50\textwidth}~\\
+  Kelly Stations with Class Dependent Service
+  Rate.
+    Recall that this contains as special cases Global PS and
+    Global LCFSPR stations with constant rate. ~\\
+ \end{minipage}
+ & $r_c^s(n^s_c)
+  \frac{n^s_c}{\abs{\vn^s}}\frac{1}{\bar{S}^s_c}$
+ \\
+ \hline
+\begin{minipage}[m]{0.50\textwidth}~\\
+Kelly Stations with Queue Size Dependent Service
+Rate.~\\
+ \end{minipage}
+ &
+ $r^s(\abs{\vn^s})
+  \frac{n^s_c}{\abs{\vn^s}}\frac{1}{\bar{S}^s_c}$
+\\
+\hline
+\begin{minipage}[m]{0.50\textwidth}~\\
+IS station with Class Dependent Service Rate]
+ ~\\
+ \end{minipage}
+ &
+ $r_c^s(n^s_c)
+  n^s_c\frac{1}{\bar{S}^s_c}$
+\\
+\hline
+\begin{minipage}[m]{0.50\textwidth}~\\
+IS station with Queue Size Dependent Service
+Rate.~\\
+ \end{minipage}
+ &
+ $r^s(\abs{\vn^s})
+  n^s_c\frac{1}{\bar{S}^s_c}$
+\\
+ \hline
+\begin{minipage}[m]{0.50\textwidth}~\\
+FIFO
+ station with $B$ servers and queue size dependent service
+ rate. Recall that this is a
+ station of Category 2 hence the service
+ requirement is exponentially distributed and has
+ the same mean $\bar{S}^s$ for all classes.
+~\\
+ \end{minipage}
+ &
+ $\frac{1}{\bar{S}^s}\min\lp B,
+\abs{\vn^s}\rp
+    r(\abs{\vn^s})$
+\\
+ \hline
+\end{tabular}
+  \mycaption{Equivalent service rates for frequently used
+  stations.
+Notation: $\vn^s=(n^s_1, ...,n^s_C)$ with $n^s=$
+number of class $c$ customers at station $s$;
+$\bar{S}^s_c$ is the mean service requirement;
+$r^s_c(n^s_c)$ is the rate allocated to a class
+$c$ customer when the service rate is class
+dependent; $r^s(\abs{\vn^s})$ is the rate
+allocated to any customer when the service rate
+depends on queue size; $\abs{\vn^s}$ is the total
+number of customers in station $s$. For a
+constant rate station, take $r^s_c()=1$ or
+$r^s()=1$.}\label{table-q-qnet-eqsrvrat}
+\end{table}
+%
+The equivalent service rate is used in the
+following theorem.
+\begin{shadethm}(\cite{reiser1975queuing})
+
+Consider a multi-class product form queuing
+network with closed and perhaps some open chains,
+and let $\vK$ be the \nt{chain population vector}
+of the \imp{closed} chains. For any class $c$ of
+the closed chain $\calC$ and any station $s$, if
+$n^s_c\geq 1$:
+ \be
+   P^s\lp\vn^s\left|\vK\rp\right.  =
+   P^s\lp\vn^s-\vone_c\left|\vK-\vone_{\calC}\rp\right.
+   \frac{1}{\mu^{*s}_c(\vn^s)}
+   \la^s_c(\vK) \label{eq-q-mva-bas}
+  \ee
+
+  where $P^s\lp.\left|\vK\rp\right.$ is the
+  marginal probability at station $s$ and
+  $\la^s_c(\vK)$ is the throughput for class $c$
+  at station $s$.
+  \label{theo-q-qnet-adsjkhfuierbhfv}
+\end{shadethm}
+
+This theorem is useful if the equivalent service rate is
+tractable or is numerically known. It can be used if one is
+interested in the marginal distribution of one station; it
+requires computing the throughputs $\la(\vK)$, for example
+using convolution or MVA. \eref{eq-q-mva-bas} can be used to
+compute $P^s\lp\vn^s\left|\vK\rp\right.$ iteratively by
+increasing the populations of closed chains
+\cite{reiser1981mean}. Note that it does not give the
+probability of an empty station; this one can be computed by
+using the fact that the sum of probabilities is $1$.
+
+\begin{figure}
+\centering
+ \Ifignc{rsp-x=0.7y=0.8}{0.75}{0.4}
+ \Ifignc{pdf-x=0.7y=0.8}{0.95}{0.4}
+  \mycaption{First panel:
+Mean Response time for internal jobs at the dual
+core processor, in millisecond, as a function of
+the number $K$ of internal jobs. Second panel:
+stationary probability distribution of the number
+of internal jobs at stations 1 to 3, for $K=10$.
+(Details of computations are in
+Examples~\ref{ex-q-qnet-dsjkldsjkfl}
+and~\ref{ex-q-qnet-dsjkhuzewnnbasdio};
+$\bar{S}^1=1, \bar{S}^2=5, \bar{S}^3=1$msec,
+$x=0.7$, $y=0.8$.)}\label{fig-q-qnet-ex-dcp-eqsr}
+\end{figure}
+
+\begin{ex}{Dual Core Processor in \fref{fig-q-chains}, continued}
+We now compute the stationary probability that
+there are $n$ jobs in station 2 given that there
+are $K$ internal jobs in total. By
+\eref{eq-q-mva-bas}:
+ \be
+ P^2(n|K) = P^2(n-1|K-1) \la(K)
+ \frac{\bar{S}^2}{n}
+ \ee
+since the equivalent service rate for station 2
+(which is an IS station) is
+ $\frac{n}{\bar{S}^2}$ when there are $n$ customers in the
+ station.
+  This gives $P^2(n|K)$ for
+ $1 \leq 1 \leq K$ if we know $P^2(.|K-1)$;
+ $P(0|K)$ is obtained by the normalizing
+ condition\ben \sum_{n=0}^K P^2(n|K)=1\een
+We compute $P^2(.|K)$ by iteration on $K$,
+starting from $P^2(0|0)=1$ and using the previous
+two equations. The mean number of jobs is station
+2 follows:
+ \be \bar{N}^2(K) = \sum_{n=0}^K n P(n|K)
+ \ee
+Similarly for station 3, with
+ \be
+ P^3(n|K) = P^3(n-1|K-1) \la(K) \bar{S}^3
+ \ee
+since the equivalent service rate for station 3
+(which is a PS station) is
+ $\frac{1}{\bar{S}^3}$. The mean number of
+ internal jobs in station $1$ follows:
+ $\bar{N}^1_4(K)=K-\bar{N}^2(K)-\bar{N}^3(K)$.
+
+We derive the mean response times for internal
+jobs in stations 1 to 3  by using Little's law:
+$\bar{R}^s_4(K) =
+  \frac{\bar{N}^s(K)}{\la(K)}$ for $s=1,2,3$.
+
+By Little's law, $(R^1_4+R^2_4+R^3_4)\la =K$; for
+large $K$, $\la \approx
+\theta_{\max}=\min(1-x,2-x-y)$ and $R^2_4\approx
+\bar{S}^2$, $R^3_4\approx \bar{S}^3$ (most of the
+queuing is at station 1), thus $\bar{R}^1_4(K)
+\approx
+\frac{K}{\theta_{\max}}-\bar{S}^2-\bar{S}^3$ for
+large $K$. The results are shown in
+\fref{fig-q-qnet-ex-dcp-eqsr}.
+\label{ex-q-qnet-dsjkldsjkfl}
+  \end{ex}
+
+%
+%
+%the of category 1 and a class $c$, the
+%\nt{equivalent service rate} for class $c$ by
+% \be
+%   \mu^{*s}_c(\vn^s)\eqdef \frac{f^s(\vn^s -\vone_c)}{f^s(\vn^s)}
+%   \ee
+%where $f^s()$ is the station function. The
+%intuition for the equivalent service rate is the
+%rate at which station $s$ outputs a class $c$
+%customer. The equivalent service rate can be
+%readily derived from the station function, and
+%has a simple form for a few stations:
+%\begin{description}
+%    \item[Kelly Stations with Constant or Class Dependent Service Rate]
+%    Recall that this contains as special cases Global PS and
+%    Global LCFSPR stations with constant rate.
+%The equivalent service rate is directly derived
+%from the station function and is
+% \be
+%  \mu^{*s}_c(\vn^s) = r_c^s(n^s_c)
+%  \frac{n^s_c}{\abs{\vn^s}}\frac{1}{\bar{S}^s_c}
+% \ee where $r^s_c(n^s_c)$ is the rate allocated in
+% station $s$ to
+% a class $c$ customer when there are $n_c$
+% customers in station $s$, $\abs{\vn^s}$ is the total
+% number of customers in station $s$, and
+% $\bar{S}^s_c$ is the mean service requirement
+% for class $c$ at station $s$.
+%    \item[Kelly Stations with Queue Size Dependent Service Rate]
+%    This is similar, with
+%    \be
+%  \mu^{*s}_c(\vn^s) = r^s(\abs{\vn^s})
+%  \frac{n^s_c}{\abs{\vn^s}}\frac{1}{\bar{S}^s_c}
+% \ee
+%
+%    \item[IS Station] If the service rate is class dependent
+% then \be
+%  \mu^{*s}_c(\vn^s) = r_c^s(n^s_c)
+%  n^s_c\frac{1}{\bar{S}^s_c}
+% \ee
+%if it is queue size dependent then \be
+%  \mu^{*s}_c(\vn^s) = r^s(\abs{\vn^s})n^s_c\frac{1}{\bar{S}^s_c}
+% \ee
+% \item[FIFO station] Recall that this is a
+% station of Category 2 hence the service
+% requirement is exponentially distributed and has
+% the same mean $\bar{S}^s$ for all classes. For a FIFO
+% station with $B$ servers and with queue size dependent service
+% rate one finds
+% \be \mu^{*s}_c(\vn^s)=\frac{1}{\bar{S}^s}\min\lp B,
+%\abs{\vn^s}\rp
+%    r(\abs{\vn^s})
+%    \ee
+%\end{description}
+%
+%
+%
+\subsection{Suppression of Open Chains} In an
+open network, the product form theorem implies
+that all stations are independent in the
+stationary regime, and thus the network is
+equivalent to a collection of stations in
+isolation. In the mixed or closed case, this does
+not hold anymore, and station states are mutually
+dependent.
+
+It is possible to simplify mixed networks by removing open
+chains. In the modified network, there are only closed chain
+customers, with the same routing matrix $q^{s,s'}_{c,c'}$ for
+all $c,c'$ in closed chains; the stations are the same, but
+with a modified station function. Let $G^s(\vZ)$ be the $z$
+transform of the station function and $\theta^s_c$ the visit
+rates in the original network with open chains. In the modified
+network, the $z$ transform of the station function is
+  \be
+  G'^s(\vZ) =G^s(\vZ') \mwith
+  \bracket{
+  Z'_c = Z_c \mif c \mbox{ is in a closed
+  chain}\\
+  Z'_c = \theta^s_c \mif c \mbox{ is in an open chain}
+  }
+  \ee
+In the above, $\vZ$ is a vector with one
+component per class in a closed chain, whereas
+$\vZ'$ has one component per class, in any open
+or closed chain.
+ \begin{shadethm}(\nt{Suppression of Open
+ Chains})
+Consider a mixed multi-class network that
+satisfies the hypotheses of the product form
+theorem~\ref{theo-q-pf}. Consider the network
+obtained by removing the open chains as described
+above. In the modified network the stationary
+probability and the throughputs for classes of
+closed chains are the same as in the original
+network. \label{theo-q-qnet-rem-op}
+ \end{shadethm}
+
+The proof is by inspection of the generating
+functions. Note that the modified stations may
+not be of the same type as the original ones;
+they are fictitious stations as in the equivalent
+station theorem. Also, the equivalent service
+rates of the modified stations depend on the
+visit rates of the open chains that were removed,
+as illustrated in the next example.
+
+\begin{ex}{Dual Core Processor in \fref{fig-q-chains}, continued}
+We now compute the stationary probability at station 1. We
+suppress the open chains and compute the equivalent service
+rate at station 1. We have now a single chain, single class
+network, with only customers of class $4$. Stations 2 and 3 are
+unchanged; station 1 is replaced by the station with generating
+function:
+  \ben
+  G'^1(Z) = G^1(\theta^1_1, \theta^1_2, \theta^1_3,
+  Z)
+  \een where $G^1$ is given in
+  \eref{eq-q-qnet-djjduetgsvdff}.
+With the same notation as in \exref{ex-dcp-th}, $G'^1(z)=
+ D(Z\bar{S}^1+x,y)$ with $ D$ given by
+\eref{eq-q-ex-phi-skl}, and thus
+ \be
+  G'^1(Z) = \frac{1}{1-x-Z\bar{S}^1} \lp
+   1 + y + \frac{y^2}{2-x-y- Z\bar{S}^1}\rp
+ \ee
+The station function $f'^1(n)$ of the modified station 1 is
+obtained by power series expansion $G'^1(Z)=\sum_{n\geq
+0}f'^1(n) Z^n$. modified as follows. Since $G'^1$ is a rational
+function (quotient of two polynomials), its power series
+expansion can be obtained as the impulse response of a filter
+with rational $z$ transform (\sref{sec-z-tr}). Consider the
+filter
+  \be
+ \frac{1}{1-x-B\bar{S}^1} \lp
+   1 + y + \frac{y^2}{2-x-y- B\bar{S}^1}\rp
+  \ee where $B$ is the backshift operator. The
+  sequence $(f'^1(0), f'^1(1), f'^1(2)...)$ is
+  the impulse response of this filter, and can be
+obtained easily with the \pro{filter} function of
+matlab. The equivalent service rate of station 1
+for internal jobs is
+  \be
+  \mu'^1(n) = \frac{f'^1(n-1)}{f'^1(n)}
+  \ee
+Since we know the equivalent service rate, we can
+obtain the probability distribution $P'^1(n)$ of
+internal jobs at station $1$ using
+\thref{theo-q-qnet-adsjkhfuierbhfv} as in
+\exref{ex-q-qnet-dsjkldsjkfl}. The results are
+shown in \fref{fig-q-qnet-ex-dcp-eqsr}.
+ \label{ex-q-qnet-dsjkhuzewnnbasdio}
+  \end{ex}
+
+\subsection{Arrival Theorem and MVA Version 1}
+%\subsubsection{Arrival Theorem}
+%
+%\subsubsection{Simple MVA for Networks With Single Server FIFO, IS or similar Stations}
+\label{sec-mva} \nt{Mean Value Analysis} (MVA)\index{MVA} is a
+method, developed in \cite{reiser1980mean}, which does not
+compute the normalizing constant and thus avoids potential
+overflow problems. There are many variants of it,
+ %such as the
+% Multibus algorithm \cite{le1988multibus} for networks with
+% MSCCC stations other than FIFO;
+see the discussion in \cite{balsamo2000product}.
+
+In this chapter we give two versions. The former,
+described in this section is very simple, but
+applies only to some station types, as it
+requires to be able to derive the response time
+from the Palm distribution of queue size upon
+customer arrival. The second, described in
+\sref{sec-mva-2} is more general and applies to
+all stations for which the equivalent service
+rate can be computed easily.
+
+MVA version 1 is based on the following theorem,
+which is a consequence of the product form
+theorem and the embedded subchain theorem of Palm
+calculus (\thref{theo-incluse}).
+
+\begin{shadethm}(\nt{Arrival Theorem})
+
+Consider a multi-class product form queuing. The probability
+distribution of the numbers of customers seen by customer just
+before arriving at station $s$ is the stationary distribution
+of
+\begin{itemize}
+    \item the same network
+if the customer belongs to an open chain;
+    \item the network with one customer less in
+    its chain, if the customer belongs to a closed
+    chain.
+\end{itemize}\label{theo-arrival}
+\end{shadethm}
+
+Consider now a \emph{closed} network where all
+stations are FIFO or IS with constant rate, or
+are equivalent in the sense that they have the same
+station function as one of these (thus have the same equivalent service rate). Indeed, recall
+that stationary probabilities and throughput
+depend only on the station function. For example,
+a station may also be a global PS station with
+class independent service requirement of any
+phase type distribution, which has the same
+station function as a FIFO station with one
+server and exponential service time. In the rest
+of this section we call ``FIFO" [resp. IS]
+station one that has the same station function as
+a single server, constant rate FIFO [resp. IS]
+station. Recall that at a FIFO station we need to
+assume that the mean service requirements are the
+same for all classes at the same station; for the
+IS station, it may be class dependent.
+
+First we assume the FIFO [resp. IS] stations are
+truly FIFO [resp.IS], not just equivalent stations
+as defined above. We will remove this restriction
+later. Let $\bar{N}^s_c(\vK)$ be the mean number
+of class $c$ customers at station $s$ when the
+chain population vector is $\vK$. The mean
+response time for a class $c$ customer at a FIFO
+station $s$ when the population vector is $\vK$
+is
+ \ben
+ \bar{R}^s_c(\vK) = \lp 1+
+ \sum_{c}\bar{N}^s_c(\vK-\vone_{\calC})
+ \rp
+ \bar{S}^s
+ \een where $\calC$ is the chain of class $c$.
+This is because of the exponential service
+requirement assumption: an
+ arriving customer has to wait for $\bar{S}^s$ multiplied by the
+ number of customers present upon arrival; in average, this latter
+ number is
+ $\sum_{c}\bar{N}^s_c(\vK-\vone_{\calC})$
+by the arrival theorem. By Little's formula:
+ \ben
+\bar{R}^s_c(\vK) \la^s_c(\vK)=\bar{N}^s_c(\vK)
+ \een
+Combining the two gives
+  \be
+ \bar{N}^s_c(\vK) = \la^s_c(\vK) \lp 1+
+ \sum_{c}\bar{N}^s_c(\vK-\vone_{\calC})
+ \rp \bar{S}^s
+  \ee
+which is valid for FIFO stations. For a delay
+station one finds
+ \be
+ \bar{N}^s_c(\vK) = \la^s_c(\vK)\bar{S}^s_c
+ \ee
+This gives a recursion for $\bar{N}^s_c(\vK)$ if
+one can get determine $\la^s_c(\vK)$. The next
+observation is \eref{eq-q-qnet-dskjsdjkjkdf},
+which says that if we know the throughput at one
+station visited by a chain, then we know the
+throughputs for all stations and all classes of
+the same chain. The last observation is that the
+sum of the numbers of customers across all
+stations and all classes of chain $\calC$ is
+equal to $K_{\calC}$. Combining all this gives:
+for every chain $\calC$, if $K_{\calC}>0$ then
+  \bear
+  \frac{K_{\calC}}{\la_{\calC}( \vK)} &=&
+\sum_{c \in \calC}
+  \lb
+   \sum_{s: \mathrm{FIFO}}\theta^s_c
+   \lp 1+
+ \sum_{c'}\bar{N}^s_{c'}(\vK-\vone_{\calC})
+ \rp \bar{S}^s
+  +
+    \sum_{s: \mathrm{IS}}\theta^s_c
+    \bar{S}^s_c
+    \rb
+    \label{eq-q-qnet-mva-dlsld}
+  \eear
+ and \be \la_{\calC}( \vK)= 0 \mif
+ K_{\calC}=0 \ee
+For every FIFO station $s$ and class $c$:
+ \bear
+ \bar{N}^s_c(\vK) &= &\theta^s_c\la_{\calC(c)}
+ (\vK) \lp 1+
+ \sum_{c'}\bar{N}^s_{c'}(\vK-\vone_{\calC(c)})
+ \rp \bar{S}^s
+ \mif K_{\calC(c)} >0  \label{eq-q-qnet-mva-dlsdsdld}
+ \\
+ & = & 0 \mif  K_{\calC(c)} =0
+ \eear
+%and for every IS station $s$ and class $c$
+% \bear
+% \bar{N}^s_c(\vK)& = &\theta^s_c\la_{\calC(c)}(\vK) \bar{S}^s_c
+% \\
+% & = & 0 \mif  K_{\calC(c)} =0
+% \eear
+
+Second, we observe that the resulting equations
+depend only on the station function, therefore
+they apply to equivalent stations as well.
+
+
+The \nt{MVA algorithm version 1} iterates on the
+total population, adding customers one by one. At
+every step, the throughput is computed using
+Equation~(\ref{eq-q-qnet-mva-dlsld}). Then the
+mean queue sizes at FIFO queues are computed
+using Equation~(\ref{eq-q-qnet-mva-dlsdsdld}),
+which closes the loop. We give the algorithm in
+the case of a single chain. For the multi-chain
+case, the algorithm is similar, but there are
+many optimizations to reduce the storage
+requirement, see \cite{balsamo2000product}.
+%
+ \begin{algorithm}\mycaption{MVA Version 1: Mean Value Analysis for a single chain
+ closed
+ multi-class
+ product form queuing network containing only constant rate
+ FIFO and IS stations, or stations with same station functions.}
+ \begin{algorithmic}[1]
+%
+  \State $K=$ population size
+  \State $\la=0$ \Comment{throughput}
+  %\State $N^s_c=0$ for all class $c$ and station
+%  $s$ \Comment{mean numbers of customers}
+  \State $Q^s=0$ for all station $s \in \mathrm{FIFO}$
+  \Comment{total number of customers at station $s$, $Q^s=\sum_c \bar{N}^s_c$}
+%
+  \State Compute the visit rates $\theta^s_c$
+  using \eref{eq-q-visitRatios} and
+  $\sum_{c=1}^C\theta^1_c=1$
+  \State $\theta^s=\sum_{c}\theta^s_c$ for every
+  $s\in \mathrm{FIFO}$
+  \State $h=\sum_{s \in \mathrm{IS}}\sum_{c}\theta^s_c
+  \bar{S}^s_c  + \sum_{s \in
+  \mathrm{FIFO}}\theta^s  \bar{S}^s$
+  \Comment{constant term in \eref{eq-q-qnet-mva-dlsld}}
+%
+    \For{$k=1:K$}
+    \State
+    $\la=\frac{k}{h+\sum_{s \in \mathrm{FIFO}}
+    \theta^s  Q^s \bar{S}^s}$
+    \Comment{\eref{eq-q-qnet-mva-dlsld}}
+    \State $Q^s=\la \theta^s
+    \bar{S}^s (1 + Q^s)$ for all
+    $s \in \mathrm{FIFO}$
+  \EndFor
+  \State The throughput at station $1$ is $\la$
+  \State The throughput of class $c$ at station $s$ is $\la
+ \theta^s_c$
+  \State The mean number of customers of class $c$ at FIFO
+  station
+  $s$ is $Q^s\theta^s_c/\theta^s$
+  \State The mean number of customers of class $c$ at
+  IS
+  station
+  $s$ is $\la \theta^s_c \bar{S}^s_c$
+\end{algorithmic}\label{algo-q-mva}
+ \end{algorithm}
+\begin{figure}[htbp]
+   \Ifig{botana}{0.8}{0.4}
+   \mycaption{Throughput in transactions per second versus number of users,
+   computed with MVA for the network
+   in \fref{fig-bottleneckAna}. The dotted lines are
+   the bounds of bottleneck analysis in \fref{fig-bot-lamres}.}
+  \mylabel{fig-q-qnet-botana}
+\end{figure}
+
+
+\begin{ex}{Mean Value Analysis of \fref{fig-bottleneckAna}}
+We model the system as a single class, closed
+network. The CPU is modelled as a PS station,
+disks A and B as FIFO single servers, and think
+time as an IS station. We fix the visit rate
+$\theta^{\mathrm{think time}}$ to $1$ so that
+$\theta^{\mathrm{CPU}}=V_{\mbox{CPU}}$,
+$\theta^{\mathrm{A}}=V_{\mbox{A}}$ and
+$\theta^{\mathrm{B}}=V_{\mbox{B}}$. Note that the
+routing probabilities need not be specified in
+detail, only the visit rates are required.
+
+The CPU station is not a FIFO station, but is has
+the same station function, therefore we may apply
+MVA and treat it as if it would be FIFO.
+
+\fref{fig-q-qnet-botana} shows the results, which
+are essentially as prediced by bottleneck
+analysis in \fref{fig-bot-lamres}.
+
+\label{ex-q-qnet-djerzcbasvvajhqoejfz}
+\end{ex}
+
+\subsection{Network Decomposition}
+%One often wishes to compute the stationary
+%probability for \emph{one} station or for one
+%group of stations. A key property of product
+%form, i.e. the marginal of the joint
+%distribution. In an open network, this is given
+%by the station function. In a closed or mixed
+%network, one may use \eref{eq-qnet-convol}. For
+%simple stations, it is often simpler to use the
+%equivalent service rate defined in the next
+%section.
+\begin{figure}[htbp]
+\center
+   \insfignc{netdecomp1}{0.4}
+   \insfignc{netdecom2}{0.4}\\
+   \insfignc{netdecom3}{0.4}
+   \insfignc{netdecom4}{0.4}
+  \mycaption{Decomposition procedure:
+  original network $\calN$,
+  with subnetwork $\calS$; simplified
+  network $\tilde{\calN}$;
+  equivalent station $\tilde{\calS}$; subnetwork
+  in short-circuit
+  $\tilde{\calN}_{\calS}$.}
+  \mylabel{fig-q-st-aggreg}
+\end{figure}
+
+
+A key consequence of the product form theorem is
+the possibility to replace an entire subnetwork
+by an equivalent single station. This can be done
+recursively and is the basis for many algorithms,
+such as MVA version 2.
+
+Consider a multi-class product form network
+$\calN$ and a subnetwork $\calS$. The stations in
+$\calS$ need not directly connected and the
+network can be closed, mixed or open. If the
+network is mixed or open, we consider that
+outside arrivals are from some fictitious station
+$0$, and $0\nin \calS$. We create two virtual
+networks: $\tilde{\calN}$ and
+$\tilde{\calN}_{\calS}$ and a virtual station
+$\tilde{\calS}$ as follows
+(\fref{fig-q-st-aggreg}).
+
+The virtual station $\tilde{\calS}$, called the
+\nt{equivalent station} of $\calS$, is obtained
+by isolating the set of stations $\calS$ from the
+network $\calN$ and collapsing classes to chains.
+Inside $\tilde{\calS}$, there is only one class
+per chain, i.e. a customer's attribute is its
+chain $\calC$; furthermore, the station is a
+``per class PS" station, with service rate to be
+defined later%
+\footnote{Observe that within one service station
+customers cannot change class, therefore if we
+aggregate a subnetwork into a single station, we
+must aggregate classes of the same chain as
+well.}.
+
+$\tilde{\calN}$, called the \nt{simplified
+network}, is obtained by replacing all stations
+in $\calS$ by the equivalent station
+$\tilde{\calS}$. In $\tilde{\calN}$, routing is
+defined by the corresponding natural aggregation,
+i.e. is the same as if the stations in $\calS$
+were still present but not observable
+individually. Thus the routing matrix $\tilde{q}$
+is:
+  \bearn
+  \tilde{q}^{s,s'}_{c,c'}  & =  & q^{s,s'}_{c,c'}
+ \mif s \nin \calS \mand s' \nin \calS
+ \\
+  \tilde{q}^{\calS,s'}_{\calC,c'}& = &
+    \bracket{
+    0 \mif c' \nin \calC
+       \\
+  \frac{1}{\tilde{\theta}_{\calC}}
+      \sum_{s \in \calS, c \in \calC} \theta^s_c q^{s,s'}_{c,c'}
+   \mif c' \in \calC}
+  \\
+  \tilde{q}^{s,\calS}_{c,\calC} & =&
+  \bracket{
+    0 \mif c \nin \calC
+    \\
+    \sum_{s' \in \calS, c' \in \calC} q^{s,s'}_{c,c'}  \mif c \in \calC
+    }
+ \\
+  \tilde{q}^{\calS,\calS}_{\calC,\calC'}&  =&
+  \bracket{0 \mif \calC \neq \calC'
+  \\
+   \frac{1}{\tilde{\theta}_{\calC}}
+      \sum_{s, s' \in \calS, c,c' \in \calC}
+      \theta^s_c q^{s,s'}_{c,c'} \mif \calC = \calC'
+      }
+   \\
+  \tilde{\theta}_{\calC} & = &
+      \sum_{s \in \calS, c \in \calC} \theta^s_c
+   \eearn
+where, for example,
+$\tilde{q}^{\calS,s'}_{\calC,c'}$ is the
+probability that a chain $\calC$ customer leaving
+station $\tilde{\calS}$ joins station $s'$ with
+class $c'$. If there are some open chains, recall
+that $s=0$ represents arrivals and departures and
+we assumed $0\nin\calS$; in such cases, the
+external arrival rate of chain $\calC$ customers
+to the virtual station $\tilde{\calS}$ is
+  \ben
+  \la^{\calS}_{\calC} = \sum_{s \in \calS, c \in \calC}
+  \la^s_c
+  \een
+and the probability that a chain $\calC$
+customers leaves the network after visiting
+$\tilde{\calS}$ is
+  \ben
+  \frac{1}{\tilde{\theta}_{\calC}}
+      \sum_{s \in \calS, c \in \calC}
+      \theta^s_c q^{s,0}_{c}
+    \een where  $q^{s,0}_c \eqdef 1- \sum_{s',
+    c'}q^{s,s'}_{c,c'}$ is the probability that a
+    class $c$ customer leaves the network after
+    visiting station $s$.
+
+The visit rates in $\tilde{\calN}$ are the same
+as in $\calN$ for stations not in $\calS$; for
+the equivalent station $\tilde{\calS}$, the visit
+rate for chain $\calC$ is $
+\tilde{\theta}_{\calC}$ given above.
+ %\ben
+% \bracket{
+% \tilde{\theta}^s_c  =  \theta^s_c \mif s
+% \nin \calS
+% \\
+% \tilde{\theta}^{\calS}_c= \sum_{s \in \calS}\theta^s_c
+%   }
+% \een
+The station function of the equivalent station
+$\tilde{\calS}$ is computed in such a way that
+replacing all stations in $\calS$ by
+$\tilde{\calS}$ makes no difference to the
+stationary probability of the network. It
+follows, after some algebra, from the product
+form theorem; the precise formulation is a bit
+heavy:
+ \be
+ f^{\calS}(\vk)=\sum_{(\vn^s)_{s \in \calS}
+ \mst \sum_{s \in \calS, c \in \calC}n^s_c=k_{\calC}}\prod_{s \in
+ \calS}
+  \lb
+  f^s(\vn^s)
+   \prod_{c}
+    \lp
+      \frac{\theta^s_c}{\theta^{\calS}_c}
+    \rp^{n^s_c}
+  \rb
+ \ee where $\vk$ is a population vector of closed
+ or open
+ chains. Note that it may happen that some chain
+ $\calC_0$
+be ``trapped" in $\calS$, i.e customers of this
+chain never leave $\calS$. The generating
+function of the virtual station $\calS$ has a
+simple expression
+  \be
+ G^{\calS}(\vZ)  =  \prod_{s\in \calS}G^s(\vX^s)
+ \;
+ \mwith X^s_c  =
+ Z_{\calC(c)}\frac{\theta^s_c}{\tilde{\theta}_{\calC}}
+\label{eq-q-qnet-fgagllddd}
+  \ee where $\calC(c)$ is the chain of class $c$.
+  Here $\calC$ spans the set of all chains,
+  closed or open. Thus, the equivalent station
+$\tilde{\calS}$ is a per-class PS station, with
+one class per chain, and with balance function
+$f^{\calS}(\vk)$. In the next theorem, we will
+give an equivalent statement that is easier to
+use in practice.
+
+
+The second virtual network, $\tilde{\calN}_{\calS}$ is called
+the \nt{subnetwork in short-circuit}\index{short circuit}. It
+consists in replacing anything not in $\calS$ by a
+short-circuit. In $\tilde{\calN}_{\calS}$, the service times at
+stations not in $\calS$ are $0$ and customers instantly
+traverse the complement of $\calS$. This includes the virtual
+station $0$ which represents the outside, so
+$\tilde{\calN}_{\calS}$ is a closed network%
+\footnote{Be careful that this is different from
+the procedure used when defining the station in
+isolation. In $\tilde{\calN}_{\calS}$, $\calS$ is
+connected to a short-circuit, i.e. a station
+where the service requirement is $0$; in
+contrast, in the configuration called ``$\calS$
+in isolation", $\calS$ is connected to a station
+with unit rate and unit service requirement. }.
+%The service stations in $\tilde{\calN}_{\calS}$
+%are station $\tilde{\calS}'$ and the stations in
+%$\calS$, and routing is defined by
+%short-circuiting anything outside of $\calS$.
+%More precisely, the routing matrix in
+%$\tilde{\calN}_{\calS}$ is
+% \bearn
+%  \tilde{\tilde{q}}^{s,s'}_{c,c'}  & =  & q^{s,s'}_{c,c'}
+% \mif s \in \calS \mand s' \in \calS
+% \\
+%  \tilde{\tilde{q}}^{\tilde{\calS}',s'}_{\calC,c'}& = &
+%    \bracket{
+%    0 \mif c' \nin \calC
+%       \\
+%  \frac{1}{\tilde{\tilde{\theta}}_{\calC}}
+%      \sum_{s \nin \calS, c \in \calC} \theta^s_c q^{s,s'}_{c,c'}
+%   \mif c \in \calC}
+%  \\
+%  \tilde{\tilde{q}}^{s,\tilde{\calS}'}_{c,\calC} & =&
+%  \bracket{
+%    0 \mif c \nin \calC
+%    \\
+%    \sum_{s' \nin \calS, c' \in \calC} q^{s,s'}_{c,c'}
+%    }
+% \\
+%  \tilde{\tilde{q}}^{\tilde{\calS}',\tilde{\calS}'}_{\calC,\calC'}&  =&
+%  \bracket{0 \mif \calC \neq \calC'
+%  \\
+%   \frac{1}{\tilde{\tilde{\theta}}_{\calC}}
+%      \sum_{s, s' \nin \calS, c,c' \in \calC}
+%      \theta^s_c q^{s,s'}_{c,c'}
+%      }
+%   \\
+%  \tilde{\tilde{\theta}}_{\calC} & = &
+%      \sum_{s \nin \calS, c \in \calC} \theta^s_c
+%   \eearn
+%Note that $\tilde{\calN}_{\calS}$ is always
+%closed, even if there are some open chains in the
+%original network.
+The population vector $\vk$ remains constant in
+$\tilde{\calN}_{\calS}$; the visit rates at stations in
+$\calS$ are the same as in the original network for closed chains. For classes that belong to a chain that is open in the original network, we obtain the visit rates by setting arrival rates to $1$.
+
+%It can be seen by direct inspection that the
+%normalizing constant for the subnetwork in
+%short-circuit is the same as the station function
+%$f^{\calS}(\vk)$. Thus we have shown most of the
+%following theorem:
+ \begin{shadethm}(Decomposition
+Theorem \cite{MR563738})
+
+Consider a multi-class network that satisfies the
+hypotheses of the product form
+theorem~\ref{theo-q-pf}. Any subnetwork $\calS$
+can be replaced by its equivalent station
+ $\tilde{\calS}$, with one class per chain and
+station function defined by
+\eref{eq-q-qnet-fgagllddd}. In the resulting
+equivalent network $\tilde{\calN}$, the
+stationary probability and the throughputs that
+are observable are the same as in the original
+network.
+
+Furthermore, if $\calC$ effectively visits
+$\calS$, the equivalent service rate to chain
+$\calC$ (closed or open) at the equivalent
+station $\tilde{\calS}$ is
+ \be
+  \mu^{*\calS}_{\calC}(\vk) = \la^{*\calS}_{\calC}(\vk)
+  \label{eq-q-qnet-sdlfkjfdlkii}
+  \ee
+ where
+$\la^{*\calS}_{\calC}(\vk)$ is the throughput of
+chain $\calC$ for the subnetwork in short-circuit
+$\tilde{\calN}_{\calS}$ when the population
+vector for all chains (closed or open) is $\vk$.
+ \label{theo-q-qnet-aggreg}
+\end{shadethm}
+The phrase ``that are observable" means: the
+numbers of customers of any class at any station
+not in $\calS$; the total number of customers of
+chain $\calC$ that are present in any station of
+$\calS$; the throughputs of all classes at all
+stations not in $\calS$; the throughputs of all
+chains. Recall that the per chain throughput
+$\la_{\calC}(\vK)$ (defined in
+\eref{eq-q-qnet-dskjsdjkjkdf}) is the throughput
+measured at some station $s_{\calC}$ effectively
+visited by chain $\calC$. The station $s_{\calC}$
+is assumed to be the same in the original and the
+virtual networks, which is possible since the
+visit rates are the same.
+
+If $\calC$ does not effectively visit $\calS$
+(i.e. if $\tilde{\theta}_{\calC} \eqdef
+      \sum_{s \in \calS, c \in \calC}
+ \theta^s_c=0$) then the equivalent service
+rate  $\mu^{*\calS}_{\calC}$ is undefined, which
+is not a problem since we do not need it.
+
+By the throughput theorem,
+\eref{eq-q-qnet-sdlfkjfdlkii} can also be written
+$\mu^{*\calS}_{\calC}(\vk) =
+\frac{\eta^*(\vk-\vone_{\calC})}{\eta^*(\vk)}$
+where $\eta^*(\vk)$ is the normalizing constant
+for the subnetwork in short-circuit
+ $\tilde{\calN}_{\calS}$.
+
+ If
+ $\calS$ consists of a single station with one
+ class per chain at this station, then the
+ equivalent station is the same as the original station,
+ as expected. Also, the theorem implies, as a byproduct,
+ that the equivalent service rate for class $c$ at a
+  station $s$, as defined in \eref{eq-q-qnet-eqsrvrat},
+is equal to the throughput for class $c$ at the
+network made of this station and a short circuit
+for every class (i.e. every class $c$ customer
+immediately returns to the station upon service
+completion, with the same class).
+ \begin{figure}
+\centering
+ \Ifignc{dcpAgg}{0.95}{0.5}~\\
+ \vspace{1cm}
+ \Ifignc{dcpAggSC}{0.95}{0.3}
+ %\Ifignc{pdf-x=0.7y=0.8}{0.95}{0.4}
+  \mycaption{Aggregation of stations applied to the dual core
+  processor example of \fref{fig-q-chains}. First panel: stations
+   2 and 3 are replaced by $\tilde{\calS}$. Bottom panel: the
+   network in short-circuit $\tilde{\calN}_{\calS}$
+   used to compute the equivalent service rate $\mu^*(n4)$ of $\tilde{\calS}$.}
+  \label{fig-q-qnet-sdflfdlkjbnfiouzgb}
+\end{figure}
+
+\begin{ex}{Dual Core Processor in \fref{fig-q-chains},
+continued} We replace stations 2 and 3 by one
+aggregated station $\tilde{S}$ as in
+\fref{fig-q-qnet-sdflfdlkjbnfiouzgb}. This
+station receives only customers of class 4
+(internal jobs). Its equivalent service rate is
+ \be
+ \mu^*(n_4) = \frac{\eta^*(n_4-1)}{\eta^*(n_4)}
+ \ee
+where $\eta^*(n_4)$ is the normalizing constant
+for the network $\tilde{\calN}_{\calS}$ obtained
+when replacing station 1 by a short-circuit as in
+\fref{fig-q-qnet-sdflfdlkjbnfiouzgb}; the $z$
+transform of $\eta^*$ is given by the convolution
+theorem \ref{theo-gf-eta}:
+ \be
+ F_{\eta^*}(Y)=e^{\bar{S}^2Y}
+      \frac{1}{1-\bar{S}^3 Y}
+ \label{eq-q-qnet-sdjsduuepoowjfdgkjhhjdkjhfd}
+ \ee
+ One can compute a Taylor expansion and deduce $\eta^*(n)$ or use
+ \pro{filter} as in the other examples, but here
+ one can also find a closed form
+  \be
+  \eta^*(n) = \lp\bar{S}^3\rp^n \sum_{k=0}^n
+  \lp\frac{\bar{S}^2}{\bar{S}^3}\rp^k \frac{1}{k!}
+  \ee
+ Note that for large $n$,  $\eta^*(n) \approx
+ \lp\bar{S}^3\rp^n \exp\lp
+ \frac{\bar{S}^2}{\bar{S}^3}\rp$ and thus
+$\mu^*(n) \approx \frac{1}{\bar{S}^3}$, i.e. it
+is equivalent to station 3 (but this is true only
+for large $n$). We can deduce the equivalent
+service rate $\mu^*(n)$ and obtain the
+probability distribution $P^*(n)$ of internal
+jobs at stations $2$ or $3$ using
+\thref{theo-q-qnet-adsjkhfuierbhfv} as in
+\exref{ex-q-qnet-dsjkldsjkfl}.
+
+Note that internal jobs are either at station 1,
+or at stations 2 or 3. Thus we should have
+  \be
+  P^*(n|K) = P'^1(K-n|K)
+  \ee
+where $P'^1(.|K)$ is the probability distribution
+for internal jobs at station 1, already obtained
+in \exref{ex-q-qnet-dsjkhuzewnnbasdio}, and we
+can verify this numerically.
+  \end{ex}
+%
+%decomposition procedures
+%that aim at simplifying the network
+%analysis. %There are different aggregation
+%%methods, which differ in the definition of
+%%auxiliary stations. A first approach is the same
+%%as was used already in the definition of the
+%%station in isolation.
+%First we define the aggregation procedure.
+%
+%Consider a multi-class product form network
+%$\calN$ and a subset $\calS$ of stations. The
+%stations need not directly connected and the
+%network can be closed, mixed or open. If the
+%network is mixed or open, we consider that
+%outside arrivals are from some fictitious station
+%$0$, and $0\nin \calS$. We create two virtual
+%networks: $\tilde{\calN}$ and
+%$\tilde{\calN}_{\calS}$ and a virtual station
+%$\tilde{\calS}$ as follows
+%(\fref{fig-q-st-aggreg}).
+%
+%The virtual station $\tilde{\calS}$, called the
+%\nt{equivalent station} of $\calS$, is obtained
+%by isolating the set of stations $\calS$ from the
+%network $\calN$ and collapsing classes to chains.
+%Inside $\tilde{\calS}$, there is only one class
+%per chain, i.e. a customer's attribute is its
+%chain $\calC$; furthermore, the station is a
+%``per class PS" station, with service rate to be
+%defined later%
+%\footnote{Observe that within one service station
+%customers cannot change class, therefore if we
+%aggregate a subnetwork into a single station, we
+%must aggregate classes of the same chain as
+%well.}.
+%
+%$\tilde{\calN}$, called the \nt{aggregated
+%network}, is obtained by replacing all stations
+%in $\calS$ by the equivalent station
+%$\tilde{\calS}$. In $\tilde{\calN}$, routing is
+%defined by the corresponding natural aggregation,
+%i.e. is the same as if the stations in $\calS$
+%were still present but not observable
+%individually. More precisely, the routing matrix
+%$\tilde{q}$ is:
+%  \bearn
+%  \tilde{q}^{s,s'}_{c,c'}  & =  & q^{s,s'}_{c,c'}
+% \mif s \nin \calS \mand s' \nin \calS
+% \\
+%  \tilde{q}^{\calS,s'}_{\calC,c'}& = &
+%    \bracket{
+%    0 \mif c' \nin \calC
+%       \\
+%  \frac{1}{\tilde{\theta}_{\calC}}
+%      \sum_{s \in \calS, c \in \calC} \theta^s_c q^{s,s'}_{c,c'}
+%   \mif c \in \calC}
+%  \\
+%  \tilde{q}^{s,\calS}_{c,\calC} & =&
+%  \bracket{
+%    0 \mif c \nin \calC
+%    \\
+%    \sum_{s' \in \calS, c' \in \calC} q^{s,s'}_{c,c'}
+%    }
+% \\
+%  \tilde{q}^{\calS,\calS}_{\calC,\calC'}&  =&
+%  \bracket{0 \mif \calC \neq \calC'
+%  \\
+%   \frac{1}{\tilde{\theta}_{\calC}}
+%      \sum_{s, s' \in \calS, c,c' \in \calC}
+%      \theta^s_c q^{s,s'}_{c,c'}
+%      }
+%   \\
+%  \tilde{\theta}_{\calC} & = &
+%      \sum_{s \in \calS, c \in \calC} \theta^s_c
+%   \eearn
+%where, for example,
+%$\tilde{q}^{\calS,s'}_{\calC,c'}$ is the
+%probability that a chain $\calC$ customer leaving
+%station $\tilde{\calS}$ joins station $s'$ with
+%class $c'$. If there are some open chains, recall
+%that $s=0$ represents arrivals and departures and
+%we assumed $0\nin\calS$; in such cases, the
+%external arrival rate of chain $\calC$ customers
+%to the virtual station $\tilde{\calS}$ is
+%  \ben
+%  \la^{\calS}_{\calC} = \sum_{s \in \calS, c \in \calC}
+%  \la^s_c
+%  \een
+%and the probability that a chain $\calC$
+%customers leaves the network after visiting
+%$\tilde{\calS}$ is
+%  \ben
+%  \frac{1}{\tilde{\theta}_{\calC}}
+%      \sum_{s \in \calS, c \in \calC}
+%      \theta^s_c q^{s,0}_{c}
+%    \een where  $q^{s,0}_c \eqdef 1- \sum_{s',
+%    c'}q^{s,s'}_{c,c'}$ is the probability that a
+%    class $c$ customer leaves the network after
+%    visiting station $s$.
+%
+%The visit rates in $\tilde{\calN}$ are the same
+%as in $\calN$ for stations not in $\calS$; for
+%the equivalent station $\tilde{\calS}$, the visit
+%rate for chain $\calC$ is $
+%\tilde{\theta}_{\calC}$ given above.
+% %\ben
+%% \bracket{
+%% \tilde{\theta}^s_c  =  \theta^s_c \mif s
+%% \nin \calS
+%% \\
+%% \tilde{\theta}^{\calS}_c= \sum_{s \in \calS}\theta^s_c
+%%   }
+%% \een
+%The station function of the equivalent station
+%$\tilde{\calS}$ is computed in such a way that
+%replacing all stations in $\calS$ by
+%$\tilde{\calS}$ makes no difference to the
+%stationary probability of the network. It
+%follows, after some algebra, from the product
+%form theorem; the precise formulation is a bit
+%heavy:
+% \be
+% f^{\calS}(\vk)=\sum_{(\vn^s)_{s \in \calS}
+% \mst \sum_{s \in \calS, c \in \calC}n^s_c=k_{\calC}}\prod_{s \in
+% \calS}
+%  \lb
+%  f^s(\vn^s)
+%   \prod_{c}
+%    \lp
+%      \frac{\theta^s_c}{\theta^{\calS}_c}
+%    \rp^{n^s_c}
+%  \rb
+% \ee where $\vk$ is a population vector of closed
+% or open
+% chains.
+%The generating function of the virtual station
+%$\calS$ has a simple expression
+%  \be
+% G^{\calS}(\vZ)  =  \prod_{s\in \calS}G^s(\vX^s)
+% \;
+% \mwith X^s_c  =
+% Z_{\calC(c)}\frac{\theta^s_c}{\tilde{\theta}_{\calC}}
+%\label{eq-q-qnet-fgagllddd}
+%  \ee where $\calC(c)$ is the chain of class $c$.
+%  Here $\calC$ spans the set of all chains,
+%  closed or open. Thus, the equivalent station
+%$\tilde{\calS}$ is a per-class PS station, with
+%one class per chain, and with balance function
+%$f^{\calS}(\vk)$. In the next theorem, we will
+%give an equivalent statement that is easier to
+%use in practice.
+%
+%
+%The second virtual network,
+%$\tilde{\calN}_{\calS}$ is called the
+%\nt{subnetwork in short-circuit}. It results from
+%the dual aggregation, where all stations not in
+%$\calS$ are collapsed into one single station
+%$\tilde{\calS}'$. In $\tilde{\calN}_{\calS}$, the
+%service times at $\tilde{\calS}'$ are $0$ (so
+%customers instantly traverse  $\tilde{\calS}'$;
+%also, in $\tilde{\calS}'$, customers loose their
+%class attribute, but retain their chain
+%attribute)%
+%\footnote{Be careful that this is different from
+%the procedure used when defining the station in
+%isolation. In $\tilde{\calN}_{\calS}$, $\calS$ is
+%connected to a short-circuit, i.e. a station
+%where the service requirement is $0$; in
+%contrast, in the configuration called ``$\calS$
+%in isolation", $\calS$ is connected to a station
+%with unit rate and unit service requirement. }.
+%The service stations in $\tilde{\calN}_{\calS}$
+%are station $\tilde{\calS}'$ and the stations in
+%$\calS$, and routing is defined by
+%short-circuiting anything outside of $\calS$.
+%More precisely, the routing matrix in
+%$\tilde{\calN}_{\calS}$ is
+% \bearn
+%  \tilde{\tilde{q}}^{s,s'}_{c,c'}  & =  & q^{s,s'}_{c,c'}
+% \mif s \in \calS \mand s' \in \calS
+% \\
+%  \tilde{\tilde{q}}^{\tilde{\calS}',s'}_{\calC,c'}& = &
+%    \bracket{
+%    0 \mif c' \nin \calC
+%       \\
+%  \frac{1}{\tilde{\tilde{\theta}}_{\calC}}
+%      \sum_{s \nin \calS, c \in \calC} \theta^s_c q^{s,s'}_{c,c'}
+%   \mif c \in \calC}
+%  \\
+%  \tilde{\tilde{q}}^{s,\tilde{\calS}'}_{c,\calC} & =&
+%  \bracket{
+%    0 \mif c \nin \calC
+%    \\
+%    \sum_{s' \nin \calS, c' \in \calC} q^{s,s'}_{c,c'}
+%    }
+% \\
+%  \tilde{\tilde{q}}^{\tilde{\calS}',\tilde{\calS}'}_{\calC,\calC'}&  =&
+%  \bracket{0 \mif \calC \neq \calC'
+%  \\
+%   \frac{1}{\tilde{\tilde{\theta}}_{\calC}}
+%      \sum_{s, s' \nin \calS, c,c' \in \calC}
+%      \theta^s_c q^{s,s'}_{c,c'}
+%      }
+%   \\
+%  \tilde{\tilde{\theta}}_{\calC} & = &
+%      \sum_{s \nin \calS, c \in \calC} \theta^s_c
+%   \eearn
+%Note that $\tilde{\calN}_{\calS}$ is always
+%closed, even if there are some open chains in the
+%original network. The population vector $\vk$
+%remains constant in $\tilde{\calN}_{\calS}$.
+%
+%It can be seen by direct inspection that the
+%normalizing constant for the subnetwork in
+%short-circuit is the same as the station function
+%$f^{\calS}(\vk)$. Thus we have shown most of the
+%following theorem:
+% \begin{shadethm}(Decomposition
+%Theorem \cite{MR563738})
+%
+%Consider a multi-class network that satisfies the
+%hypotheses of the product form
+%theorem~\ref{theo-q-pf}. Any subset of stations
+%$\calS$ can be replaced by its equivalent station
+% $\tilde{\calS}$, with one class per chain and
+%station function defined by
+%\eref{eq-q-qnet-fgagllddd}. In the resulting
+%equivalent network $\tilde{\calN}$, the
+%stationary probability and the throughputs that
+%are observable are the same as in the original
+%network.
+%
+%Furthermore, the equivalent service rate to chain
+%$\calC$ (closed or open) at the equivalent
+%station $\tilde{\calS}$ is
+% \be
+%  \mu^{*\calS}_{\calC}(\vk) = \la^{*\calS}_{\calC}(\vk)
+%  \label{eq-q-qnet-sdlfkjfdlkii}
+%  \ee
+%where $\la^{*\calS}_{\calC}(\vk)$ is the
+%throughput of chain $\calC$ for the subnetwork in
+%short-circuit $\tilde{\calN}_{\calS}$ when the
+%population vector for all chains (closed or open)
+%is $\vk$.
+% \label{theo-q-qnet-aggreg}
+%\end{shadethm}
+%The phrase ``that are observable" means: the
+%numbers of customers of any class at any station
+%not in $\calS$; the total number of customers of
+%chain $\calC$ that are present in any station of
+%$\calS$; the throughputs of all classes at all
+%stations not in $\calS$; the sum of all
+%throughputs per class over classes in one chain
+%and over all stations in $\calS$. The throughput
+%for chain $\calC$ is measured on the outside loop
+%of $\tilde{\calN}_{\calS}$ (see
+%\fref{fig-q-st-aggreg}).
+%
+%By the throughput theorem,
+%\eref{eq-q-qnet-sdlfkjfdlkii} can also be written
+%$\mu^{*\calS}_{\calC}(\vk) =
+%\frac{\eta^*(\vk-\vone_{\calC})}{\eta^*(\vk)}$
+%where $\eta^*(\vk)$ is the normalizing constant
+%for the subnetwork in short-circuit
+% $\tilde{\calN}_{\calS}$.
+%
+% \begin{figure}
+%\centering
+% \Ifignc{dcpAgg}{0.95}{0.5}~\\
+% \vspace{1cm}
+% \Ifignc{dcpAggSC}{0.95}{0.3}
+% %\Ifignc{pdf-x=0.7y=0.8}{0.95}{0.4}
+%  \mycaption{Aggregation of stations applied to the dual core
+%  processor example of \fref{fig-q-chains}. First panel: stations
+%   2 and 3 are replaced by $\tilde{\calS}$. Bottom panel: the
+%   network in short-circuit $\tilde{\calN}_{\calS}$
+%   used to compute the equivalent service rate $\mu^*(n4)$ of $\tilde{\calS}$.}
+%  \label{fig-q-qnet-sdflfdlkjbnfiouzgb}
+%\end{figure}
+%
+%\begin{ex}{Dual Core Processor in \fref{fig-q-chains},
+%continued} We replace stations 2 and 3 by one
+%aggregated station $\tilde{S}$ as in
+%\fref{fig-q-qnet-sdflfdlkjbnfiouzgb}. This
+%station receives only customers of class 4
+%(internal jobs). Its equivalent service rate is
+% \be
+% \mu^*(n_4) = \frac{\eta^*(n_4-1)}{\eta^*(n_4)}
+% \ee
+%where $\eta^*(n_4)$ is the normalizing constant
+%for the network $\tilde{\calN}_{\calS}$ obtained
+%when replacing station 1 by a short-circuit as in
+%\fref{fig-q-qnet-sdflfdlkjbnfiouzgb}; the $z$
+%transform of $\eta^*$ is given by the convolution
+%theorem \ref{theo-gf-eta}:
+% \be
+% F_{\eta^*}(Y)=e^{\bar{S}^2Y}
+%      \frac{1}{1-\bar{S}^3 Y}
+% \label{eq-q-qnet-sdjsduuepoowjfdgkjhhjdkjhfd}
+% \ee
+% One can compute a Taylor expansion and deduce $\eta^*(n)$ or use
+% \pro{filter} as in the other examples, but here
+% one can also find a closed form
+%  \be
+%  \eta^*(n) = \lp\bar{S}^3\rp^n \sum_{k=0}^n
+%  \lp\frac{\bar{S}^2}{\bar{S}^3}\rp^k \frac{1}{k!}
+%  \ee
+% Note that for large $n$,  $\eta^*(n) \approx
+% \lp\bar{S}^3\rp^n \exp\lp
+% \frac{\bar{S}^2}{\bar{S}^3}\rp$ and thus
+%$\mu^*(n) \approx \frac{1}{\bar{S}^3}$, i.e. it
+%is equivalent to station 3 (but this is true only
+%for large $n$). We can deduce the equivalent
+%service rate $\mu^*(n)$ and obtain the
+%probability distribution $P^*(n)$ of internal
+%jobs at stations $2$ or $3$ using
+%\thref{theo-q-qnet-adsjkhfuierbhfv} as in
+%\exref{ex-q-qnet-dsjkldsjkfl}.
+%
+%Note that internal jobs are either at station 1,
+%or at stations 2 or 3. Thus we should have
+%  \be
+%  P^*(n|K) = P'^1(K-n|K)
+%  \ee
+%where $P'^1(.|K)$ is the probability distribution
+%for internal jobs at station 1, already obtained
+%in \exref{ex-q-qnet-dsjkhuzewnnbasdio}, and we
+%can verify this numerically.
+%  \end{ex}
+%
+%
+%
+\subsection{MVA Version 2}
+\label{sec-mva-2} This is an algorithm which,
+like MVA version 1, avoids computing the
+normalizing constant, but which applies to fairly
+general station types \cite{reiser1981mean}. We
+give a version for single chain (but multi-class)
+networks. For networks with several chains, the
+complexity of this method is exponential in the
+number of chains, and more elaborate
+optimizations have been proposed; see
+\cite{conway1986recal,conway1989mean} as well as
+\cite{balsamo2000product} and the discussion
+therein.
+
+The starting point is the decomposition theorem,
+which says that one can replace a subnetwork by a
+single station if one can compute its throughputs
+in short circuit. For example, using MVA version
+1, one can compute the throughputs of a
+subnetwork made of single server FIFO or IS
+stations (or equivalent), therefore one can replace
+the set of all such stations in a network by one
+single station.
+
+MVA version 2 does the same thing for general
+stations in closed networks. This can be reduced
+to the simpler problem of how to compute the
+throughput of a network of 2 stations, with
+numerically known service rates. If we can solve
+this problem, we can replace the 2 stations by a
+new one, the service rate is equal to the
+throughput (by \thref{theo-q-qnet-aggreg}), and
+we can iterate. This problem is solved by the
+next theorem. It uses the concept of networks in
+short-circuit.
+
+\begin{shadethm}(\nt{Complement Network Theorem})
+Consider a \emph{closed} multi-class product form
+queuing network $\calN$. Let $\calS^1, \calS^2$
+be a partition of $\calN$ in two subnetworks and
+let $\calN_{\calS^1},\calN_{\calS^2}$ be the
+corresponding subnetworks in short circuit (in
+$\calN_{\calS^1}$, all stations in $\calS^2$ are
+short circuited). Define:
+\begin{itemize}
+    \item $P^1(\vk| \vK)=$ the stationary probability
+    that the number of customers of chain
+    $\calC$ present in $\calS^1$ is $k_{\calC}$ for all
+    $\calC$ when the total network
+    population vector is $\vK$;
+    \item $\eta^1(\vK)=$ [resp. $\eta^2(\vK)$, $\eta(\vK)$]
+the normalizing constant of
+    $\calN_{\calS^1}$ [resp. $\calN_{\calS^2}$, $\calN$] when the total network
+    population vector is $\vK$;
+    \item $\la^{*1}_\calC(\vK)=$
+[resp. $\la^{*2}_\calC(\vK)$, $\la_\calC(\vK)$]
+the per chain
+    throughput of chain $\calC$ in
+    $\calN_{\calS^1}$ [resp. $\calN_{\calS^2}$, $\calN$] when the total network
+    population vector is $\vK$.
+\end{itemize}
+Then for $\vzero\leq \vk\leq \vK$:
+  \bear
+  P^1(\vk| \vK) & = &  \frac{\eta^1(\vk)
+  \eta^2(\vK-\vk)}{\eta(\vK)}
+  \label{eq-q-qnet-dec-dfsakjhfu1}
+  \eear
+  and for any chain $\calC$ such that
+  $k_{\calC}>0$:
+  \bear
+  P^1(\vk|\vK) & = & P^1(\vk - \vone_{\calC}|(\vK - \vone_{\calC})
+  \frac{\la_{\calC}(\vK)}{\la^{*1}_{\calC}(\vk)}
+ \label{eq-q-qnet-dec-dfsakjhfu2}
+  \\
+  P^1(\vk|\vK) & = &  P^1(\vk |(\vK - \vone_{\calC})
+  \frac{\la_{\calC}(\vK)}{\la^{*2}_{\calC}(\vK-\vk)}
+ \label{eq-q-qnet-dec-dfsakjhfu3}
+  \eear
+ \label{theo-q-qnet-compnet}
+\end{shadethm}
+The inequalities $\vzero\leq \vk\leq \vK$ are
+componentwise. The proof is by direct inspection:
+recognize in \eref{eq-q-qnet-dec-dfsakjhfu1} the
+convolution theorem;
+\eref{eq-q-qnet-dec-dfsakjhfu2} and
+\eref{eq-q-qnet-dec-dfsakjhfu3} follow from
+\eref{eq-q-qnet-dec-dfsakjhfu1} and the
+throughput theorem.
+
+Note that \eref{eq-q-qnet-dec-dfsakjhfu2} is an
+instance of the equivalent service rate formula
+\eref{eq-q-mva-bas}, since
+$\la^{*1}_{\calC}(\vk)=\mu^{*1}_{\calC}(\vk)$ is
+also equal to the equivalent service rate of
+$\calS^1$. \eref{eq-q-qnet-dec-dfsakjhfu3} is the
+symmetric of \eref{eq-q-qnet-dec-dfsakjhfu2} when
+we exchange the roles of $\calS^1$ and $\calS^2$
+since $P^1(\vk|\vK)=P^2(\vK-\vk|\vK)$.
+
+$\calS^2$ is called the complement network of
+$\calS^1$ in the original work
+\cite{reiser1981mean}, hence the name.
+
+\paragraph{The MVA Composition Step}
+In the rest of this section we consider that
+there is only one chain, and drop index $\calC$.
+Assume that we know the throughputs of the two
+subnetworks $\la^{*1}(K), \la^{*2}(K)$; the goal
+of the composition step is to compute $\la(K)$.
+We compute the distribution $P^1(.|K)$ by
+iteration on $K$, starting with $P^1(0|0)=1$,
+$P^1(n|0)=0$, $n\geq 1$.
+\eref{eq-q-qnet-dec-dfsakjhfu2} and
+\eref{eq-q-qnet-dec-dfsakjhfu3} become
+  \bear
+  \mfor k=1...K\;:\;P^1(k|K) & = & P^1(k - 1|(K - 1)\frac{\la(K)}{\la^{*1}(k)}
+   \\
+\mfor k=0...K-1\;:\;  P^1(k|K) & = & P^1(k |(K -
+1)\frac{\la(K)}{\la^{*2}(K-k)}
+  \eear
+None of the two equations alone is sufficient to
+advance one iteration step, but the combination
+of the two is. For example, use the former for
+$k=1...K$ and the latter for $k=0$. $\la(K)$ is
+then obtained by the condition
+$\sum_{n=0}^KP^1(k|K)=1$.
+
+\paragraph{MVA Version 2}
+The algorithm works in two phases. In phase 1,
+the throughput is computed. The starting point is
+a network $\calN_0$; first, we compute the
+throughput of the subnetwork $\calS^0$ made of
+all stations to which MVA version 1 applies, as
+this faster than MVA version 1. We replace
+$\calS^0$ by its equivalent station; let
+$\calN_1$ be the resulting network.
+
+In one step we match stations 2 by 2, possibly
+leaving one station alone. For every pair of
+matched stations we apply the MVA Composition
+Step to the network made of both stations in
+short circuit (all stations except the two of the
+pair are short-circuited); we thus obtain the
+throughput of the pair in short-circuit. Then we
+replace the pair by a single station, whose
+service rate is the throughput just computed.
+This is repeated until there is only one
+aggregate station left, at which time the phase 1
+terminates and we have computed the throughput
+$\la(K)$ of the original network.
+
+In phase 2, the distributions of states at all
+stations of interest can be computed using the
+equivalent service rate theorem
+(\eref{eq-q-mva-bas}) and normalization to obtain
+the probability of an empty station; there is no
+need to use the complement network in this phase.
+
+The number of steps in Phase 1 is order of
+$\log_2(N)$, where $N$ is the number of stations;
+the MVA Composition Step is applied in total
+order of $N$ times (and not $2^N$ as wrongly
+assumed in \cite{balsamo2000product}). The
+complexity of one MVA Composition Step is linear
+in $K$, the population size.
+
+In \aref{algo-q-mva-cs} in
+\sref{sec-q-qnet-qnaskxidzesdfsa} we give a
+concrete implementation.
+
+%This is a method, developed by
+%Reiser \cite{reiser1981mean}, which avoids
+%computing the normalizing constant and the
+%corresponding overflow problems. There are many
+%variants of it, such as the Multibus algorithm
+%\cite{le1988multibus} for networks with MSCCC
+%stations other than FIFO; see also the discussion
+%in \cite{balsamo2000product}.
+%
+%In this section, we give two variants. The former
+%is very simple, but applies only to some station
+%types, as it requires to be able to derive the
+%response time from the Palm distribution of queue
+%size upon customer arrival. The second is more
+%general and applies to all stations for which the
+%service rate can be computed easily.
+%
+%networks where all
+%stations are FIFO with one server or IS with
+%constant rate, or have the same station function
+%as one of these two stations. Indeed, recall that
+%stationary probabilities and throughput depend
+%only on the station function. It is based on the
+%arrival theorem. The second variant is more
+%general, and makes use of both the arrival
+%theorem and the complement network theorem,
+%presented next.
+
+%There are many variants of it, and they are not
+%all numerically stable. We give here the simplest
+%form, which is  For other cases,  For an
+%application to MSCCC stations other than the
+%single server FIFO station, see the Multibus
+%algorithm \cite{le1988multibus}. The method is
+%based on the following theorem for Palm
+%distributions at arrival times.
+%
+
+%
+%\subsubsection{Simple MVA for Networks With Single Server FIFO, IS or similar Stations}
+%This algorithm is based on the following theorem,
+%which is a consequence of the product form
+%theorem and the embedded subchain theorem of Palm
+%calculus (\thref{theo-incluse}).
+%
+%\begin{shadethm}(\nt{Arrival Theorem})
+%
+%Consider a multi-class product form queuing,
+%possibly with blocking. The probability
+%distribution of the numbers of customers seen by
+%customer just before arriving at station $s$ is
+%the stationary distribution of
+%\begin{itemize}
+%    \item the same network
+%if the customer belongs to an open chain;
+%    \item the network with one customer less in
+%    its chain, if the customer belongs to a closed
+%    chain.
+%\end{itemize}
+%\end{shadethm}
+%
+%Consider now a \emph{closed} network where all
+%stations are FIFO or IS with constant rate, or
+%are similar in the sense that they have the same
+%station function as one of these. Indeed, recall
+%that stationary probabilities and throughput
+%depend only on the station function. For example,
+%a station may also be a global PS station with
+%class independent service requirement of any
+%phase type distribution, which has the same
+%station function as a FIFO station with one
+%server (and exponential service time). In the
+%rest of this section we call ``FIFO" [resp. IS]
+%station one that has the same station function as
+%a single server, constant rate FIFO [resp. IS]
+%station. Recall that at a FIFO station we need to
+%assume that the mean service requirements are the
+%same for all classes at the same station; for the
+%IS station, it may be class dependent.
+%
+%First we assume the FIFO [resp. IS] stations are
+%truly FIFO [resp.IS], not just similar stations
+%as defined above. We will remove this restriction
+%later. Let $\bar{N}^s_c(\vK)$ be the mean number
+%of class $c$ customers at station $s$ when the
+%chain population vector is $\vK$. The mean
+%response time for a class $c$ customer at a FIFO
+%station $s$ when the population vector is $\vK$
+%is
+% \ben
+% \bar{R}^s_c(\vK) = \lp 1+
+% \sum_{c}\bar{N}^s_c(\vK-\vone_{\calC})
+% \rp
+% \bar{S}^s
+% \een where $\calC$ is the chain of class $c$.
+%This is because of the exponential service
+%requirement assumption: an
+% arriving customer has to wait for $\bar{S}^s$ multiplied by the
+% number of customers present upon arrival; in average, this latter
+% number is
+% $\sum_{c}\bar{N}^s_c(\vK-\vone_{\calC})$
+%by the arrival theorem. By Little's formula:
+% \ben
+%\bar{R}^s_c(\vK) \la^s_c(\vK)=\bar{N}^s_c(\vK)
+% \een
+%Combining the two gives
+%  \be
+% \bar{N}^s_c(\vK) = \la^s_c(\vK) \lp 1+
+% \sum_{c}\bar{N}^s_c(\vK-\vone_{\calC})
+% \rp \bar{S}^s
+%  \ee
+%which is valid for FIFO stations. For a delay
+%station one finds
+% \be
+% \bar{N}^s_c(\vK) = \la^s_c(\vK)\bar{S}^s_c
+% \ee
+%This gives a recursion for $\bar{N}^s_c(\vK)$ if
+%one can get determine $\la^s_c(\vK)$. The next
+%observation is \eref{eq-q-qnet-dskjsdjkjkdf},
+%which says that if we know the throughput at one
+%station visited by a chain class, then we know
+%the throughputs for all stations and all classes
+%of the same chain. The last observation is that
+%the sum of the numbers of customers across all
+%stations and all classes of chain $\calC$ is
+%equal to $K_{\calC}$. Combining all this gives:
+%for every chain $\calC$, if $K_{\calC}>0$ then
+%  \bear
+%  \frac{K_{\calC}}{\la_{\calC}( \vK)} &=&
+%\sum_{c \in \calC}
+%  \lb
+%   \sum_{s: \mathrm{FIFO}}\theta^s_c
+%   \lp 1+
+% \sum_{c'}\bar{N}^s_{c'}(\vK-\vone_{\calC})
+% \rp \bar{S}^s
+%  +
+%    \sum_{s: \mathrm{IS}}\theta^s_c
+%    \bar{S}^s_c
+%    \rb
+%    \label{eq-q-qnet-mva-dlsld}
+%  \eear
+% and \be \la_{\calC}( \vK)= 0 \mif
+% K_{\calC}=0 \ee
+%For every FIFO station $s$ and class $c$:
+% \bear
+% \bar{N}^s_c(\vK) &= &\theta^s_c\la_{\calC(c)}
+% (\vK) \lp 1+
+% \sum_{c'}\bar{N}^s_{c'}(\vK-\vone_{\calC(c)})
+% \rp \bar{S}^s
+% \mif K_{\calC(c)} >0  \label{eq-q-qnet-mva-dlsdsdld}
+% \\
+% & = & 0 \mif  K_{\calC(c)} =0
+% \eear
+%%and for every IS station $s$ and class $c$
+%% \bear
+%% \bar{N}^s_c(\vK)& = &\theta^s_c\la_{\calC(c)}(\vK) \bar{S}^s_c
+%% \\
+%% & = & 0 \mif  K_{\calC(c)} =0
+%% \eear
+%
+%Second, we observe that the resulting equations
+%depend only on the station function, therefore
+%they apply to similar stations as well.
+%
+%
+%The \nt{Simple MVA} algorithm iterates on the
+%total population, adding customers one by one. At
+%every step, the throughput is computed using
+%Equation~(\ref{eq-q-qnet-mva-dlsld}). Then the
+%mean queue sizes at FIFO queues are computed
+%using Equation~(\ref{eq-q-qnet-mva-dlsdsdld}),
+%which closes the loop. We give the algorithm in
+%the case of a single chain. For the multi-chain
+%case, the algorithm is similar, but there are
+%many optimizations to reduce the storage
+%requirement, see \cite{balsamo2000product}.
+%%
+% \begin{algorithm}\mycaption{Mean Value Analysis for a single chain
+% closed
+% multi-class
+% product form queuing network containing only constant rate
+% FIFO and IS stations, or stations with same station functions.}
+% \begin{algorithmic}[1]
+%%
+%  \State $K=$ population size
+%  \State $\la=0$ \Comment{throughput}
+%  %\State $N^s_c=0$ for all class $c$ and station
+%%  $s$ \Comment{mean numbers of customers}
+%  \State $Q^s=0$ for all station $s \in \mathrm{FIFO}$
+%  \Comment{total number of customers at station $s$, $Q^s=\sum_c \bar{N}^s_c$}
+%%
+%  \State Compute the visit rates $\theta^s_c$
+%  using \eref{eq-q-visitRatios} and
+%  $\sum_{c=1}^C\theta^1_c=1$
+%  \State $\theta^s=\sum_{c}\theta^s_c$ for every
+%  $s\in \mathrm{FIFO}$
+%  \State $h=\sum_{s \in \mathrm{IS}}\sum_{c}\theta^s_c
+%  \bar{S}^s_c  + \sum_{s \in
+%  \mathrm{FIFO}}\theta^s  \bar{S}^s$
+%  \Comment{constant term in \eref{eq-q-qnet-mva-dlsld}}
+%%
+%    \For{$k=1:K$}
+%    \State
+%    $\la=\frac{k}{h+\sum_{s \in \mathrm{FIFO}}
+%    \theta^s  Q^s \bar{S}^s}$
+%    \Comment{\eref{eq-q-qnet-mva-dlsld}}
+%    \State $Q^s=\la \theta^s
+%    \bar{S}^s (1 + Q^s)$ for all
+%    $s \in \mathrm{FIFO}$
+%  \EndFor
+%  \State The throughput at station $1$ is $\la$
+%  \State The throughput of class $c$ at station $s$ is $\la
+% \theta^s_c$
+%  \State The mean number of customers of class $c$ at FIFO
+%  station
+%  $s$ is $Q^s\theta^s_c/\theta^s$
+%  \State The mean number of customers of class $c$ at
+%  IS
+%  station
+%  $s$ is $\la \theta^s_c \bar{S}^s_c$
+%\end{algorithmic}\label{algo-q-mva}
+% \end{algorithm}
+%\begin{figure}[htbp]
+%   \Ifig{botana}{0.8}{0.4}
+%   \mycaption{Throughput in transactions per second versus number of users,
+%   computed with MVA for the network
+%   in \fref{fig-bottleneckAna}. The dotted lines are
+%   the bounds of bottleneck analysis in \fref{fig-bot-lamres}.}
+%  \mylabel{fig-q-qnet-botana}
+%\end{figure}
+%
+%
+%\begin{ex}{Mean Value Analysis of \fref{fig-bottleneckAna}}
+%We model the system as a single class, closed
+%network. The CPU is modelled as a PS station,
+%disks A and B as FIFO single servers, and think
+%time as an IS station. We fix the visit rate
+%$\theta^{\mathrm{think time}}$ to $1$ so that
+%$\theta^{\mathrm{CPU}}=V_{\mbox{CPU}}$,
+%$\theta^{\mathrm{A}}=V_{\mbox{A}}$ and
+%$\theta^{\mathrm{B}}=V_{\mbox{B}}$. Note that the
+%routing probabilities need not be specified in
+%detail, only the visit rates are required.
+%
+%The CPU station is not a FIFO station, but is has
+%the same station function, therefore we may apply
+%MVA and treat it as if it would be FIFO.
+%
+%\fref{fig-q-qnet-botana} shows the results, which
+%are essentially as prediced by bottleneck
+%analysis in \fref{fig-bot-lamres}.
+%
+%\label{ex-q-qnet-djerzcbasvvajhqoejfz}
+%\end{ex}
+%
+%
+%
+%\subsubsection{General MVA}
+
+%
+% Be careful that this is different from
+%the procedure used in the station in isolation.
+%Here, we are replacing station $s_0$ by a
+%short-circuit, i.e. a station where the service
+%requirement is $0$; in contrast, with the station
+%in isolation, we replace a network part by a
+%station with unit rate and unit service
+%requirement.
+%
+%
+%With the same assumptions and notation as in
+%
+%
+%Then it follows immediately from
+%\eref{eq-q-qnet-convol-zt} that
+%  \be
+%  F_{\eta}(\vY) = G^{s}(\vZ^{s})F_{\eta^{[s]}}(\vY)
+%  \ee
+%This can also be written explicitly as
+% \be
+% \eta(\vK) =
+% \sum_{\vn^{s} \mst \vzero \leq\kappa(\vn^{s}) \leq \vK}
+% f^{s}(\vn^{s})\prod_{c=1}^C\lp
+% \theta^{s}_c\rp^{n^{s}_c} \eta^{[s]}\lp \vK-\kappa(\vn^{s})\rp
+% \label{eq-q-qnet-convolkjsaj}
+%  \ee
+%  where
+%$\kappa(\vn^{s})$ is the closed chain population
+%vector that corresponds to state $\vn^{s}$, i.e.
+%$\kappa(\vn^{s})_{\calC}=\sum_{c \in \calC} n_c$
+%(in particular, $\vK-\kappa(\vn^{s})$ is the
+%closed chain population vector obtained when we
+%remove $n^{s}_c$ customers of class $c$ for every
+%$c$). The notation $\vzero \leq \kappa(\vn^{s})
+%\leq \vK$ means
+%  $0 \leq \kappa(\vn^{s})_{\calC}\leq K_{\calC}$
+%  for all chain $\calC$.
+%
+%
+%
+%
+% and the number of chain
+%$\calC$ customers in $\vn^s$ is $0$ (i.e.
+%$\lp\kappa(\vn^s)\rp_{\calC}=0$) then
+%  \be
+% P^s\lp \vn^s \left | \vK\right. \rp
+% =\frac{\la_{\calC}(\vK)}{\la^{[s]}_{\calC}(\vK)}
+%  P^s\lp \vn^s \left | \vK- \vone_{\calC}\right. \rp
+% \mif
+%  K_{\calC}\geq 1
+%  \label{eq-q-mva-jduiewtgskxasdff}
+% \ee
+%
+%states where station $s$ is empty are feasible,
+%the probability that station $s$ is empty is \be
+%P^{s}\lp\vzero\left|\vK\rp\right. =
+% \frac{\eta^{[s]}\lp \vK \rp}{\eta(\vK)}
+% \label{eq-q-convol-p0}
+% \ee
+% and, if $K_{\calC}\geq 1$:
+%  \be
+% P^s\lp \vzero \left | \vK\right. \rp
+% =\frac{\la_{\calC}(\vK)}{\la^{[s]}_{\calC}(\vK)}
+%  P^s\lp \vzero \left | \vK- \vone_{\calC}\right. \rp
+%  \label{eq-q-mva-jduiewtgskxasdff}
+% \ee
+%
+% \bear
+% \mif n^s_c = 0 \mfa c \in \calC\; : p^*(\vn^s) & = &  \frac{1}{\la^{[s]}_{\calC}(\vK)}
+%  P^s\lp \vn^s \left | \vK- \vone_{\calC}\right. \rp
+%  \\
+%  \melse \;  p^*(\vn^s) & = &
+%   P^s\lp\vn^s-\vone_c\left|\vK-\vone_{\calC}\rp\right.
+%   \frac{1}{\mu^{*s}_c(\vn^s)}
+%   \label{eq-q-qnet-dskjlsdfjkfdjk1}
+%   \\
+%   && \mbox{where } c
+%   \mbox{ is the smallest class label } \in \calC \mbox{ such that } n^s_c>0
+%    \nonumber
+%  \\
+%  p^*(\vzero) & = &  \frac{1}{\la^{[s]}_{\calC}(\vK)}
+%  P^s\lp \vzero \left | \vK- \vone_{\calC}\right. \rp
+%  \label{eq-q-qnet-dskjlsdfjkfdjk2}
+%  \eear
+  %\bear
+%  p^*(\vn^s) & = &
+%   P^s\lp\vn^s-\vone_c\left|\vK-\vone_{\calC}\rp\right.
+%   \frac{1}{\mu^{*s}_c(\vn^s)} \mif \vn^s \neq
+%   \vzero, \label{eq-q-qnet-dskjlsdfjkfdjk1}
+%   \\
+%   && \mbox{where } c
+%   \mbox{ is the smallest class label } \in \calC \mbox{ such that } n^s_c>0
+%    \nonumber
+%  \\
+%  p^*(\vzero) & = &  \frac{1}{\la^{[s]}_{\calC}(\vK)}
+%  P^s\lp \vzero \left | \vK- \vone_{\calC}\right. \rp
+%  \label{eq-q-qnet-dskjlsdfjkfdjk2}
+%  \eear
+% \begin{algorithm}
+% \mycaption{General MVA for a closed multi-class product form network.}
+% \begin{algorithmic}[1]
+%%
+%  \State $K=$: population size
+%  \State $p(n)$, $n=0...K$: probability
+%  that there are $n$ customers at the FIFO
+%  station
+%  \State $\la$: throughput
+%  \State $p(0)=1$, $p(n)=0$, $n=1...K$
+%  \For{$k=1:K$}
+%     \State $p^*(n) = p(n-1) \bar{Z} \;/\; \min\lp n
+%     ,B\rp$,
+%     $n=1...k$
+%     \Comment{Unnormalized $p(n|k)$, \eref{eq-qnet-dklfsjfdkl1}}
+%     \State $p^*(0) = p(0) \bar{Z}/ k$
+%     \Comment{Unnormalized $p(0|k)$, \eref{eq-qnet-dklfsjfdkl2}}
+%     \State $\la= 1 / \sum_{n=0}^k p^*(n)$
+%     \State $p(n)=p^*(n)/\la$, $n=0...k$
+%  \EndFor
+%\end{algorithmic}\label{algo-q-mva-gen}
+% \end{algorithm}
+
+\section{What This Tells Us}
+
+\subsection{Insensitivity} Multi-class product
+form queuing networks are \imp{insensitive} to a
+number of properties:
+\begin{itemize}
+    \item The distribution of service times is irrelevant
+        for all insensitive stations; the stationary
+        distributions of numbers of customers and the
+        throughput depend only on traffic intensities (by
+        means of the visit rates $\theta^s_c$) and on the
+        station functions, which express how rates are
+        shared between classes. The service distribution
+        depends on the class, and classes may be used to
+        introduce correlations in service times. The
+        details of such correlations need not be modelled
+        explicitly, since only traffic intensities matter.
+
+
+        By Little's law, the mean response times are also
+        insensitive (but not the distribution of response
+        time, see \sref{sec-q-ps}).
+    \item The nature of the service station plays a
+    role only through its station function. Very
+    different queuing disciplines such as FIFO or
+    global PS, or global LCFSPR with class
+    independent service times have the same
+    station function, hence the same stationary
+    distributions of numbers of customers,
+    throughputs and mean response times
+    also irrelevant as long
+    \item The details of routings are also irrelevant, only
+        the visit rates matter. For example, in
+        \fref{fig-q-chains}, it makes no difference if we
+        assume that external jobs visit station 1 only
+        once, without feedback.
+\end{itemize}
+\begin{figure}
+\Ifig{bonald}{1.0}{0.6}
+ \mycaption{Product form queuing network used to model
+ the Internet in \cite{bonald2003insensitive}.}
+ \label{fig-q-qnet-bonald}
+\end{figure}
+\begin{ex}{Internet Model \cite{bonald2003insensitive}}
+Internet users as seen by an internet provider
+are modelled by Bonald and Prouti\`{e}re in
+\cite{bonald2003insensitive} as follows (they use
+a slightly different terminology as they do not
+interpret a Whittle network as a product form
+station as we do).
+
+Users sessions arrive as a Poisson process. A
+session alternates between active and think time.
+When active, a session becomes a flow and
+acquires a class, which corresponds to the
+network path followed by the session (there is
+one class per possible path). A flow of class $c$
+has a service requirement drawn from any
+distribution with finite mean $\bar{S}_c$. The
+network shares its resources between paths
+according to some ``bandwidth" allocation
+strategy. Let $\mu_c(\vn)$ be the rate allocated
+to class $c$ flows, where $\vn=(n_1, ..., n_C)$
+and $n_c$ is the number of class $c$ flows
+present in the network. We assume that it derives
+from a balance function $\Phi$, i.e.
+  \be
+ \mu_c(\vn)=\frac{\Phi(\vn-\vone_c)}{\Phi(\vn)}
+ \label{eq-q-qnet-bon-aal}
+ \ee
+All flows in the same
+class share the bandwidth allocated to this class
+fairly, i.e. according to processor sharing.
+
+When a flow completes, it either leaves the
+network, or mutates and becomes a session in
+think time. The think time duration has any
+distribution with a finite mean $S_0$. At the end
+of its think time, a session becomes a flow.
+
+This can be modelled as a single chain open
+network with two stations: a Per-Class PS station
+for flow transfers and an IS station for think
+time, as in \fref{fig-q-qnet-bonald}.
+
+A session in think time may keep the class it
+inherited from the flow. This means that we allow
+the classes taken by successive flows to be non
+iid, as is probably the case in reality (for
+example the next flow of this session might be
+more likely to take the same path). In fact, we
+may imagine any dependence, it does not matter as
+long as the above assumptions hold, since we have
+a product form queuing network; only the traffic
+intensities on each flow path matter, as we see
+next.
+
+With the assumption in \eref{eq-q-qnet-bon-aal},
+flow transfers are represented by means of a
+per-class processor sharing station with Whittle
+function $\Phi(\vn)$ (this is also called a
+Whittle network); think times are represented by
+a constant rate infinite server station; both are
+category 1 stations, thus the network has product
+form.
+
+More precisely, let $\theta_c$ be the visit rate
+at the Per-Class PS station, class $c$; it is
+equal to the number of class $c$ flow arrivals
+per time unit. Similarly, $\theta_0$ is the
+number of arrivals of sessions in think time per
+time unit. Let $n_0$ be the number of flows in
+think time; the stationary probability
+distribution of $(n_0, \vn)$ is, by the product
+form theorem:
+  \bear
+  P(n_0, \vn) &=&\eta
+  \Phi(\vn) \prod_{c=1}^C\lp \bar{S}_c \theta_c
+  \rp^{n_c}
+ \lp \theta_0 \bar{S}_0\rp^{n_0}
+ \nonumber \\
+ &=& \eta \Phi(\vn) \prod_{c=1}^C \rho_c^{n_c}\rho_0^{n_0}
+\label{eq-q-qnet-dsafkjdefjhkds}
+  \eear
+where $\eta$ is a normalizing constant and
+$\rho_c=\theta_c \bar{S}_c$, $ \rho_0=\theta_0
+\bar{S}_0$ are the traffic intensities.
+
+\eref{eq-q-qnet-dsafkjdefjhkds} is a remarkably
+simple formula. It depends only on the traffic
+intensities, not on any other property of the
+session think times or flow transfer times. It
+holds as long as bandwidth sharing (i.e. the rates
+$\mu_c(\vn)$) derives from a
+balance function. In \cite{bonald2003insensitive}
+it is shown that this is also a necessary
+condition.
+
+This is used by the authors in \cite{bonald2003insensitive} to advocate that bandwidth sharing be performed using a balance function. Bandwidth sharing is the function, implemented by a network, which decides the values of $\mu_c(\vn)$ for every $c$ and $\vn$. The set $\calR$ of feasible rate vectors $(\mu_c(\vn))_{c=1...C}$ is defined by the network constraints. For example, in a wired network with fixed capacities, $\calR$ is defined by the constraints $\sum_{c \in \ell}\mu_c < R_l$ where $\ell$ is a network link, $R_l$ its rate, and ``$c\in \ell$" means that a class $c$ flow uses link $\ell$. The authors define \nt{balanced fairness} as the unique
+allocation of rates to classes that (1) derives from a balance function and (2) is optimal in the sense that for any $\vn$, the rate vector $(\mu_c(\vn))_{c=1...C}$ is at the boundary of the set of feasible rate vectors $\calR$. They show that such an allocation is unique; algorithms to compute the balance function are given in \cite{bonald2004calculating}.
+\end{ex}
+
+
+
+%\subsubsection{The Multi-Class Paradigm}
+%Ex PS analysis
+%
+%In a PS station, mean response time for a class
+%$c$ customer is proportional to $\bar{S}_c$.
+
+\subsection{The Importance of Modelling Closed Populations}
+\begin{figure}
+\Ifig{engset}{0.6}{0.4} \mycaption{Model used to
+derive the Engset formula} \label{fig-engset}
+\end{figure}
+
+Closed chains give a means to account for feedback in the
+system, which may provide a different insight than the single
+queue models in \sref{sec-q-sq}; this is illustrated in
+\sref{sec-q-ex}, where we see that the conclusion (about the
+impact of capacity doubling) is radically different if we
+assume an infinite population or a finite one.
+
+Another useful example is the Engset formula, which we now
+describe. The Erlang loss formula gives the blocking
+probability for a system with $B$ servers, general service time
+and Poisson external arrivals. If the population of tasks using
+the system is small, there is a feedback loop between the
+system and the arrival process, since a job that is accepted
+cannot create an arrival. An alternative to the Erlang loss
+formula is the model in \fref{fig-engset}, with a finite
+population of $K$ jobs, a single class of customers, and two
+stations. Both stations are IS; station 1 represents the
+service center with $B$ resources, station 2 represents user
+think time. If station $1$ has $B$ customers present, arriving
+customers are rejected and instantly return to station 2 where
+they resume service. Service requirements are exponentially
+distributed. This is equivalent to the form of blocking called
+partial blocking in \sref{sec-q-qnets-blocking}. This form of
+blocking requires that routing be reversible; since there are
+only two stations, the topology is a bus and the routing is
+reversible, thus the network has product form.
+
+It follows that the probability $P(n|K)$ that
+there are $n$ customers in service, given that
+the total population is $K \geq B$, is given by
+the product form theorem and the station
+functions for IS:
+ \be
+ P(n|K) = \frac{1}{\eta}
+ \frac{\lp\bar{S}^1\rp^n}{n!}\frac{\lp\bar{S}^2\rp^{K-n}}{(K-n)!}
+ \ee
+where $\eta$ is a normalizing constant,
+$\bar{S}^1$ is the average processing time and
+$\bar{S}^2$ the average think time. Let
+$\rho=\frac{\bar{S}^1}{\bar{S}^2}$; it comes:
+  \ben
+  \eta  =  \sum_{n=0}^B \frac{\rho^n}{n! (K-n)!}
+  \een
+
+The blocking probability $P^0(B|K)$ for is equal
+to the Palm probability for an arriving customer
+to find $B$ customers in station $1$. By the
+arrival theorem, it is equal to $P(B|K-1)$. Thus
+for $K > B$
+  \be
+  P^0(B|K) = \frac{\frac{\rho^B}{B! (K-B-1)!}}
+  {\sum_{n=0}^{B} \frac{\rho^n}{n!
+  (K-n-1)!}}
+  \label{eq-q-qnet-engset}
+  \ee
+ and $P^0(B|K)=0$ for $K\leq B$.
+\eref{eq-q-qnet-engset} is called the \nt{Engset
+formula} and gives the blocking probability for a
+system with $B$ resources and a population of
+$K$. Like the Erlang-loss formula the formula is
+valid for any distribution of the service time
+(and of the think time). When $K\to \infty$, the
+Engset formula is equivalent to the Erlang-loss
+formula.
+
+
+\begin{petit}
+\section{Mathematical Details About Product-Form Queuing
+Networks}
+ \label{sec-q-form-def}
+
+\subsection{Phase Type Distributions}
+\label{sec-q-ph}
+For insensitive stations, the
+service time distribution is assumed to be a \nt{phase type} distribution; this is also called a \nt{mixture of exponentials} or a
+\nt{mixture of gamma} distribution and is defined next.
+Note that the product form theorem implies that the stationary
+distribution of the network is insensitive to any property of the distribution
+of service requirement other than its mean; thus its seems plausible to conjecture that the product form network continues to apply if we relax the phase type assumption. This is indeed shown for networks made of Kelly stations and of ``Whittle network" stations in \cite{barbour1976networks}.
+
+A non negative random variable $X$ is
+said to have a phase type distribution if there
+exists a continuous time Markov chain with finite
+state space $\lc 0,1, ..., I \rc$ such that $X$
+is the time until arrival into state $0$, given
+some initial probability distribution.
+
+Formally, a phase type distribution with $n$
+stages is defined by the non negative sequence
+$(\alpha_j)_{j=1...n}$ with $\sum_j \alpha_j=1$
+and the non negative matrix
+$(\mu_{j,j'})_{j=1...n, j'= 0...n}$. $\alpha_j$ is
+the probability that, initially, the chain is in
+state $j$ and $\mu_{j,{j'}}\geq 0$ is the transition
+rate from state $j$ to ${j'}$, for $j\neq {j'}$. Let
+$F_j(s)$ be the Laplace-Stieltjes transform of
+the time from now to the next visit to state $0$,
+given that the chain is in state $j$ now. By the
+Markov property, the Laplace-Stieltjes transform
+of the distribution we are interested in is
+$\esp{e^{-sX} } = \sum_{j\neq 0 }\alpha_j F_j(s)$
+for all $s>0$. To compute $F_{j}(s)$ we use the
+following equations, which also follow from the
+Markov property:
+ \be
+ \forall j \in \lc 0,1, ..., j \rc: \lp s+\sum_{{j'}\neq j}\mu_{j,{j'}}\rp F_j(s)
+ =
+ \mu_{j,0}
+ +
+ \sum_{{j'} \neq j, {j'}\neq 0} \mu_{j,{j'}}F_{j'}(s)
+ \label{eq-q-ph-type}
+ \ee
+\begin{figure}[htbp]
+  \insfig{ph}{0.7}
+  \mycaption{Mixtures of Exponential: a
+  Phase Type distribution is the distribution of the time until absorption into state $0$
+  (state $0$ represents the exit and is not shown).
+  The Erlang and Hyperexponential are special cases.}
+  \mylabel{fig-q-st-ph-type}
+\end{figure}
+
+Consider for example the \nt{Erlang-$n$} and
+\nt{Hyper-Exponential} distributions, which
+correspond to the Markov chains illustrated in
+\fref{fig-q-st-ph-type}. The Laplace-Stieltjes
+transform of the Erlang-$n$ distribution is
+$F_1(s)$, which is derived from
+\eref{eq-q-ph-type}:
+ \bearn
+(\la + s) F_1(s) & = & \la F_2(s)
+\\
+&...&
+\\
+(\la + s) F_{n-1}(s) & = & \la F_n(s)
+\\
+ (\la + s) F_{n}(s) & = & \la
+\eearn
+ and is thus $\lp \frac{\la}{\la + s}\rp^n$.  This could also be
+obtained by noting that it is the convolution of
+$n$ exponentials. (Note that this is a special
+case of Gamma distribution). The PDF is
+$f(x)=\la^n \frac{x^{n-1}}{(n-1)!}e^{-\la x}$.
+The mean is $\bar{S}=\frac{n}{\la}$; if we set
+the mean to a constant and let $n\to \infty$, the
+Laplace Stieltjes transform converges, for every
+$s>0$, to $e^{-s \bar{S}}$, which is the Laplace
+Stieltjes transform of the constant concentrated
+at $\bar{S}$. In other words, the Erlang-$n$
+distribution can be used to approximate a
+constant service time.
+
+Similarly, the Laplace Stieltjes transform of the
+Hyper-Exponential distribution follows
+immediately from \eref{eq-q-ph-type} and is
+$\sum_{{j}=1^n}\frac{\alpha_{j} \la_{j}}{\la_{j} +s}$
+ and the PDF is $f(x)=\sum_{{j}=1^n}\alpha_{j} e^{-\la_{j'} x}$. This
+ can be used to fit any arbitrary PDF.
+
+\subsection{Micro and Macro States}
+\label{sec-micro}
+The state of every station is defined by a
+\nt{micro-state}, as follows.
+\begin{description}
+\item[Insensitive Station] The micro state is
+$(\calB, \calJ)$ where $\calB$ is the state of
+the station buffer introduced in
+\sref{sec-q-qnet-cat} and $\calJ$ is a data
+structure with the same indexing mechanism, which
+holds the service phase for the customer at this
+position. In other words, for every index $i$ in
+the index set of the buffer, $\calB_i$ is the
+class of the customer present at this position,
+and $\calJ_i$ is the service phase of the same
+customer (if there is no customer present at this
+position, both are $0$). A customer at position
+$i$ receives a service rate $\rho_i(\calB)$ given
+by \eref{eq-def-sr}. This means that the
+probability that
+ this customer moves from the service phase
+ $j=\calJ_i$ to a next phase $j'$ in a time interval of duration
+$dt$ is $\rho_i(\calB) \mu^c_{j,j'}dt + o(dt)$
+where $c=\calB_i$ is this customer's class and
+$\mu^c_{j,j'}$ is the matrix of transition rates
+at this station for class $c$ customers, in the
+phase type representation of service requirement.
+If the next service phase is $j'=0$, this
+customer will leave the station. When a class $c$
+customer arrives at this station, it is inserted
+at position $i$ in the buffer with probability
+given in \eref{eq-q-q-net-ins-hjkdf}; the initial
+stage is set to $j$  with probability
+$\alpha^c_j$, the initial stage distribution
+probability for customers of this class at this
+station, and $\calJ_i$ is set to $j$.
+
+\item[MSCCC Station] The micro-state is an
+ordered sequence of classes $(c_1, c_2, ...,
+c_M)$ where $M$ is the number of customers
+present in the station. When a customer arrives,
+it is added at the end of the sequence. The
+customers in service are the first $B$
+\emph{eligible} customers; a customer in position
+$m$ is eligible if and only if there is a token
+available
+ (i.e. $\sum_{m'=0}^{m-1}\ind{\calG\lp c_{m'}\rp =g}<T_g$ with $g=\calG\lp c_{m}\rp$)
+  and there
+ is a server available (i.e.
+ $\sum_g \min\lp T_g,\sum_{m'=0}^{m-1}\ind{\calG\lp c_{m'}\rp
+ =g}\rp<B
+ $). There is no state information about the
+ service stage, since this category of station
+ requires that the service times be exponentially
+ distributed, hence memoryless. The probability
+ that
+ an eligible customer leaves the station in a time interval of duration
+$dt$ is $\frac{1}{\bar{S}} r(M)dt + o(dt)$ where
+$r(M)$ is the rate of this station when $M$
+customers are present and $\bar{S}$ is the mean
+service time (both are independent of the
+class). Non eligible customers may not leave the station.
+%\item[Type 2 or 3] The micro-state is an ordered
+% sequence $(c_1, j_1, c_2, j_2, ..., c_M, j_M)$
+% where $c_m$ is the class of the $m$th customer
+% in the sequence and $j_m$ is the service phase
+% for that customer (it can be any phase other than $0$; see above for the definition of phase type
+% distribution).
+%
+% For a type 2 queue, an arriving customer is
+% inserted into the list at position $i$ with probability
+% $p^{m+1}(i)$ where $m$ is the queue size before
+% arrival; the service rate for the $m$th customer in
+% the queue is $\mu(m)=p^M(m) r_{c_m}(n_{c_m})$ where $n_{c_m}$ is the number
+% of customers of the same class and $r_c$ is the service rate
+% function. This means that the probability that
+% this customers moves from the service phase
+% $j_m$ to a next phase $j'$ in one time interval of duration
+%$dt$ is $\mu(m) A^c_{j_m,j'}dt + o(dt)$. If the
+%next service phase is $j'=0$, this customer will
+%leave the station.
+%
+%  For a type 3 queue, the
+% position is irrelevant so we may assume
+% insertion is in order of arrival. The service rate for the $m$th customer in
+% the queue is $\mu(m)= r_{c_m}$.
+ \end{description}
+ The \emph{global micro state} of the network is the
+ sequence $(e_1, e_2, ..., e_S)$ where $e_s$ is
+ the micro-state of station $s$. With the
+ assumptions above, this defines a continuous
+ time Markov chain. A network is defined by the population
+ in closed chains, $K_{\calC}$.
+ The \nt{global micro state space},
+ $\calM$, is the set of all $(e_1, e_2, ...,
+ e_S)$ that are possible given the rules of each
+ station and
+ \begin{enumerate}
+    \item the total
+ number of customers in chain $\calC$ present
+ anywhere in the network is $K_{\calC}$, if $\calC$ is a closed chain, and is any
+ non negative integer otherwise;
+    \item  %routing has reached a stationary regime, more precisely,
+if the visit rate $\theta^s_c$ is $0$ for some
+station $s$ and class $c$, then there may not be
+any customer of class $c$ at station $s$.
+\end{enumerate}
+
+ %We
+%assume that this state of spaces is fully
+%connected, which is generally true except in
+%pathological
+% cases where the order of customers is preserved throughout the network lifetime
+% (for example a cyclic network with only type FIFO stations with only FIFO stations).
+%The condition is true in particular, if every
+%chain visits at least one type 2 or type 3
+%station.
+
+The \nt{macro-state} of station $s$ is the vector
+$\vn^s=(n_1^s,...,n_C^s)$ where $n_c^s$ is the
+number of class-$c$ customers present at this
+station. The global macro-state is the collection
+$(\vn^s)_{s=1...S}$; the global macro state does
+not define a Markov chain as too much information
+is lost (for MSCCC stations, we lost the order
+of customers; for insensitive stations, we lost
+the service phase). The micro-state description
+is required to prove theorems, but most formulas
+of interest are expressed in terms of
+macro-states. The \nt{global macro state space},
+$\calL$, is the set of all $(\vn^s)_{s=1...S}\geq
+\vzero$ such that
+\begin{enumerate}
+    \item $\sum_{c \in \calC, s}n^s_c = K_{\calC}$ for
+every closed chain $\calC$;
+    \item  %routing has reached a stationary regime, more precisely,
+if the visit rate $\theta^s_c$ is $0$ for some
+station $s$ and class $c$, then $n^s_c=0$.
+\end{enumerate}
+
+\subsection{Micro to Macro: Aggregation
+Condition} \label{sec-aggreg} All results in the
+previous sections apply to the macro-state
+description of the network. In the given form,
+they require that the aggregation condition
+holds, which says that
+  \begin{quote}
+  aggregation of state from
+micro to macro does not introduce non feasible
+micro states.
+ \end{quote}
+This is equivalent to saying that the set $\calM$
+is fully connected, i.e. any global micro state
+can be reached from any initial condition in a
+finite number of transitions of the underlying
+Markov chain. This is generally true except in
+pathological cases where the order of customers
+is preserved throughout the network lifetime.
+Consider for example a cyclic network with only
+FIFO stations and one customer per class. The
+initial order of customers cannot be changed and
+only states in $\calM$ that preserve the initial
+ordering are feasible. In such a network, product
+form does hold, but formulas for macro states
+are different than given in this chapter as the numbers of microstates that
+give one specific macro-state is smaller.
+
+
+\subsection{Local Balance In Isolation}
+%The product
+%form theorem \ref{theo-q-pf} and the resulting
+%independence for the open case in
+%\thref{theo-q-pf-open} also hold for the
+%micro-states; in particular, for an open network,
+%the micro-states at different stations are
+%independent. We do not give the details here, as
+%this requires defining the station function for
+%micro-state; the proof is in
+%\cite{baskett1975open,le1986bcmp,MR563738,berezner1995quasi}
+%for details.
+The station function can be defined both at the micro and macro
+levels. Formally, the \nt{station function at micro level} is a
+function $F(e)$, if it exists, of the micro state $e$ of the
+function in isolation, such that $F(\O)= 1$, where $\O$ is the empty state, and the
+stationary probability of state $e$ in the station in isolation
+is $\eta(\vK) F(e)$, where $\eta(\vK)$ is a normalizing
+constant that depends on the total populations of customers
+$K_c$ for every class $c$, in the station in isolation.
+
+We say that a station satisfies the property of \nt{Local
+Balance In Isolation} if the following holds.%
+%
+%
+%The proof of the product form theorem is based on
+%the analysis of stations in isolation; the key
+%property is that, for a micro-state description
+%of a station in isolation, the following holds
+%(called \nt{partial balance})
+For every
+micro-state $e$ and class $c$:
+ \be
+ \barr{c}
+ \mbox{departure rate out of state } e
+ \mbox{ due to a class } c \mbox{ arrival}
+ \\
+ =
+ \\
+ \mbox{arrival rate into state } e
+ \mbox{ due to a class } c \mbox{ departure}
+ \earr
+ \label{eq-q-qnet-lb1}
+ \ee
+In this formula, the rates are with respect to
+the stationary probability of the station in
+isolation, as defined earlier. It follows that
+one must also have
+ \be
+ \barr{c}
+ \mbox{departure rate out of state } e
+ \mbox{ due to a departure or an internal transfer, of any class }
+ \\
+ =
+ \\
+ \mbox{arrival rate into state } e
+ \mbox{ due to an arrival or an internal transfer, of any class }
+ \earr
+ \label{eq-q-qnet-lb2}
+ \ee where an internal transfer is a change of state without arrival nor departure (this
+is for insensitive stations, and is a change of phase for
+one customer in service). The collection of all these equations
+is the local balance in isolation. If one finds a station
+function such that local balance in isolation holds, then this
+must be the stationary probability of the station in isolation,
+up to a multiplicative constant.
+
+For example, consider a FIFO station with 1 server and
+assume that there is one class per chain in the
+network (i.e. customers do not change class). Let
+$F(c_1, ..., c_M)$ be the stationary probability
+for the station in isolation. Local balance
+  here writes:
+ \bearn
+ F(c_1, ..., c_M)  \ind{\sum_{m=1}^M \ind{c_m=c} < K_c} &=& F(c,c_1,
+ ..., c_M) \mu \mbox{ for all class } c
+ \\
+F(c_1, ..., c_M)\mu &= & F(c_1, ...,
+  c_{M-1})\ind{\sum_{m=1}^{M-1} \ind{c_m=c_M} <  K_{c_M}}
+ \eearn where $K_c$ is the number of class $c$ customers in the
+ system and
+ $\mu=\frac{1}{\bar{S}}$. The function $F(c_1, ...,
+ c_M)= \bar{S}^M$ satisfies both of these types of equations,
+ therefore it is equal to the stationary probability of the
+ station in isolation, up to a multiplicative constant. $F(c_1, ...,
+ c_M)= \bar{S}^M$ is the microscopic station
+ function. The station function $f(\vn)$ given earlier
+ follows by aggregation; indeed, let $\calE(n_1,
+  ...,n_C)$ be the set of micro-states of the FIFO station with $n_c$
+  customers of class $c$, for every $c$.
+  \ben
+  f(n_1, ...,n_C)= \sum_{e \in \calE(n_1,
+  ...,n_C)}\bar{S}^{(n_1+ ...+n_C)}=
+  \frac{(n_1+ ...+n_C)!}{n_1! ... n_C!}
+  \bar{S}^{(n_1+ ...+n_C)}
+  \een since $\frac{(n_1+ ...+n_C)!}{n_1! ...
+  n_C!}$ is the number of elements of $\calE(n_1,
+  ...,n_C)$. This is exactly the station function
+  for the FIFO station described in \eref{eq-q-stat-fifo1}.
+
+\subsection{The Product Form Theorem}
+The product form theorem in \ref{theo-q-pf} is a direct
+consequence of the following main result.
+\begin{theorem}Consider a multi-class network with Markov
+routing and $S$ stations. Assume all $S$ stations satisfy local
+balance in isolation, and let $F^s(e^s)$ be the station
+function at micro level for station $s$, where $e^s$ is the
+micro state of station $s$. Then
+  \be p(e^1, e^2, ...,e^S)\eqdef \prod_{s=1}^S F^s(e^s)
+ \label{eq-q-pf-th}
+   \ee
+  is an invariant measure for the network.
+  \label{theo-q-qnets-pff}
+\end{theorem}
+The theorem implies that, if appropriate stability conditions
+hold, the product $p(e^1, e^2, ...,e^S)$ must be equal to a
+stationary probability, up to a normalizing constant. The proof
+can be found in \cite{MR563738}; see also
+\cite{kelly1979reversibility,baskett1975open}. It consists in
+direct verification of the balance equation. More precisely,
+one shows that, in the network:
+  \be
+ \barr{c}
+ \mbox{departure rate out of state } e
+ \mbox{ due to a departure of any class }
+ \\
+ =
+ \\
+ \mbox{arrival rate into state } e
+ \mbox{ due to an arrival of any class }
+ \earr
+ \label{eq-q-qnet-lb1n}
+ \ee
+In this formula, the rates are with respect to the joint
+network probability of all stations at micro level, obtained by
+re-normalizing $p()$. Note that the local balance property, as
+defined in \eref{eq-q-qnet-lb1}, does not, in general, hold
+inside the network at the micro level.
+
+If the aggregation condition holds, then one can sum up
+\eref{eq-q-pf-th} over all micro states for which the network
+population vector is $\vn$  and obtain \eref{eq-q-pf}, which is
+the macro level product form result. Note that, at the
+macro-level, one has, in the network, and for any class $c$:
+  \be
+ \barr{c}
+ \mbox{departure rate out of state } e
+ \mbox{ due to a class } c \mbox{ departure}
+ \\
+ =
+ \\
+ \mbox{arrival rate into state } e
+\mbox{ due to a class } c \mbox{ arrival}
+ \earr
+ \label{eq-q-qnet-lb1n-ag}
+ \ee
+In this formula, the rates are with respect to the joint
+network probability of all stations at macro level. Note the
+inversion with respect to local balance.
+
+The resulting independence for the open case in
+\thref{theo-q-pf-open} therefore also holds for micro-states:
+in an open network, the micro-states at different stations are
+independent.
+
+The proof of the product form theorem \ref{theo-q-pf} follows immediately from
+\thref{theo-q-qnets-pff} and the fact that all stations in our catalog
+satisfy the property of local balance in isolation. The proof that MSCCC stations
+satisfy the local balance property is in
+\cite{le1986bcmp,berezner1995quasi}. For Kelly-Whittle stations, the
+result was known before for some specific cases. For the general case, it is novel:
+ \begin{theorem}
+Kelly-Whittle stations satisfy local balance in isolation.
+ \label{theo-kw}\end{theorem}
+The
+proof is in \sref{sec-q-proofs}.
+
+\subsection{Networks with Blocking}
+\label{sec-q-qnets-blocking} It is possible to extend Markov
+routing to state-dependent routing, In particular, it is
+possible to allow for some (limited) forms of blocking, as
+follows. Assume that there are some constraints on the network
+state, for example, there may be an upper limit to the number
+of customers in one station. A customer finishing service, or,
+for an open chain, a customer arriving from the outside, is
+denied access to a station if accepting this customer would
+violate any of the constraints. Consider the following two
+cases:
+  \begin{description}
+    \item[Transparent Stations with Capacity Limitations]
+        The constraints on the network state are expressed
+        by $L$
+capacity limitations of the form \be \sum_{(s,c) \in
+  \calH_{\ell}}n^s_c \leq \Gamma_{\ell}, \;\; \ell=1...L
+  \label{eq-q-qnet-caplim} \ee
+where $n^s_c$ is the number of class $c$ customers present
+at station $c$, $ \calH_{\ell}$ is a subset of $\lc 1,...,S
+\rc  \times
+  \lc 1,...C\rc $ and $\Gamma_{\ell}\in \Nats$. In other
+words, some stations or groups of stations may put limits
+on the number of customers of some classes or groups of
+classes.
+
+
+    If a customer is denied access to station $s$, she
+    continues her journey through the network, using Markov
+    routing with the fixed matrix $Q$, until she finds a
+    station that accepts her or until she leaves the
+    network.
+    \item[Partial Blocking with Arbitrary Constraints] The
+        constraints can be of any type. Further, If a
+        customer finishes service and is denied access to
+        station $s$, she stays blocked in service. More
+        precisely, we assume that service distributions are
+        of phase type, and the customer resumes
+        the last completed service stage. If the customer
+        was arriving from the outside, she is dropped.
+
+    Further, we need to assume that Markov routing is
+    \nt{reversible}, which means that \be
+       \theta^s_c q^{s,s'}_{c,c'} =
+       \theta^{s'}_{c'}q^{s',s}_{c',c}
+       \label{eq-q-qnet-rev} \ee for all $s,s',c,c'$.
+    Reversibility is a constraint on the topology; bus and
+    star networks give reversible routing, but ring
+    networks do not.
+  \end{description}
+
+Assume in addition that the service requirements are
+exponentially distributed (but may be class dependent at
+insensitive stations). Then the product form theorem continues
+to apply for these two forms of blocking
+\cite{pittel1979closed,leny,kelly1979reversibility}. There are
+other cases, too, see \cite{balsamo2000product} and references
+therein.
+
+There is a more general result: if the service distributions
+are exponential and the Markov routing is reversible, then the
+Markov process of global micro-states is also reversible
+\cite{le1987interinput}. Let $X_t$ be a continuous time Markov
+chain with stationary probability $p()$ and state space
+$\calE$. The process is called \nt{reversible} if
+$p(e)\mu(e,e')=p(e')\mu(e',e)$ for any two states $e, e' \in
+\calE$, where $\mu(e,e')$ is the rate of transition from $e$
+to $e'$. Reversible Markov chains enjoy the following
+\nt{truncation property} \cite{kelly1979reversibility}. Let
+$\calE'\subset \calE$ and define the process $X'_t$ by forcing
+the process to stay within $\calE'$; this is done by taking
+some initial state space $e \in \calE'$ and setting to $0$ the
+rate of any transition from $e \in \calE$ to $e'\in \calE'$.
+Then the restriction of $p$ to $\calE'$ is an invariant
+probability; in particular, if $\calE'$ is finite and fully
+connected, the stationary probability of the truncated process
+is the restriction of $p$ to $\calE'$, up to a normalizing
+constant.
+
+Note that setting to $0$ the rates of transitions from $e \in
+\calE$ to $e'\in \calE'$ is equivalent to saying that the we
+allow the transition from $e$ to $e'$ but then force an
+immediate, instantaneous return to $e$; this explains why we
+have product form for networks with partial blocking with
+arbitrary constraints.
+
+\end{petit}

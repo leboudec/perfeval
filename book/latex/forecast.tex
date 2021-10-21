@@ -1,0 +1,2057 @@
+%\vspace{-10cm}
+\begin{minipage}[b]{0.5\textwidth}
+Forecasting is a risky exercise, and involves many aspects that are
+well beyond the scope of this book. However, it is the engineer's
+responsibility to \imp{forecast what can be forecast}. For example,
+if the demand on a communication line is multiplied by 2 every 6
+months, it is wise to provision enough capacity to accommodate this
+exponential growth. We present a simple framework to understand
+\imp{what} forecasting is. We emphasize the need to quantify the
+accuracy of a forecast with a prediction interval.
+\end{minipage}
+%
+\hfill \insfignc{forecast}{0.40}\\
+%
+For the
+\imp{how}, there are many methods (perhaps because an exact forecast
+is essentially impossible). We focus on simple, generic methods that
+were found to work well in a large variety of cases. A first method
+is linear regression; it is very simple to use (with a computer) and
+of quite general application. It gives forecasts that are good as
+long as the data does not vary too wildly.
+
+Better predictions may be obtained by a combination of
+differencing, de-seasonalizing filters and linear time series
+models (ARMA and ARIMA processes - this is also called the
+Box-Jenkins method). We discuss how to avoid model overfitting.
+We show that accounting for growth and seasonal effects is very
+simple and may be very effective. We also study five sparse
+ARMA and ARIMA models, known under other names such as EWMA and
+Holt Winters; they are numerically very simple and have no
+overfitting problem. The necessary background on digital
+filters can be found in Appendix~\ref{ch-filters}. \minitoc
+%
+\section{What is Forecasting~?}
+A classical forecasting example is capacity planning, where a
+communication or data center manager needs to decide when to
+buy additional capacity. Other examples concern optimal use of
+resources: if a data center is able to predict that some
+customers send less traffic at nights, this may be used to save
+power or to resell some capacity to customers in other time
+zones.
+
+As in any performance related activity, it is
+important to follow a clean methodology, in
+particular, define appropriate metrics relevant to the
+problem area, define measurement methods, and gather
+time series of data. The techniques seen in this
+chapter start from this point, i.e. we assume that we
+have gathered some past measurement data, and would
+like to establish a forecast.
+
+Informally, one can say that a forecast consists in
+extracting all information about the future that is
+already present in the past. Mathematically, this can
+be done as follows. To avoid complex mathematical
+constructions, we assume time is discrete.  We are
+interested in some quantity $Y(t)$, where $t=1,2,..$.
+We assume that there is \emph{some} randomness in
+$Y(t)$, so it is modeled as a stochastic process.
+Assume that we have observed $Y_1,...,Y_t$ and would
+like to say something about $Y_{t+\ell}$ for some
+$\ell
+>0$.
+
+\nt{Forecasting} can be viewed as computing the
+conditional distribution of $Y_{t+\ell}$, given
+$Y_1,...,Y_t$.
+
+In particular, the \nt{point prediction} or
+\nt{predicted value} is
+ \ben
+ \hat{Y}_t(\ell)=\E(Y_{t+\ell}|Y_1=y_1, ...,Y_t=y_t)
+ \een
+and a \nt{prediction interval} at level $1-\alpha$ is
+an interval $[A,B]$ such that
+ \ben
+ \P\left(A\leq Y_{t+\ell}\leq
+B|Y_1=y_1,...,Y_t=y_t\right)=1-\alpha \een
+ The
+forecasting problem thus becomes (1) to find and fit a
+good model and (2) to compute conditional
+distributions.
+
+%\section{Re-Scaling}
+%\begin{figure}\begin{center}
+% \Ifignc{expo-traffic}{0.8}{0.4}
+% \Ifignc{boxcox-epfl}{0.8}{0.8}
+% \end{center}
+% \caption{First panel: data traffic on a server farm.
+% Other panels:  qqplot of data
+%re-scaled through the Box-Cox transformation of
+%parameter $s$. Original data is for $s=1$. No data set
+%really looks gaussian but values of $s$ close to $0$
+%appear to be closer to normal.}
+% \label{fig-server-farm-1}
+% \end{figure}
+%
+% \begin{figure}\begin{center}
+% \insfig{all-scores}{0.99}
+% \end{center}
+% \caption{Predictions obtained by applying ARIMA models
+%  to data rescaled by boc-cox transformation with parameter $s$.
+% The circles are the actual data, not
+%  known at the time of prediction. The plain and dashed lines
+%  are the prediction and confidence interval. Panel
+%  $(s, \mbox{ score})$ where the score is the mean
+%  prediction error. The best score is for prediction
+%  done in log scale ($s=0$).}
+% \label{fig-server-farm-2}
+% \end{figure}
+%
+%Many statistical methods were in
+%reality designed with the hidden assumption that the
+%data is gaussian, or at least not too wild. This is
+%the case for methods based on linear time series,
+%Monte Carlo and Bootstrap. Therefore it is worth
+%checking how far the gaussian assumption applies to
+%our original data -- in practice, it frequently does
+%not.
+%
+%A simple, and often very efficient fix, is to re-scale
+%the data to make it look more gaussian, i.e., less
+%wild. We can use the Box-Cox transformation in
+%\eref{stats-eqbc}.
+%
+%Assume that we have obtained a prediction interval
+%$[U; V]$ (e.g. using one of the methods in this
+%chapter) for the re-scaled data $X_t=b_s(Y_t)$. A
+%prediction interval at the same confidence level for
+%the original data $Y_t$ is $[b_s^{-1}(U);
+%b_s^{-1}(V)]$
+% if $s \geq 0$ (i.e. the transformation is increasing)
+% otherwise it is $[b_s^{-1}(V); b_s^{-1}(U)]$.
+%%
+%%
+%%
+% \begin{ex}{Server Farm}
+%\fref{fig-server-farm-1} shows the amount of data
+%traffic on a server farm. The data $Y_t$ appears to be
+%non gaussian (large variability) so we attempt several
+%box cox transformations.  We try several values of the
+%Box-Cox exponent $s$, and for each of them, compute a
+%prediction interval $[a,b]$ for the re-scaled data
+%$X_t=b_s(Y_t)$. For each $s$ this gives a prediction
+%interval for $Y_{t+h}$ by reversing the
+%transformation. We rate the predictions using the mean
+%square error. The best prediction is obtained for
+%$s=0$, i.e. $X_t=\ln Y_t$ (\fref{fig-server-farm-2}. A
+%visual inspection of the qq-plots indicates that this
+%transformation is also better than the original.
+% \end{ex}
+
+
+\section{Linear Regression}
+A simple and frequently used method is linear
+regression. It gives simple forecasting formulas,
+which are often sufficient.
+%
+Linear regression models are defined in \cref{ch-modfit}. In
+the context of forecasting, a linear regression model takes the
+form
+ \be
+ Y_t= \sum_{j=1}^p \beta_j f_j(t) + \epsilon_t
+ \label{eq-fc-linreg}
+  \ee
+ where $f_j(t)$ are known, non random functions and $\epsilon_t$ is iid  $N_{0,
+\sigma^2}$. Recall that the model is linear with
+respect to $\vec{\beta}$, whereas the functions $f_j$
+need not be linear with respect to $t$.
+\begin{ex}{Internet Traffic}\mylabel{ex-sprint-regress}
+ \fref{fig-sprint-regress} shows a prediction of the total amount of traffic
+on a coast to coast link of an American internet
+service provider. The traffic is periodic with period
+16 (one time unit is 90~mn), therefore we fit a simple
+ sine function, i.e. we use a linear regression model with $p=3$, $f_0(t)=1$,
+$f_2(t)=\cos(\frac{\pi}{8}t)$ and
+$f_3(t)=\sin(\frac{\pi}{8}t)$. Using techniques in
+\sref{sec-lrn} we fit the parameters to the past data
+and obtain:
+  \bearn
+  Y_t&=&\sum_{j=1}^3 \beta_j f_j(t) +\epsilon_t\\
+  &=&238.2475  -87.1876 \cos(\frac{\pi}{8}t)   -4.2961 \sin(\frac{\pi}{8}t) +\epsilon_t
+   \eearn
+with $\epsilon_t\sim$ iid  $N_{0, \sigma^2}$ and $\sigma=
+38.2667$.
+%
+A point prediction is:
+ \be
+\hat{Y}_t(\ell)=\sum_{j=1}^3 \beta_j
+f_j(t+\ell)=238.2475  -87.1876 \cos(\frac{\pi}{8}(t+
+\ell)) -4.2961 \sin(\frac{\pi}{8}(t+ \ell))
+ \ee
+and a 95\%-prediction interval can be approximated by
+$\hat{Y}_t(\ell)\pm 1.96 \sigma$.
+\begin{figure}[!htbp]
+  \insfignc{sprint-v2-regress1}{0.5}\insfignc{sprint-v2-regress3}{0.5}
+  \mycaption{Internet traffic on a coast-to-coast link of an American internet service provider.
+  One data point every 90~mn; $y$-axis is amount of traffic in Mb/s, averaged over 90~mn. Left:
+  data for $t=1$ to $224$ and a sine function fitted to the data; right: zoom on the time interval from 205 to 250, showing
+  the point prediction for the interval $225$ to $250$, the prediction
+  interval and the true value (circles), not known when the prediction was done.}
+  \mylabel{fig-sprint-regress}
+\end{figure}
+\end{ex}
+The computations in \exref{ex-sprint-regress} are based on the
+following theorem and the formula after it; they result from the
+general theory of linear regression in \cref{ch-modfit}
+\cite[Section 8.3]{davison2003sm}:
+\begin{shadethm}
+Consider a linear regression model as in
+\eref{eq-fc-linreg} with $p$ degrees of freedom for
+$\vec{\beta}$. Assume that we have observed the data
+at $n$ time points $t_1, ... , t_n$, and that we fit
+the model to these $n$ observations using
+\thref{theo:lr}. Assume that the model is regular,
+i.e. the matrix $X$ defined by $X_{i,j}=f_j(t_i)$,
+$i=1,...,n$, $j=1,...,p$ has full rank. Let
+$\hat{\beta}_j$ be the estimator of $\beta_j$ and
+$s^2$  the estimator of the variance, as in
+\thref{theo:lr}.\begin{enumerate}
+    \item The point prediction at time $t_n+\ell$ is
+    $\hat{Y}_{t_n}(\ell) = \sum_{j=1}^p \hat{\beta}_j
+    f_j(t_n+\ell)
+    $
+    \item An exact prediction interval at level $1-\alpha$ is
+    \be
+    \hat{Y}_{t_n}(\ell) \pm \xi \sqrt{1+g} \;s\label{eq-pi}\ee with
+     \ben
+         g = \sum_{j=1}^p\sum_{k=1}^p
+         f_j(t_n+\ell)G_{j,k}f_k(t_n+\ell)
+     \een
+    where $G=(X^T X)^{-1}$
+    and $\xi$ is the $(1- \frac{\alpha}{2})$ quantile of
+    the student distribution with $n-p$ degrees of
+    freedom, or, for large $n$, of the standard normal distribution.
+    \item An approximate prediction interval that
+    ignores estimation uncertainty is
+    \be\hat{Y}_{t_n}(\ell) \pm \eta s \label{eq-pi-simp}\ee
+where $\eta$ is the $1-\alpha$ quantile of the
+standard normal distribution.
+\end{enumerate}
+\label{theo-lr-pi}
+\end{shadethm}
+We now explain the difference between the last two
+items in the theorem. Item 2 gives an exact result for
+a prediction interval. It captures two effects: (1)
+the \imp{estimation error}, i.e. the uncertainty about
+the model parameters due to the estimation procedure
+(term $g$ in $\sqrt{1+g}$) and (2) the \imp{model
+forecast uncertainty}, due to the model being a random
+process. In practice, we often expect the estimation
+error to be much smaller than the model forecast
+uncertainty, i.e. $g$ is much smaller than $1$. This
+occurs in the rule when the number $n$ of points used
+for the estimation is large, so we can also replace
+student by standard normal. This explains
+\eref{eq-pi-simp}.
+
+\fref{fig-sprint-regress-cipi} shows the prediction intervals
+computed by \eref{eq-pi} and \eref{eq-pi-simp} (they are
+indistinguishable). By \thref{theo:lr}, one can also see that
+that a confidence interval for the point prediction is given by
+$\pm \xi\sqrt{g}\; s$ (versus $\pm \xi\sqrt{1+g}\; s$ for the
+prediction interval). The figure shows that the confidence
+interval for the point prediction is small but not negligible.
+However, its effect on the prediction interval \emph{is}
+negligible. See also \fref{fig-sprint-regress-a} for what may
+happen when the problem is ill posed.
+
+In the simple case where the data is assumed to be
+iid, we can see from \thref{theo-conf-pin} that $g$
+decreases like $\frac{1}{n}$, so in this case the
+approximation in \eref{eq-pi-simp} is always valid for
+large $n$.
+\begin{figure}[!htbp]
+\begin{center}
+  \insfignc{sprint-v2-regress-cipi}{0.45}\insfignc{sprint-v2-regress-cipi-2}{0.45}
+  \end{center}
+  \mycaption{Left:
+Same example as \fref{fig-sprint-regress}, showing the
+prediction interval computed by
+\thref{theo-lr-pi}(dot-dashed lines) and the
+confidence interval for the point prediction (plain
+lines around center values). The predictions intervals
+computed by \eref{eq-pi} and \eref{eq-pi-simp}
+are indistinguishable. Right: same except only the
+last 24 points of the past data are used to fitting
+the model (instead of 224). The confidence interval
+for the point prediction is slightly larger than in
+the left panel; the exact prediction interval computed
+from \thref{theo-lr-pi} is only slightly larger than
+the approximate one computed from \eref{eq-pi-simp}. }
+  \mylabel{fig-sprint-regress-cipi}
+\end{figure}
+\paragraph{Verification} We cannot verify a prediction
+until the future comes. However, one can verify how
+well the model fits by screening the residuals, as
+explained in \thref{theo:lr}. The standardized
+residuals should look grossly normal, not showing
+large trends nor correlations.
+\fref{fig-sprint-regress-res} displays the
+standardized residuals for the model in
+\exref{fig-sprint-regress}. While the residuals fit
+well with the normal assumption, they do appear to
+have some correlation and some periodic behaviour.
+Models that are able to better capture these effects
+are discussed in \sref{lin-ts}.
+\begin{figure}[!htbp]
+\begin{center}
+  \ifig{sprint-v2-regress-res}{0.6}{0.35}
+  \end{center}
+  \mycaption{Residuals for the model fitted in \fref{fig-sprint-regress}. }
+  \mylabel{fig-sprint-regress-res}
+\end{figure}
+
+\section{The Overfitting Problem}
+Perhaps contrary to intuition, a parametric model
+should not have too many parameters. To see why,
+consider the model in \fref{fig-sprint-regress}.
+Instead of a simple sine function, we now fit a more
+general model, where we add a polynomial component and
+a more general periodic function (with harmonics),
+with the hope of improving the fit, thus the
+prediction. The new model has the form
+ \be Y_t = \sum_{i=0}^d a_i t^i + \sum_{j=1}^h \left(b_j\cos\frac{j \pi
+ t}{8}
+   + c_j \sin\frac{j \pi t}{8} \right)
+   \label{eq-sprint-regress-a}
+ \ee
+\fref{fig-sprint-regress-a} shows the resulting fit
+for a polynomial of degree $d=10$ and with $h-1=2$
+harmonics. The fit is better ($\sigma=25.4375$ instead
+of $38.2667$), however, the prediction power is
+ridiculous.
+\begin{figure}[!htbp]
+  \insfignc{sprint-v2-regress1a}{0.5}\insfignc{sprint-v2-regress3a}{0.5}
+  \mycaption{More parameters is not always better. Same as \fref{fig-sprint-regress},
+  but with a more general model. Right panel: prediction intervals computed with the
+  simple formula (\ref{eq-pi-simp}) (dot-dashed lines) do not coincide with the exact
+  prediction intervals (plain lines). The line with small circles is the exact values.}
+  \mylabel{fig-sprint-regress-a}
+\end{figure}
+This is the \nt{overfitting problem}. At the extreme,
+a model with absolute best fit has $0$ residual error
+-- but it is no longer an explanatory model.
+
+There are two classical solutions to avoid overfitting: test
+data and information criterion.
+%
+\subsection{Use of Test Data} The
+idea is to reserve a small fraction of the data set to test the
+model prediction. Consider for example
+\fref{fig-sprint-stupid-poly-criteria}. We fitted the model in
+\eref{eq-sprint-regress-a} with $h-1=2$ harmonics and a polynomial
+of degree $d=0$ to 10. The prediction error is defined here as the
+mean square error between the true values of the data at t=225 to
+250 and the point predictions given by \thref{theo-lr-pi}. The
+estimation error is the estimator $s$ of $\sigma$. The smallest
+prediction error is for $d=4$. The fitting error decreases with $d$,
+whereas the prediction error is minimal for $d=4$.
+\begin{figure}[!htbp]
+  \insfig{sprint-v2-regress-stupid-poly-criteria}{0.8}
+  \mycaption{Model
+  in \eref{eq-sprint-regress-a} with $h-1=2$ harmonics and a polynomial
+of degree $d=0$ to 10. Top Panel: Use of test data: estimation and
+prediction errors. Bottom panel: information criteria. The test data
+finds that the best model is for $d=4$, but the information criteria
+find that the best model is for $d=10$, which is an aberrant model.
+Information criteria should be used only for models that match the
+type of data.}
+  \mylabel{fig-sprint-stupid-poly-criteria}
+\end{figure}
+This method is quite general but has the drawback to ``burn" some of
+the data, as the test data cannot be used for fitting the model.
+%
+\subsection{Information Criterion}
+\label{sec-ic}An alternative is to use an
+\nt{information criterion}, which strikes a balance
+between model accuracy and number of parameters.
+%
+\nt{Akaike's Information Criterion} (AIC)\index{AIC} is defined for any parametric model by
+ \be
+ \mbox{AIC}=-2 l(\hat{\theta}) + 2k
+\ee
+ where $k$ is
+the dimension of the parameter $\theta$ and $l(\hat{\theta})$
+is the estimated log-likelihood. It can be interpreted in an
+information theoretic sense as follows \cite[Section
+7.3]{weber-ts}. Consider an independent replication $X_t$ of
+the sequence $Y_t$; then AIC is an approximate estimate of the number
+of bits needed by an optimal code to describe the sequence
+$X_t$, when the optimal code estimates the distribution of
+$X_t$ from the sample $Y_t$. AIC thus measures the efficiency
+of our model to describe the data. The preferred model is the
+one with the \emph{smallest} information criterion.
+
+For the linear regression model with $n$ data points
+and $p$ degrees of freedom for $\vec{\beta}$, the
+parameter is $\theta=(\vec{\beta},\sigma)$, thus
+$k=p+1$. AIC can easily be computed and one obtains
+ \be
+ \mbox{AIC} = 2\left(p + n \ln  \hat{\sigma} \right) + C
+ \ee
+ where $C=2 +n \left(1+ \ln (2 \pi)\right)$ and
+ $\hat{\sigma}$ is the MLE of $\sigma$, i.e.
+ \ben
+ \hat{\sigma}^2=\left(1-\frac{p}{n}\right) s^2
+ \een
+
+In practice, the AIC has a tendancy to
+overestimate the model order $k$ when $n$, the number of observations, is small. An alternative
+criterion is the \nt{Bayesian Information
+Criterion}(BIC)\index{BIC, Bayesian Information
+Criterion}\cite{BrockwellDavis02-book,ShumwayStoffer06-book},
+which is defined for a linear regression model by \ben
+ \mbox{BIC}=-2 l(\hat{\theta}) + k \ln n
+\een %where $n$ is the number of observations.
+Thus one
+finds
+ \be
+ \mbox{BIC}=p \ln n  + 2 n \ln  \hat{\sigma}  + C'
+ \ee
+with $C'=n(1+\ln(2 \pi))+ \ln n$ and $p$ is the number
+of degrees of freedom for the parameter of the linear
+regression model.
+
+\begin{figure}[!htbp]
+  \insfig{sprint-v2-regress-criteria}{0.70}%\insfignc{sprint-v2-regress-best-bic}{0.45}
+  \mycaption{Choice of best Model for
+  \eref{eq-sprint-regress-a} with degree $d=1$ and various values of $h$.
+Top panel: Use of test data; estimation and prediction
+errors. Bottom panel: information criteria. The
+prediction error is about the same for $h\geq 2$,
+which implies that the most adequate model if for
+$h=2$. The information criteria also find here that
+the best model is for $h=2$.}
+  \mylabel{fig-sprint-regress-infocri}
+\end{figure}
+\begin{exnn}{Internet Traffic, continued}
+We want to find the best fit for the model in
+\eref{eq-sprint-regress-a}. It seems little
+appropriate to fit the growth in
+\fref{fig-sprint-regress} by a polynomial of high
+degree, therefore we limit $d$ to be $0,1$ or $2$. We
+used three methods: test data, AIC and BIC and
+searched for all values of $d\in \{0,1,2\}$ and $h \in
+\{0,...,10\}$. The results are~:
+ \begin{verbatim}
+ Test Data: d=2, h=2, prediction error = 44.6006
+ Best AIC : d=2, h=3, prediction error = 46.1003
+ Best BIC : d=0, h=2, prediction error = 48.7169
+\end{verbatim}
+The test data method finds the smallest prediction error, by
+definition. All methods find a small number of harmonics, but
+there are some minor differences.
+\fref{fig-sprint-regress-infocri} shows the values for $d$=1.
+
+\fref{fig-sprint-stupid-poly-criteria} shows a different
+result. Here, we try to use a polynomial of degree up to 10,
+which is not appropriate for the data. The AIC and BIC find
+aberrant models, whereas test data finds a reasonable best
+choice.
+\end{exnn}
+Information criterion are more efficient in the sense that they
+do not burn any of the data; however, they may be completely
+wrong if the model is inappropriate.
+\section{Differencing the Data}
+A slightly more sophisticated alternative to the regression method
+is to combine two approaches: first capture trends and periodic
+behaviour by application of differencing or de-seasonalizing
+filters, then fit the filtered data to a time series stationary
+model that allows correlation, as we explain in this and the next
+section.
+
+\subsection{Differencing and De-seasonalizing Filters}
+ \label{forecast-preprocess}
+Consider a time series $Y=(Y_1, ...,Y_n)$. Contrary to linear
+regression modelling, we require here that the indices are
+contiguous integers, $t=1,...,n$. The \nt{differencing filter}
+at lag $1$ is the mapping, denoted with $\Delta_1$ that
+transforms a times series $Y$ of finite length into a time
+series $X=\Delta_1 Y$ of \imp{same length} such that
+ \be
+ X_t = (\Delta_1 Y)_t = Y_{t}-Y_{t-1} \;\;\;\;\;
+ t=1,...,n
+ \ee
+where by convention $Y_j=0$ for $j \leq 0$. Note that this
+convention is not the best possible, but it simplifies the
+theory a lot. In practice, the implication is that the first
+term of the filtered series is not meaningful and should not be
+used for fitting a model (they are removed from the plots on
+\fref{fig-sprint-diff}). Formally, we consider $\Delta_1$ to be
+a mapping from $\bigcup_{n =1}^{\infty} \Reals^n$ onto itself,
+i.e. it acts on time series of any finite length.
+
+The differencing filter $\Delta_1$ is a discrete time
+equivalent of a derivative. If the data has a
+polynomial trend of degree $d\geq 1$, then $\Delta_1
+Y$ has a trend of degree $d-1$. Thus $d$ iterated
+applications of $\Delta_1$ to the data remove any
+polynomial trend of degree up to $d$.
+
+Similarly, if the data $Y$ is periodic with period $s$, then we
+can use the \nt{de-seasonalizing} filter $R_s$\index{$R_s$}
+(proposed by S.A. Roberts in \cite{roberts-82}). It maps a
+times series $Y$ of finite length into a time series $X = R_s
+Y$ of \imp{same length} such that
+ \be
+ X_t = \sum_{j=0}^{s-1} Y_{t-j} \;\;\;\;\;
+ t=1,...,n
+ \ee again with the convention that $Y_j=0$ if $j\leq
+ 0$. One application of $R_s$ removes a periodic
+component, in the sense that if $Y_t$ is periodic of
+period $s$, then $R_s Y$ is equal to a constant.
+
+The differencing filter at lag $s$,
+$\Delta_s$,\index{$\Delta_s$} is defined similarly by
+ \be
+ (\Delta_s X)_t =  Y_{t}-Y_{t-s} \;\;\;\;\;
+ \ee
+ It can be easily seen that
+ \be
+ \Delta_s = R_s \Delta_1
+ \ee
+i.e. combining de-seasonalizing and differencing at
+lag $1$ is the same as differencing at lag $s$.
+
+Filters \imp{commute}, e.g. $R_{s'} R_{s} Y =R_s R_{s'}Y$ for
+all $s, s'$ and $Y \in \Reals^n$ (see
+Appendix~\ref{sp-crashcourse}). It follows that the
+differencing filter and de-seasonalizing filter may be used to
+remove polynomial growth, non zero mean and periodicities, and
+that one can apply them in any order. In practice, one tries to
+apply $R_s$ once for any identified period $d$, and $\Delta_1$
+as many times as required for the data to appear stationary.
+
+\begin{ex}{Internet Traffic} In \fref{fig-sprint-diff}
+we apply the differencing filter $\Delta_1$ to the
+time series in \exref{ex-sprint-regress} and obtain a
+strong seasonal component with period $s=16$. We then
+apply the de-seasonalizing filter $R_{16}$; this is
+the same as applying $\Delta_{16}$ to the original
+data. The result does not appear to be stationary; an
+additional application of $\Delta_1$ is thus
+performed.
+\end{ex}
+\begin{figure}[!htbp]\begin{center}
+  \subfigure[Differencing at Lag 1]{\ifig{sprint-v2-d1}{0.4}}
+  \subfigure[Differencing at Lag 16]{\ifig{sprint-v2-d16}{0.4}}
+  \subfigure[Differencing at Lags 1 and 16]{\ifig{sprint-v2-d1d16}{0.4}}
+  \subfigure[Prediction at time 224]{\ifig{sprint-v2-diff-fc}{0.7}}
+\end{center}
+  \mycaption{Differencing filters $\Delta_1$ and $\Delta_{16}$ applied
+to \exref{ex-sprint-regress} (first terms removed).
+The forecasts
+  are made assuming the differenced data is iid gaussian with $0$ mean.  o = actual value of the future (not used for fitting the model).
+   The point prediction is better than on
+  \fref{fig-sprint-regress}, but the prediction
+  intervals are large.}
+  \mylabel{fig-sprint-diff}
+\end{figure}
+
+
+Also note that if $Y_t=\mu + Z_t$ where $Z_t$ is
+stationary, then $\Delta_s Y$ has a zero
+mean\footnote{more precisely $\E(\Delta_s Y_t) = 0$
+for $t\geq s+1$. i.e. the first $s$ elements of the
+differenced time series may not be 0 mean.}. Thus, if
+after enough differencing we have obtained a
+stationary but non zero mean sequence, one more
+differencing operation produces a zero mean sequence.
+\subsection{Computing Point Prediction}
+\label{sec-fc-d}
+
+With many time series, differencing and
+de-seasonalizing produces a data set that has neither
+growth nor periodicity, thus is a good candidate for
+being fitted to a simple stochastic model. In this
+section we illustrate a straightforward application of
+this idea. The method used in this section will also
+be used in \sref{lin-ts} with more elaborate models
+for the differenced data.
+
+Assume we have a model for the differenced data $X_t$
+that we can use to obtain predictions for $X_t$. How
+can we use this information to derive a prediction for
+the original data $Y_t$~? There is a very simple
+solution, based on the properties of filters given in
+appendix.
+
+We write compactly $X = L Y$, i.e $L$ is the combination of
+filters (possibly used several times each) used for
+differencing and de-seasonalizing. For example, in
+\fref{fig-sprint-diff}, $L=\Delta_{16}\Delta_1$. $\Delta_s $ is
+an invertible filter for all $s\geq 1$ thus $L$ also is an
+invertible filter (see Appendix~\ref{sp-crashcourse} for more
+details). We can use the AR($\infty$) representation of
+$L^{-1}$ and write, using \eref{eq-coef-ar} in appendix:
+ \be
+ Y_t =   X_t - g_1 Y_{t-1}-\ldots-g_{q} Y_{t-q}
+ \ee
+where $(g_0=1,g_1,...,g_q)$ is the impulse response of the
+filter $L$. See the next example and
+Appendix~\ref{sp-crashcourse} for more details on how to obtain
+the impulse response of $L$. The following result derives
+immediately from this and \thref{theo-pred-filter}:
+
+\begin{proposition}Assume that $X=LY$ where $L$ is a
+differencing or de-seasonalizing filter with impulse
+response $g_0=1,g_1,...,g_q$. Assume that we are able
+to produce a point prediction $\hat{X}_t(\ell)$ for
+$X_{t+\ell}$ given that we have observed $X_1$ to
+$X_t$. For example, if the differenced data can be
+assumed to be iid with mean $\mu$, then
+$\hat{X}_{t}(\ell)=\mu$.
+
+A point prediction for $Y_{t+\ell}$ can be obtained
+iteratively by:
+%\begin{fr}
+ \bear
+   \hat{Y}_t(\ell)&=&  \hat{X}_t(\ell) - g_1
+ \hat{Y}_t(\ell-1) - \ldots- g_{\ell -1}
+ \hat{Y}_t(1)  - g_{\ell} y_t - \ldots\nonumber \\&& -g_{q}
+ y_{t-q+\ell}\;\;\mfor 1\leq\ell\leq q
+ \label{eq-pred-mean-diff}\\
+\hat{Y}_t(\ell)&=&   \hat{X}_t(\ell) - g_1
+ \hat{Y}_t(\ell-1) - \ldots - g_{q}
+ \hat{Y}_t(\ell -q) \mfor \ell> q
+ \eear
+%\end{fr}
+%Alternatively, one can use the non-iterative formulae
+%%\begin{fr}
+% \be
+% \hat{Y}_t(\ell)= h_0 \hat{X}_t(\ell) + h_1
+% \hat{X}_t(\ell-1) + \ldots + h_{\ell -1}
+% \hat{X}_t(1) + h_{\ell -1} x_t + \ldots +h_{t -1} x_1
+% \label{eq-pred-mean-diff}
+% \ee where $(h_0,h_1,\ldots)$ is the impulse response of $L^{-1}$.
+%%\end{fr}
+\label{eq-propal-pp-diff}
+\end{proposition}
+%
+In the proposition, we write $y_t$ in lower-case to stress that, when we perform a prediction at time $t$, the data up to time $t$ is considered known and non-random.
+
+Note that by differencing enough times we are able to remove any non
+zero means from the data. Consequently, we often assume that
+$\mu=0$.
+%
+\begin{exnn}{Internet Traffic, continued} For
+\fref{fig-sprint-diff}, we have
+ \ben L=  \Delta_1^2  R_{16}=\Delta_1 \Delta_{16} =(1-B) (1-B^{16})
+  =
+  1-B-B^{16}+B^{17}
+ \een
+ thus the impulse response $g$ of $L$ is given by
+ \ben
+ g_0=g_{17}=1,\; g_1=g_{16}=-1,\; g_m = 0
+ \mbox{ otherwise}
+ \een
+ If we can assume that the differenced data is iid
+ with 0 mean, the prediction formulae for $Y$ are
+   \bearn
+    \hat{Y}_t(1)&=&y_t+y_{t-15}-y_{t-16}\\
+     \hat{Y}_t(\ell)&=&\hat{Y}_t(\ell-1)+y_{t+\ell-16}-y_{t+\ell-17}
+     \mfor 2 \leq \ell \leq 16\\
+    \hat{Y}_t(17)&=& \hat{Y}_t(16)+\hat{Y}_t(1)-y_{t}\\
+    \hat{Y}_t(\ell)&=&\hat{Y}_t(\ell-1)+\hat{Y}_t(\ell-16)
+    -\hat{Y}_t(\ell-17)
+     \mfor \ell \geq 18
+   \eearn
+\end{exnn}
+%
+\subsection{Computing Prediction Intervals}
+If we want to obtain not only point predictions but
+also to quantify the prediction uncertainty, we need
+to compute prediction intervals. We consider a
+special, but frequent case. More general cases can be
+handled by Monte Carlo methods as explained in
+\sref{sec-mc-arma}. The following result derives from
+\thref{theo-pred-filter} in appendix.
+\begin{proposition}
+Assume that the differenced data is iid gaussian. i.e.
+$X_t = (LY)_t \sim \mbox{ iid  }N(\mu,\sigma^2)$.
+
+The conditional distribution of $Y_{t + \ell}$ given
+that $Y_1=y_1,...,Y_t=y_t$ is gaussian with mean
+$\hat{Y}_t(\ell)$ obtained from
+\eref{eq-pred-mean-diff} and variance \be
+ \mbox{MSE}^2_t(\ell)=\sigma^2 \left(h_0^2 + \hdots +
+  h_{\ell-1}^2\right)
+ \ee
+where $h_0, h_1, h_2, \ldots$ is the impulse response
+of $L^{-1}$. A prediction interval at level $0.95$ is
+thus
+ \be
+\hat{Y}_{t}(\ell) \pm 1.96 \sqrt{\mbox{MSE}^2_t(\ell)}
+\label{eq-pred-mse-diff} \ee
+Alternatively, one can
+compute $\hat{Y}_{t}(\ell)$ using
+ \be
+\hat{Y}_{t}(\ell)=\mu \left(h_0 + \hdots +
+  h_{\ell-1}\right)  + h_{\ell}x_t + \hdots
+  h_{t+\ell-1}x_1 \label{eq-pred-pp-diff}
+ \ee
+\end{proposition}
+
+The impulse response of $L^{-1}$ can be obtained numerically
+(for example using the \pro{filter} command), as explained in
+Appendix~\ref{sp-crashcourse}. If $L$ is not too complicate, it
+can be obtained in a simple closed form. For example, for
+$s=1$, the reverse filter $\Delta_1^{-1}$ is defined by
+ \ben\left(\Delta_1^{-1}X\right)_t =
+ X_1+X_2+...+X_t\;\;\;\;\;t=1,...,n
+ \een
+i.e. its impulse response is $h_m=1$ for all $m \geq
+0$. It is a discrete time equivalent of integration.
+
+The impulse response of $L=(\Delta_1\Delta_s)^{-1}$
+used in \fref{fig-sprint-diff} is
+ \be
+h_m=1+\left\lfloor \frac{m}{16} \right\rfloor
+\label{eq-impres-diff}
+ \ee where the notation $\lfloor x \rfloor$ means the
+largest integer $\leq x$.
+%
+
+Note that $\mu$ and $\sigma$ need to be estimated from the
+differenced data\footnote{Here too, the prediction interval
+does not account for the estimation uncertainty}.
+
+\begin{exnn}{Internet Traffic, continued}
+\fref{fig-sprint-diff} shows the prediction obtained
+assuming the differenced data is iid gaussian with $0$
+mean.
+
+It is obtained by applying \eref{eq-pred-pp-diff} with
+$\mu=0$, \eref{eq-pred-mse-diff} and
+\eref{eq-impres-diff}.
+
+The point prediction is good, but the confidence
+interval appear to be larger than necessary. Note that
+the model we used here is extremely simple; we only need to fit one parameter (namely $\sigma$), which is
+estimated as the sample standard deviation of the
+differenced data.
+
+Compare to \fref{fig-sprint-regress}: the point
+prediction seems to be more exact. Also, it starts
+just from the previous value. The point prediction
+with differencing filters is more adaptive than with a
+regression model.
+
+The prediction intervals are large and grow with the
+prediction horizon. This is a symptom that the iid
+gaussian model for the differenced data may not be
+appropriate. In fact, there are two deviations from
+this model: the distribution does not appear to be
+gaussian, and the differenced appears to be correlated
+(large values are not isolated). Addressing these
+issues requires a more complex model to be fitted to
+the differenced time series: this is the topic of
+\sref{lin-ts}
+\end{exnn}
+
+
+\section{Fitting Differenced Data to an ARMA Model}
+\label{lin-ts} The method in this section is inspired
+by the original method of Box and Jenkins in
+\cite{bj70} and can be called the \nt{Box-Jenkins}
+method, although some of the details differ a bit. It
+applies to cases where the differenced data $X$
+appears to be stationary but not iid. In essence, the
+method provides a method to \imp{whiten} the
+differenced data, i.e. it computes a filter $F$ such
+that $FX$ can be assumed to be iid. We first discuss
+how to recognize whether data can be assumed to be
+iid.
+\subsection{Stationary but non IID
+Differenced Data}After pre-processing with differencing and
+de-seasonalizing filters we have obtained a data set that
+appears to be \imp{stationary}. Recall from \cref{ch-simul}
+that a stationary model is such that it is statistically
+impossible to recognize at which time a particular sample was
+taken. The time series in panel (c) of \fref{fig-sprint-diff}
+appear to have this property, whereas the original data set in
+panel (a) does not. In the context of time series, lack of
+stationarity is due to growth or periodicity: if a data set
+increases (or decreases), then by observing a sample we can
+have an idea of whether it is old or young; if there is a daily
+pattern, we can guess whether a sample is at night or at
+daytime.
+\subsubsection{Sample ACF}
+\label{sec-sacf} A means to test whether a data series that
+appears to be stationary is iid or not is the \nt{sample
+autocovariance} function; by analogy to the autocovariance of a
+process, it is defined, for $t\geq 0$ by
+ \be
+ \hat{\gamma}_t = \frac{1}{n} \sum_{s=1}^{n-t}(X_{s+t}-\bar{X})(X_{s}-\bar{X})
+\label{eq-def-acv} \ee where $\bar{X}$ is the sample mean. The
+\nt{sample ACF} is defined by
+$\hat{\rho}_t=\hat{\gamma}_t/\hat{\gamma}_0$. The {sample PACF}
+is also defined as an estimator of the true partial
+autocorrelation function (PACF) defined in
+\sref{sec-fc-arma-arima}.
+
+If $X_1,...,X_n$ is iid with finite variance, then the sample
+ACF and PACF are asymptotically centered normal with variance
+$1/n$. ACF and PACF plots usually display the bounds $\pm
+1.96/\sqrt{n}$. If the sequence is iid with finite variance,
+then roughly $95\%$ of the points should fall within the
+bounds. This provides a method to assess whether $X_t$ is iid
+or not. If yes, then no further modelling is required, and we
+are back to the case in \sref{sec-fc-d}. See
+\fref{fig-acf-sprint} for an example.
+
+The ACF can be tested formally by means of the \nt{Ljung-Box}
+test. It tests $H_0$: ``the data is iid" versus $H_1$: ``the
+data is stationary". The test statistic is
+$L=n(n+2)\sum_{s=1}^{t} \frac{\hat{\rho}_s^2}{n-s}$, where $t$
+is a parameter of the test (number of coefficients), typically
+$\sqrt{n}$. The distribution of $L$ under $H_0$ is $\chi^2_t$,
+which can be used to compute the $p$-value.
+%
+%
+\subsection{ARMA and ARIMA Processes}
+\label{sec-fc-arma-arima} Once a data set appears to be
+stationary, but not iid (as in panel (c) of
+\fref{fig-sprint-diff}) we can model it with an
+\nt{Auto-Regressive Moving Average} (ARMA)\index{ARMA,
+Auto-Regressive Moving Average} process.
+
+\begin{definition} A $0$-mean ARMA($p,q$) process $X_t$ is
+a process that satisfies for $t=1,2,\hdots$ a
+difference equation such as:
+ \be
+ X_t + A_1 X_{t-1}+\hdots+A_p X_{t-p}=\epsilon_t + C_1
+ \epsilon_{t-1}+\hdots+C_q \epsilon_{t-q} \;\;\;\;\;\;
+ \epsilon_t \mbox{ iid }\sim N_{0, \sigma^2} \label{eq-arma-def}
+ \ee
+ Unless
+ otherwise specified, we assume $X_{-p+1}=\hdots=X_0=0$.
+
+An ARMA($p,q$) process with mean $\mu$ is a process
+$X_t$ such that $X_t -\mu$ is a $0$ mean ARMA process
+and, unless otherwise specified,
+$X_{-p+1}=\hdots=X_0=\mu$.\label{def-arma}
+\end{definition}
+
+The parameters of the process are $A_1,\hdots,A_p$
+(\nt{auto-regressive coefficients}), $C_1, \hdots,C_q$
+(\nt{moving average coefficients}) and $\sigma^2$
+(\nt{white noise variance}). The iid sequence
+$\epsilon_t$ is called the noise sequence, or
+\nt{innovation}.
+
+An ARMA($p,0$) process is also called an
+\nt{Auto-regressive} process, AR($p$); an ARMA($0,q$)
+process is also called a \nt{Moving Average} process,
+MA($q$).
+
+Since a difference equation as in \eref{eq-arma-def} defines a
+filter with rational transfer function
+(Appendix~\ref{sp-crashcourse}), one can also define an ARMA
+process by \be
+ X = \mu + F \epsilon \label{eq-def-arma-filter}
+ \ee
+where $\epsilon$ is an iid gaussian sequence and
+ \be F= \frac{1+C_1 B +\ldots+C_q B^q}{1+A_1B+\ldots + A_p B^p}
+ \label{eq-def-arma-f}
+ \ee $B$ is the backshift operator, see
+Appendix~\ref{sp-crashcourse}.
+
+In order for an ARMA process to be practically useful,
+we need the following:
+\begin{hypo}
+The filter in \eref{eq-def-arma-f} and its inverse are
+stable.\label{hypo-arma}
+\end{hypo}
+In practice, this means that the zeroes of $1+A_1
+z^{-1}+\ldots + A_p z^{-p}$ and of $1+C_1z^{-1}+\ldots
++ C_q z^{-q}$ are within the unit disk.
+
+\eref{eq-def-arma-filter} can be used to simulate ARMA
+processes, as in \fref{fig-arma-samples}.
+\begin{figure}[!htbp]\begin{center}
+ \subfigure[ARMA(2,2) $X_t=-0.4 X_{t-1}+0.45 X_{t-2}+
+ \epsilon_t-0.4 \epsilon_{t-1}+0.95 \epsilon_{t-2}$]
+ {\Ifignc{armaSample1}{0.4}{0.2}}
+ \subfigure[AR(2) $X_t=-0.4 X_{t-1}+0.45 X_{t-2}+
+ \epsilon_t$]{\Ifignc{armaSample2}{0.4}{0.2}}
+ \subfigure[MA(2) $X_t=\epsilon_t-0.4 \epsilon_{t-1}+0.95
+ \epsilon_{t-2}$]{\Ifignc{armaSample3}{0.4}{0.2}}
+  \end{center}
+\mycaption{Simulated ARMA processes with $0$ mean and
+noise variance $\sigma^2=1$. The first one, for
+example, is obtained by the matlab commands
+\pro{Z=randn(1,n)} and \pro{X=filter([1 -0.4 +0.95],[1
+0.4 -0.45],Z)}.}
+  \mylabel{fig-arma-samples}
+\end{figure}
+
+\paragraph{ARMA Process as a Gaussian Process}
+
+Since an ARMA process is defined by linear
+transformation of a gaussian process $\epsilon_t$ it
+is a gaussian process. Thus it is entirely defined by
+its mean $\E(X_t)=\mu$ and its covariance. Its
+covariance can be computed in a number of ways, the
+simplest is perhaps obtained by noticing that
+ \be
+ X_t = \mu + h_0 \epsilon_t + \ldots + h_{t-1} \epsilon_1
+ \ee
+ where $h$ is the impulse response of the filter in
+\eref{eq-def-arma-f}. Note that, with our convention,
+$h_0=1$. It follows that for $t \geq 1$ and $s \geq
+0$:
+ \be
+ \cov(X_t, X_{t+s})=\sigma^2\sum_{j=0}^{t-1}h_j h_{j+s}
+ \ee
+
+For large $t$
+ \be
+\cov(X_t, X_{t+s}) \approx \gamma_s=\sigma^2
+\sum_{j=0}^{\infty}h_j h_{j+s} \label{eq-def-gamma}
+ \ee
+The convergence of the latter series follows from the
+assumption that the filter is stable. Thus, for large
+$t$, the covariance does not depend on $t$. More
+formally, one can show that an ARMA process with
+\hyporef{hypo-arma} is asymptotically stationary
+\cite{BrockwellDavis02-book,ShumwayStoffer06-book}, as
+required since we want to model stationary
+data\footnote{Furthermore, it can easily be shown that
+if the initial conditions $X_{0},\ldots,X_{-p}$ are
+not set to $0$ as we do for simplicity, but are drawn
+from the gaussian process with mean $\mu$ and
+covariance $\gamma_s$, then $X_t$ is (exactly)
+stationary. We ignore this subtlety in this chapter
+and consider only asymptotically stationary
+processes.}.
+
+Note in particular that
+ \be
+ \var(X_t)\approx \sigma^2 \sum_{j=0}^{\infty}h_j^2 =
+ \sigma^2 (1 +\sum_{j=1}^{\infty}h_j^2)\geq \sigma^2
+-- \ee
+thus the variance of the ARMA process is larger than
+that of the noise\footnote{Equality occurs only when
+$h_1=h_2 =...=0$, i.e. for the trivial case where
+$X_t=\epsilon_t$}.
+
+For an MA$(q)$ process, we have $h_j=C_j$ for
+$j=1,\ldots,q$ and $h_j=0$ for $j\geq q$ thus the ACF
+is $0$ at lags $\geq q$.
+
+The \nt{Auto-Correlation Function} (ACF)
+\index{ACF}\label{def-acf}
+is defined by%
+\footnote{Some authors call autocorrelation the quantity
+$\gamma_t$ instead of $\rho_t$.} $ \rho_t = \gamma_t /
+\gamma_0$. The ACF quantifies departure from an iid model;
+indeed, for an iid sequence (i.e. $h_1=h_2=...=0$), $\rho_t=0$
+for $t\geq 1$. The ACF can be computed from \eref{eq-def-gamma}
+but in practice there are more efficient methods that exploit
+\eref{eq-def-arma-f}, see \cite{weber-ts}, and which are
+implemented in standard packages.
+\begin{figure}
+\begin{center}
+ \subfigure[ARMA(2,2) $X_t=-0.4 X_{t-1}+0.45 X_{t-2}+ \epsilon_t-0.4 \epsilon_{t-1}+0.95 \epsilon_{t-2}$]
+ {\Ifignc{arma22-acf}{0.8}{0.2}}
+ \subfigure[AR(2) $X_t=-0.4 X_{t-1}+0.45 X_{t-2}+ \epsilon_t$]{\Ifignc{ar2-acf}{0.8}{0.2}}
+ \subfigure[MA(2) $X_t=\epsilon_t-0.4 \epsilon_{t-1}+0.95 \epsilon_{t-2}$]{\Ifignc{ma2-acf}{0.8}{0.2}}
+\end{center}
+\mycaption{ACF (left) and PACF (right) of some ARMA
+processes.} \label{fig-arma-acf}
+\end{figure}
+One also sometimes uses the \nt{Partial
+Auto-Correlation Function} (PACF)\index{PACF}, which
+is defined in \sref{sec-pacf} as  the residual
+correlation of $X_{t+s}$ and $X_t$,  given that
+$X_{t+1},...,X_{t+s-1}$ are known.\footnote{The PACF
+is well defined if the covariance matrix of
+$(X_{t},...,X_{t+s})$ is invertible. For an ARMA
+process, this is always true, by
+\coref{coro-rank-normal}.}
+
+\fref{fig-arma-acf} shows the ACF and PACF of a few ARMA
+processes. They all decay exponentially. For an AR$(p)$
+process, the PACF is exactly $0$ at lags\footnote{This follows
+from the definition of PACF and the fact that $X_{t+s}$ is
+entirely determined by $X_{t+s-p},...,X_{t+s-p}$.} $t>p$.
+
+\paragraph{ARIMA Process} By definition, the random
+sequence $Y=(Y_1,Y_2,\ldots)$ is an ARIMA($p,d,q$)
+(Auto-Regressive Integrated Moving Average)
+%\index{Auto-Regressive Integrated Moving Average}
+process if differencing $Y$ $d$ times gives an
+ARMA($p,q$) process (i.e. $X=\Delta_1^d Y$ is an ARMA
+process, where $\Delta_1$ is the differencing filter
+at lag $1$). For $d \geq 1$ an ARIMA process is not
+stationary.
+
+In the statistics literature, it is customary to
+describe an ARIMA($p,d,q$) process $Y_t$ by writing
+ \be
+ (1-B)^d(1+A_1 B +\ldots+A_p B^p) Y = (1+C_1 B +\ldots+C_q
+ B^q) \epsilon
+ \ee
+ which is the same as saying that $\Delta_1^d Y$ is a
+ zero mean ARMA($p,q$) process.
+
+ By extension, we also call ARIMA process a process
+ $Y_t$ such that $L Y$ is an ARMA process where $L$ is
+ a combination of differencing and de-seasonalizing
+ filters.
+\subsection{Fitting an ARMA Model}
+Assume we have a time series which, after differencing
+and de-seasonalizing (and possible re-scaling)
+produces a time series $X_t$ that appears to be
+stationary and close to gaussian (i.e does not have
+too wild dynamics), but not iid. We may now think of
+fitting an ARMA model to $X_t$.
+
+The ACF and PACF plots may give some bound about the
+orders $p$ and $q$ of the model, as there tend to be
+exponential decay at lags larger than $p$ and $q$.
+
+
+Note that the sample ACF and PACF make sense only if
+the data appears to be generated from a
+\imp{stationary} process. If the data comes from a non
+stationary process, this may be grossly misleading
+(\fref{fig-acf-sprint}).
+%
+\begin{figure}
+  \begin{center}
+\Ifignc{acf-sprint-nondiff}{0.49}{0.3}
+\Ifignc{acf-sprint-diff}{0.49}{0.3}\end{center}
+  \mycaption{First panel: Sample ACF of the
+internet traffic of \fref{fig-sprint-regress}. The
+data does not appear to come from a stationary process
+so the sample ACF cannot be interpreted as estimation
+of a true ACF (which does not exist). Second panel:
+sample ACF of data differenced at lags 1 and 16. The
+sampled data appears to be stationary and the sample
+ACF decays fast. The differenced data appears to be
+suitable for modelling by an ARMA
+process.}\label{fig-acf-sprint}
+\end{figure}
+%
+%
+\subsubsection{Maximum Likelihood Estimation of an
+ARMA or ARIMA Model} Once we have decided for orders
+$p$ and $q$, we need to estimate the parameters $\mu,
+\sigma,A_1,\ldots,A_p, C_1,\ldots,C_q$. As usual, this
+is done by maximum likelihood. This is simplified by
+the following result.
+ \begin{shadethm} Consider an ARMA or ARIMA model
+ with parameters as in \dref{def-arma}, where the
+parameters are constrained to be in some set $\calS$.
+Assume we are given some observed data
+$x_1,\ldots,x_N$. \begin{enumerate}
+    \item The log likelihood of the data is
+    $-\frac{N}{2}\ln \left(2 \pi \hat{\sigma}^2\right)$ where
+    \be\hat{\sigma}^2
+=\frac{1}{N}\sum_{t=2}^{N} \left(x_{t}-\hat{X}_{t-1}(1)\right)^2
+\label{eq-mle-sig-arma}
+    \ee and $\hat{X}_{t-1}(1)$ is the one step ahead
+    forecast at time $t-1$.
+    \item Maximum likelihood estimation is equivalent
+    to minimizing the mean square one step ahead
+    forecast error $\hat{\sigma}$, subject to the model parameters
+    being in $\calS$.
+\end{enumerate}\label{theo-mle-arma}
+ \end{shadethm}
+The one step forecasts $\hat{X}_{t-1}(1)$ are computed using
+\pref{prop-forecast-arma} below. Care should be taken to remove
+the initial values if differencing is performed.
+
+Contrary to linear regression, the optimization involved here
+is non linear, even if the constraints on the parameter set are
+linear. The optimizer usually requires some initial guess to
+run efficiently. For MA$(q)$ or AR($p$) there exist estimation
+procedures (called \nt{moment heuristics}) that are not maximum
+likelihood but are numerically fast \cite{weber-ts}. These are
+based on the observation that for MA$(q)$ or AR$(p)$ processes,
+if we know the autocovariance function exactly, then we can
+compute the coefficients numerically\footnote{For AR$(p)$
+processes, the AR coefficients are obtained by solving the
+``Yule-Walker" equations, using the ``Levinson-Durbin"
+algorithm \cite{weber-ts}}. Then we use the sample
+autocovariance as estimate of the autocovariance function,
+whence we deduce an estimate of the parameters of the process.
+This is less accurate than maximum likelihood, but is typically
+used as an initial guess. For example, if we want to compute
+the maximum likelihood estimate of a general ARMA$(p,q)$ model,
+we may estimate the parameters $\mu, \sigma, C_1, \ldots,C_q$
+of an MA$(q)$ model, using a moment fitting heuristic. We then
+give as initial guess these values plus $A_1=\ldots=A_p=0$.
+
+It is necessary to verify that the obtained ARMA model
+corresponds to a stable filter with stable inverse.
+Good software packages automatically do so, but at
+times, it may be impossible to obtain both a stable
+filter and a stable inverse. It is generally admitted
+that this may be fixed by changing the differencing
+filter: too little differencing may make it impossible
+to obtain a stable filter (as the differenced data is
+not stationary); conversely, too much differencing may
+make it impossible to obtain a stable inverse
+\cite{BrockwellDavis02-book}.
+
+\subsubsection{Determination of Best Model Order}
+Deciding for the correct order may be done with the
+help of an information criterion (\sref{sec-ic}), such
+as the AIC. For example, assume we would like to fit
+the differenced data $X_t$ to a general ARMA$(p,q)$
+model, without any constraint on the parameters; we
+have $p+q$ coefficients, plus the mean $\mu$ and the
+variance $\sigma^2$; thus, up to the constant $- N \ln
+(2 \pi)$, which can be ignored, we have \be \mbox{AIC}
+= - N \ln \hat{\sigma}^2 + 2(p+q+2)\ee Note that the
+AIC counts as degrees of freedom only continuous
+parameters, so it does not count the number of times
+we applied differencing or de-seasonalizing to the
+original data. Among all the possible values of $p,q$
+and possibly among several application of differencing
+or de-seasonalizing filters, we choose the one than
+minimizes AIC.
+
+\subsubsection{Verification of Residuals} The sequence
+of residuals $e=(e_1,e_2,\ldots)$ is an estimation of
+the non observed innovation sequence $\epsilon$. It is
+obtained by
+ \be
+(e_1,e_2,\ldots,e_t)=F^{-1}
+(x_1-\mu,x_2-\mu,\ldots,x_t-\mu) \label{eq-diff-resid}
+ \ee
+where $(x_1,x_2,\ldots)$ is the differenced data and
+$F$ is the ARMA filter in \eref{eq-def-arma-f}. If the
+model fit is good, the residuals should be roughly
+independent, therefore the ACF and PACF of the
+residuals should be close to 0 at all lags.
+
+Note that the residuals can also be obtained from the
+following proposition (the proof of which easily
+follows from \coref{coro-pred-filter}, applied to
+$X_t$ and $\epsilon_t$ instead of $Y_t$ and $X_t$)
+\begin{proposition}[\nt{Innovation Formula}]
+ \be
+ \epsilon_t  = X_t -\hat{X}_{t-1}(1)
+ \label{eq-inno}
+ \ee
+ where $\hat{X}_{t-1}(1)$ is the one step ahead prediction
+ at time $t-1$.
+ \end{proposition}
+Thus, to estimate the residuals, one can compute the
+one step ahead predictions for the available data
+$\hat{x}_{t-1}(1)$, using the forecasting formulae
+given next; the residuals are then
+ \be
+ e_t = x_t - \hat{x}_{t-1}(1)
+ \ee
+ \begin{figure}[!htbp]
+ \begin{center}
+%\Ifignc{sprint-arima-constrained-diffdata-acf}{0.8}{0.3}
+%\Ifignc{sprint-arima-constrained-diffdata-pacf}{0.8}{0.3}
+ \subfigure[Prediction at time 224]{\ifig{sprint-arima-constrained}{0.7}}
+ \subfigure[Residuals]{\Ifignc{sprint-arima-constrained-resid}{0.8}{0.3}}
+ \subfigure[ACF of Residuals]{\Ifignc{sprint-arima-constrained-resid-acf}{0.4}{0.3}}
+ \subfigure[PACF of Residuals]{\Ifignc{sprint-arima-constrained-resid-pacf}{0.4}{0.3}}
+\end{center}
+  \mycaption{Prediction for internet traffic of
+\fref{fig-sprint-regress}, using an ARMA model for the differenced
+data (o=actual value of the future, no known at time of prediction).
+Compare to \fref{fig-sprint-diff}: the point predictions are almost
+identical, but the prediction intervals are more accurate
+(smaller).} \label{fig-sprint-arima-constrained}
+\end{figure}
+%
+\subsection{Forecasting} Once a model is fitted to
+the differenced data, forecasting derive easily from
+\thref{theo-pred-filter}, given in appendix, and its
+corollaries. Essentially, \thref{theo-pred-filter} says that
+predictions for $X$ and $Y$ are obtained by mapping predictions
+for $\epsilon$ by means of the reverse filters. Since
+$\epsilon$ is iid, predictions for $\epsilon$ are trivial: e.g.
+the point prediction $\hat{\epsilon}_t(h)$ is equal to the
+mean. One needs to be careful, though, since the first terms of
+the differenced time series $X_t$ are not known, and one should
+use recursive formulas that avoid propagation of errors. This
+gives the following formulas:
+
+\begin{proposition}
+Assume the differenced data $X=LY$ is fitted to an
+ARMA($p,q$) model with mean $\mu$ as in
+\dref{def-arma}.  \begin{enumerate}
+ \item The
+$\ell$-step ahead predictions at time $t$,
+$\hat{X}_t(\ell)$, of the differenced data can be
+obtained for $t\geq 1 $ from the recursion
+ \bearn
+ \hat{X}_t(\ell)-\mu &+& A_1 (\hat{X}_t(\ell-1)-\mu)
+ +\ldots+A_p
+ (\hat{X}_t(\ell-p)-\mu) =
+ C_1 \hat{e}_{t}(\ell-1) +\ldots+C_q
+  \hat{e}_{t}(\ell-q)
+  \\
+\hat{X}_t(\ell) &=&\bracket{
+    X_{t+\ell} \mif \ell \leq 0 \mand 1 \leq t+ \ell\\
+    \mu \mif t+ \ell \leq 0
+    }\\
+\hat{e}_{t}(\ell) &=&\bracket{
+    0 \mif \ell \geq 1 \mor t+ \ell \leq 0\\
+    X_{t+\ell}-\hat{X}_{t+\ell-1}(1) \mif \ell \leq 0
+    \mand t+ \ell \geq 2\\
+    X_1 -\mu \mif t+\ell=1 \mand \ell \leq 0
+    }
+ \eearn
+ In the recursion, we allow $\ell \leq 0$
+ even though we are eventually interested only in
+ $\ell \geq 1$.
+%
+%
+    \item Alternatively,
+$\hat{X}_t(\ell)$ can be computed as follows. Let
+$(c_0=1, c_1, c_2,\ldots)$ be the impulse response of
+$F^{-1}$; then:
+ \be
+ \hat{X}_t(\ell)-\mu =
+ -c_1  (\hat{X}_t(\ell-1)-\mu) - \ldots -
+ c_{\ell-1}(\hat{X}_t(1)-\mu)- c_{\ell} (x_t-\mu)-\ldots
+ -c_{t+\ell-t_0}(x_{t_0}-\mu)
+\; \ell \geq 1 \label{eq-arma-ar-pred}
+ \ee where $(x_{t_0}, \ldots,x_t)$
+is the differenced data observed up to time $t$, and
+where $t_0$ is the length of the impulse response of
+the differencing and de-seasonalizing filter $L$.
+ \item The
+$\ell$-step ahead predictions at time $t$,
+$\hat{Y}_t(\ell)$, of the non differenced data follow,
+using \pref{eq-propal-pp-diff}.
+    \item Let $(d_0, d_1,d_2 \ldots)$ be the impulse response of
+the filter $L^{-1}F$ and  \be
+\mbox{MSE}^2_t(\ell)=\sigma^2 \left(d_0^2 + \hdots +
+  d_{\ell-1}^2\right) \label{eq-var-mse}
+ \ee
+A 95\% prediction interval for $Y_{t+\ell}$ is \be
+\hat{Y}_{t}(\ell) \pm 1.96 \sqrt{\mbox{MSE}^2_t(\ell)}
+\label{eq-pred-mse-arima} \ee
+\end{enumerate}
+\label{prop-forecast-arma}
+\end{proposition}
+
+Note that we use two steps for computing the point predictions:
+first for $X_t$, then for $Y_t$. One can wonder why, since one
+could use a single step, based on the fact that $Y = L^{-1}F
+\epsilon$. The reason is numerical stability: since the initial
+values of $X_t$ (or equivalently, the past values $Y_s$ for
+$s\leq 0$) are not known, there is some numerical error in
+items 1 and 2. Since we assume that $F^{-1}$ is stable, $c_m
+\to 0$ for large $m$ so the values of $x_t$ for small $t$ do
+not influence the final value of \eref{eq-arma-ar-pred}. Indeed
+the non-differenced data $x_t$ for small values of $t$ is not
+known exactly, as we made the simplifying assumption that
+$y_s=0$ for $s\leq 0$. This is also why the first $t_0$ data
+points of $x$ are  removed in
+\eref{eq-arma-ar-pred}. %When $F^{-1}$ is assumed to be
+%stable, $c_m \to 0$ for large $m$ so the values of
+%$x_t$ for small $t$ do not influence the final value
+%of \eref{eq-arma-ar-pred}.
+
+The problem does not exist for the computation of
+prediction intervals, this is why one can directly use
+a single step in item~4. This is because the variance
+of the forecast $\mbox{MSE}^2_t(\ell)$ is independent
+of the past data (\thref{theo-parcor1} in Appendix).
+
+If one insists on using a model such that $F$ is stable, but not
+$F^{-1}$, the theorem is still formally true, but may be numerically
+wrong. It is then preferable to use the formulae in Section~3.3 of
+\cite{BrockwellDavis02-book} (but in practice one should avoid using
+such models).
+
+%Good software packages
+%implement robust formulae that work even if $F^{-1}$
+%is not stable.
+%\begin{proposition}
+%Assume the differenced data $X=LY$ is fitted to an
+%ARMA($p,q$) model with mean $\mu$ as in
+%\dref{def-arma}. Let $e_t$ be the residuals, as
+%defined in \eref{eq-diff-resid} and let \be
+% e'=(e_1,e_2,\ldots,e_t,0,0, \ldots)
+%\ee The $\ell$-step ahead predictions at time $t$,
+%$\hat{Y}_t(\ell)$, are obtained from
+% \be
+% (y_1,y_2,\ldots,y_t,\hat{Y}_t(1),\ldots,\hat{Y}_t(\ell),\ldots)=
+% L^{-1}(Fe'+\mu) \label{eq-gen-pred}
+% \ee
+%
+%Let $(d_0, d_1,d_2 \ldots)$ be the impulse response of
+%the filter $L^{-1}F$ and  \be
+%\mbox{MSE}^2_t(\ell)=\sigma^2 \left(d_0^2 + \hdots +
+%  d_{\ell-1}^2\right) \label{eq-var-mse}
+% \ee
+%A 95\% prediction interval for $Y_{t+\ell}$ is \be
+%\hat{Y}_{t}(\ell) \pm 1.96 \sqrt{\mbox{MSE}^2_t(\ell)}
+%\label{eq-pred-mse-arima} \ee
+%
+%If $\mu=0$ we can replace \eref{eq-gen-pred} by
+% \be
+% \hat{Y}_t(\ell) =
+% d_{\ell -1} e_t + \ldots +d_{t -1} e_1
+% \ee or
+%    \be
+% \hat{Y}_t(\ell) =
+% -g_1  \hat{Y}_t(\ell-1) - \ldots -
+% g_{\ell-1}\hat{Y}_t(1)- g_{\ell} y_t-\ldots -g_{t+\ell-1}y_1
+%\; \ell \geq 1 \label{eq-arma-ar-pred}
+% \ee where $(g_0=1,g_1,\ldots,g_m,\ldots)$ is the
+%impulse response of $F^{-1}L$ and $(y_1, \ldots,y_t)$
+%is the (non differenced) data observed up to time $t$.
+%\end{proposition}
+
+
+\subsubsection{Point Predictions for an AR($p$) 0 Mean Process} The formulae have simple closed forms
+when there is no differencing or de-seasonalizing and
+the ARMA process is AR($p$) with $0$ mean. In such a
+case, $Y_t=X_t$ and \eref{eq-arma-ar-pred} becomes
+(with the usual convention $y_s=0$ for $s \leq 0$):
+ \bearn
+ \hat{Y}_t(\ell)&=& -\sum_{j=1}^{\ell-1}A_{j}\hat{Y}_t(\ell-j)
+  -\sum_{j=\ell}^p A_{j} y_{t-j+\ell} \mfor 1\leq\ell\leq p\\
+   \hat{Y}_t(\ell)&=& -\sum_{j=1}^{p}A_{j}\hat{Y}_t(\ell-j)
+ \mfor \ell>p
+ \eearn
+where $A_1,A_2,\ldots,A_p$ are the auto-regressive
+coefficients as in \eref{eq-arma-def}. Because of this
+simplicity, AR processes are often used, e.g. when
+real time predictions are required.
+
+\begin{ex}{Internet Traffic, continued}\label{ex-sprint-arima-constrained}
+The differenced data in \fref{fig-acf-sprint} appears to be
+stationary and has decaying ACF. We model it as a 0 mean
+ARMA($p,q$) process with $p,q \leq 20$ and fit the models to
+the data. The resulting models have very small coefficients
+$A_m$ and $C_m$ except for $m$ close to 0 or above to 16.
+Therefore we re-fit the model by forcing the parameters such
+that
+ \bearn
+ A&=&(1,A_1, \ldots,A_p, 0,\ldots,0,A_{16}, \ldots,A_{16+p})\\
+C&=&(1,C_1, \ldots,C_p, 0,\ldots,0,C_{16},
+\ldots,C_{16+q})
+ \eearn for some $p$ and $q$. The model
+ with smallest AIC in this class is for $p=1$ and
+ $q=3$.
+
+\fref{fig-sprint-arima-constrained} shows the point
+predictions and the prediction intervals for the
+original data. They were obtained by first computing
+point predictions for the differenced data (using
+Matlab's \pro{predict} routine) and applying
+\pref{eq-propal-pp-diff}. The prediction intervals are
+made using \pref{prop-forecast-arma}. Compare to
+\fref{fig-sprint-diff}: the point predictions are only
+marginally different, but the confidence intervals are
+much better.
+
+We also plot the residuals and see that they do appear
+uncorrelated, but there are some large values that do
+not appear to be compatible with the gaussian
+assumption. Therefore the prediction intervals might
+be pessimistic. We computed point predictions and
+prediction intervals by re-sampling from residuals.
+\fref{fig-sprint-arima-constrained-bs} shows that the
+confidence intervals are indeed smaller.
+\end{ex}
+
+\subsubsection{Use of Bootstrap Replicates}
+\label{sec-mc-arma} When the residuals appear to be
+uncorrelated but non gaussian, the prediction
+intervals may be over or under-estimated. It is
+possible to avoid the problem using a Monte Carlo
+method (\sref{sec-montecarlo}), as explained now.
+
+The idea is to draw many independent predictions for
+the residuals, from which we can derive predictions
+for the original data (by using reverse filters).
+There are several possibilities for generating
+independent predictions for the residuals: one can fit
+a distribution, or use Bootstrap replicates (i.e.
+re-sample from the residuals with replacement). We
+give an algorithm using this latter solution.
+
+\begin{algorithm}\mycaption{Monte-Carlo computation of
+prediction intervals at level $1-\alpha$ for time series $Y_t$
+using re-samplig from residuals.  We are given: a data set
+$Y_t$, a differencing and de-seasonalizing filter $L$ and an
+ARMA filter $F$ such that the residual $\epsilon = F^{-1} L Y$
+appears to be iid; the current time $t$, the prediction lag
+$\ell$ and the confidence level $\alpha$. $r_0$ is the
+algorithm's accuracy parameter.}
+ \begin{algorithmic}[1]
+%
+  \State $R=\lceil 2 \;r_0/\alpha\rceil-1$ \Comment{For example
+  $r_0=25$, $R=999$}
+
+  \State compute the differenced data $(x_1,\ldots,x_t)=L(y_1,\ldots,y_t)$
+  \State compute the residuals $(e_q,\ldots,e_t)=F^{-1}(x_q,\ldots,x_t)$ where
+  $q$ is an initial value chosen to remove initial
+  inaccuracies due to differencing or de-seasonalizing (for example $q=$
+  length of impulse response of $L$)
+  \For{$r=1:R$}
+    \State draw $\ell$ numbers with replacement from
+the sequence $(e_q,\ldots,e_t)$ and call them
+$\epsilon^r_{t+1},...,\epsilon^r_{t+\ell}$\label{line-draw-xrf}
+    \State let $e^r=
+(e_q,\ldots,e_t,\epsilon^r_{t+1},...,\epsilon^r_{t+\ell})$
+    \State compute $X^r_{t+1},\ldots,X^r_{t+\ell}$ using
+$(x_q,\ldots,x_t,X^r_{t+1},\ldots,X^r_{t+\ell})=F(e^r)$
+    \State
+compute $Y^r_{t+1},\ldots,Y^r_{t+\ell}$ using
+\pref{eq-propal-pp-diff} (with $X^r_{t+s}$ and
+$Y^r_{t+s}$ in lieu of $\hat{X}_t(s)$ and
+$\hat{Y}_t(s)$)
+  \EndFor
+%  \State Point prediction is $\hat{Y}_t(\ell)=\frac{1}{R}\sum_{r=1}^R
+%  Y^r_{t+\ell}$
+  \State $\left(Y_{(1)},...,Y_{(R)}\right)=\mbox{sort}\left(Y^1_{t+\ell},...,Y^R_{t+\ell}\right)$
+  \State Prediction interval is $[Y_{(r_0)}\;;\;Y_{(R+1-r_0)}]$
+\end{algorithmic}\label{algo-mc-arma}
+ \end{algorithm}
+The algorithm is basic in that in gives no information
+about its accuracy. A larger $r_0$ produces a better
+accuracy; a more sophisticated algorithm would set
+$r_0$ such that the accuracy is small.
+
+Also note that, as any bootstrap method, it will
+likely fail if the distribution of the residuals is
+heavy tailed.
+
+An alternative to the bootstrap is to fit a parametric
+distribution to the residuals; the algorithm is the same as
+\aref{algo-mc-arma} except that line~\ref{line-draw-xrf} is
+changed by the generation of a sample residual from its
+distribution.
+% \begin{figure}[!htbp]
+% \begin{center}
+%%\Ifignc{sprint-arima-constrained-diffdata-acf}{0.8}{0.3}
+%%\Ifignc{sprint-arima-constrained-diffdata-pacf}{0.8}{0.3}
+% \subfigure[Prediction at time 224]{\ifig{sprint-arima-constrained}{0.7}}
+% \subfigure[Residuals]{\Ifignc{sprint-arima-constrained-resid}{0.8}{0.3}}
+% \subfigure[ACF of Residuals]{\Ifignc{sprint-arima-constrained-resid-acf}{0.4}{0.3}}
+% \subfigure[PACF of Residuals]{\Ifignc{sprint-arima-constrained-resid-pacf}{0.4}{0.3}}
+%\end{center}
+%  \mycaption{Prediction for internet traffic of
+%\fref{fig-sprint-regress}, using an ARMA model for the differenced
+%data (o=actual value of the future, no known at time of prediction).
+%Compare to \fref{fig-sprint-diff}: the point predictions are almost
+%identical, but the prediction intervals are more accurate
+%(smaller).} \label{fig-sprint-arima-constrained}
+%\end{figure}
+%
+\begin{figure}[htbp]\begin{center}
+{\ifig{sprint-arima-constrained-bs}{0.7}}
+\end{center}\mycaption{Prediction
+at time 224, same model as
+\fref{fig-sprint-arima-constrained}, but prediction
+obtained with the bootstrap method (re-sampling from
+residuals).} \label{fig-sprint-arima-constrained-bs}
+\end{figure}
+
+\section{Sparse ARMA and ARIMA Models} In order to
+avoid overfitting, it is desirable to use ARMA models
+that have as few parameters as possible. Such models
+are called \imp{sparse}. The use of an information
+criterion gives a means to obtain sparse models, but
+it involves a complex non linear optimization problem.
+An alternative is to impose constraints on the model,
+based on some sensible heuristics.
+
+\subsection{Constrained ARMA Models} A simple method
+consists in forcing some of the auto-regressive and
+moving average coefficients to 0, as in
+\exref{ex-sprint-arima-constrained}. Another method,
+more adapted to models with periodicity, is called
+\nt{Seasonal ARIMA}. Assumes that the data has a
+period $s$; a seasonal ARMA model is an ARMA model
+where we force the filter $F$ defined in
+\eref{eq-def-arma-f} to have the form
+ \be
+ F=\frac
+ {
+ \left(1+\sum_{i=1}^q c_i B^i\right)\left(1+\sum_{i=1}^Q C_i B^{si}\right)
+ }
+ {
+ \left(1+\sum_{i=1}^p a_i B^i\right)\left(1+\sum_{i=1}^P A_i B^{si}\right)
+ }
+ \ee
+$Y_t$ is a seasonal ARIMA model $\Delta_1^d R_s^D Y$
+is a seasonal ARMA model, for some nonnegative
+integers $d,D$. This model is also called
+\nt{multiplicative ARIMA} model, as the filter
+polynomials are products of polynomials.
+
+The only difference with the rest of this section when
+using a seasonal ARIMA model is the fitting procedure,
+which optimizes the model parameters subject to the
+constraints (using \thref{theo-mle-arma}). The
+forecasting formulae are the same as for any ARIMA or
+ARMA model.
+
+\subsection{Holt-Winters Models} These
+are simple models, with few parameters, which emerged
+empirically, but can be explained as ARMA or ARIMA models with
+few parameters. Their interest lies in the simplicity of both
+fitting and forecasting. Holt Winters models were originally
+introduced by Holt and Winters in \cite{holt-57,winters-60},
+and later refined by Roberts in \cite{roberts-82}; we follow
+the presentation in this latter reference. We discuss five
+models: EWMA, double EWMA and three variants of the Holt
+Winters seasonal model.
+\subsubsection{Exponentially Weighted Moving Average}
+This was originally defined as an ad-hoc forecasting formula.
+The idea is to keep a running estimate $\hat{m}_t$ of
+the mean of the data, and update it using the \nt{exponentially
+weighted moving average}\index{EWMA, exponentially weighted
+moving average} mechanism with parameter $a$, defined for $t
+\geq 2 $ by:
+ \be \hat{m}_{t} =
+(1-a)  \hat{m}_{t-1} + a Y_t \label{eq-hw1}
+ \ee
+ with initial condition $\hat{m}_1=Y_1$. The point
+ forecast is then simply
+\be
+ \hat{Y}_t(\ell) =  \hat{m}_t
+ \label{eq-ewma-1}
+\ee The following results makes the link to ARMA models (proof
+in \sref{sec-fc-proofs}).
+\begin{proposition}[\cite{roberts-82}] EWMA with parameter $a$ is
+equivalent to modelling the non-differenced time
+series with the ARIMA$(0,1,1)$ model defined by
+ \be(1-B) Y=(1-
+(1-a) B)\epsilon\ee with $\epsilon_t \sim \mbox{iid}
+N_{0, \sigma^2}$\label{prop-hw1-arima}
+\end{proposition}
+The parameter $a$ can be found by fitting the ARIMA
+model as usual, using \thref{theo-mle-arma}, namely,
+by minimizing the one step ahead forecast error. There
+is no constraint on $a$, though it is classical to
+take it between 0 and 1.
+
+The noise variance $\sigma^2$ can be estimated using
+\eref{eq-mle-sig-arma}, which, together with
+\pref{prop-forecast-arma}, can be used to find
+prediction intervals.
+
+EWMA works well only when the data has no trend or
+periodicity, see \fref{fig-ewma-swisspop}.
+
+
+ \mq{q-kdkldsa88}{What is EWMA for $a=0$~? $a=1$~?}{$a=0$: a constant, equal to the initial value;
+ $a=1$: no smoothing, $\hat{m}_t=Y_t$.}
+\begin{figure}[!htbp]
+\begin{center}
+\ifig{swisspop08}{0.4}
+\ifig{swisspop-ewma-diff1}{0.4}\ifig{swisspop-ewma-diff2}{0.4}
+\end{center}
+  \mycaption{First graph: simple EWMA applied to swiss population data $Y_t$ with $a=0.9$.
+  EWMA is lagging behind the trend.
+  Second graph: simple EWMA applied to the differenced series
+  $\Delta Y_t$. Third graph: prediction reconstructed from the previous graph.}
+  \mylabel{fig-ewma-swisspop}
+\end{figure}
+
+%
+%\begin{figure}[!htbp]
+%  \insfig{pompone-ewma}{1.0}
+%  \mycaption{EWMA applied to CPU data for $\alpha=0.2$ and $0.9$. The optimal one-step
+%  ahead predictor if for $\alpha=1$, i.e. no smoothing.}
+%  \mylabel{fig-ewma-pompone}
+%\end{figure}
+
+\subsubsection{Double Exponential Smoothing with
+Regression} \index{Double Exponential Smoothing with
+Regression} This is another simple model that can be
+used for data with trend but no season. Like simple
+EWMA, it is based on ad-hoc forecasting formulae that
+happen to correspond to ARIMA models. The idea is to
+keep a running estimate of both the mean level
+$\hat{m}_t$ and the trend $\hat{r}_t$. Further, a
+discounting factor $\phi$ is applied to model
+practical cases where the growth is not linear.
+
+The forecasting equation is
+ \bear
+ \hat{Y}_t(\ell) &=& \hat{m}_t +
+ \hat{r}_t\sum_{i=1}^{\ell}\phi^i
+ \eear
+ and the update equations are, for $t\geq 3$:
+ \bear
+ \hat{m}_t&=&(1-a)\left(\hat{m}_{t-1}+\phi\hat{r}_{t-1}\right)
+ + a Y_t\\
+ \hat{r}_t&=&(1-b) \phi \hat{r}_{t-1} +
+ b(\hat{m}_t-\hat{m}_{t-1})
+ \eear
+with initial condition $\hat{m}_2=Y_2$ and $\hat{r}_2=Y_2-Y_1$.
+We assume $0<\phi\leq 1$; there is no constraint on $a$ and
+$b$, though it is classical to take them between 0 and 1.
+
+For $\phi=1$ we have the classical Holt Winters model,
+also called \nt{Double Exponential Weighted Moving
+Average}; for $0<\phi<1$ the model is said ``with
+regression".
+% with $b=\frac{A_2}{a}$
+%
+\begin{proposition}[\cite{roberts-82}] Double EWMA with regression
+is equivalent to modeling the non differenced data as
+the zero mean ARIMA$(1,1,2)$ process defined by:
+ \be
+ (1-B)(1-\phi B) Y =(1 -\theta_1 B -\theta_2
+ B^2)\epsilon
+ \ee
+ with
+ \bear
+ \theta_1&=&1+\phi -a -\phi a b \\
+ \theta_2&=&-\phi(1-a)
+ \eear
+ with $\epsilon_t \sim \mbox{iid}
+N_{0, \sigma^2}$.
+
+Double EWMA is equivalent to the zero mean
+ARIMA$(0,2,2)$ model:
+  \be
+ (1-B)^2Y=(1 -\theta_1 B -\theta_2 B^2)\epsilon
+ \ee
+ with
+ \bear
+ \theta_1&=&2 -a - a b \\
+ \theta_2&=&-(1-a)
+ \eear
+ \label{prop-hw2-arima}
+\end{proposition}
+
+The maximum likelihood estimate of $a,b$ and $\phi$ is
+obtained as usual by minimizing the one step ahead
+forecast error. \fref{fig-ewma-swisspop2} shows an
+example of double EWMA.
+\begin{figure}[!htbp]
+\begin{center}
+\Ifig{swisspop08-double}{0.6}{0.4}
+\end{center}
+  \mycaption{Double EWMA with $a=0.8, b=0.8$. It gives a good
+  predictor; it underestimates the trend in convex parts, overestimates it in concave parts.}
+  \mylabel{fig-ewma-swisspop2}
+\end{figure}
+
+% \mq{q-klklaskl89}{What would the forecast be if we do double EWMA on the differenced
+% series in \fref{fig-ewma-swisspop}~?}{The trend in the difference would be extrapolated;
+% this is equivalent to assuming that the quadratic growth in the last years will continue. In
+% contrast, simple EWMA applied to the differences assumes that the over linear growth in
+% the last years is a random effect and will not be sustained.}
+%
+%
+% \mq{q-asdjkjkds892}{Show that simple EWMA($\alpha_1$) applied to the differenced series is the same as
+% double EWMA with parameters to be identified.}{Same as double EWMA with $\alpha=0, \beta=\alpha_1$.}
+
+\subsubsection{Seasonal Models} For times series with a
+periodic behaviour there are extensions of the Holt Winters
+model, which keep the same simplicity, and can be explained as
+ARIMA models. We present three variants, which differ in the
+choice of some coefficients.
+
+Assume that we know that the non differenced data has a period
+$s$. The idea is to keep the level and trend estimates
+$\hat{m}_t$ and $\hat{r}_t$ and introduce corrections for
+seasonality $\hat{s}_t(i)$, for $i=0,\ldots,s-1$. The forecast
+equation is \cite{roberts-82}:
+ \be
+ \hat{Y}_t(\ell) = \hat{m}_t + \sum_{i=1}^{\ell}\phi^i
+ \hat{r}_t + w^{\ell} \hat{s}_{t}(\ell \mod s)
+ \ee
+where $\phi$ and $w$ are discounting factors. The update
+equations are, for $t\geq s+2$:
+%
+ \bear
+ \hat{m}_t&=&a \left(Y_t - w \hat{s}_{t-1}(1)\right) + (1-a) (\hat{m}_{t-1}+
+ \phi \hat{r}_{t-1})\\
+ \hat{r}_t&=&
+ b\left(\hat{m}_t-\hat{m}_{t-1}\right)+(1-b)\phi\hat{r}_{t-1}\\
+ \hat{s}_t(i)&=&w \hat{s}_{t-1}((i+1)\mod s) + D_i e_t \; \mfor i = 0
+ ... s-1
+ \eear
+%
+%
+% \bear
+% \hat{m}_t&=&\hat{m}_{t-1}+\phi \hat{r}_{t-1}+ a e_t\\
+% \hat{r}_t&=&\phi \hat{r}_{t-1}+ a b e_t\\
+% \hat{s}_t(i)&=&w \hat{s}_{t-1}((i+1)\mod s) + D_i e_t
+% \eear
+where $D_i$ are coefficients to be specified next and
+$e_t=Y_t-\hat{Y}_{t-1}(1)$.
+
+The initial values of $\hat{m}$, $\hat{r}$, $\hat{s}$ are
+obtained by using the forecast equation with $t=1$ and
+$\ell=1...s$. More precisely, set $\hat{m}_t=Y_t$ for
+$t=1,\ldots,s+1$, $\hat{r}_{1}=r$, $\hat{s}_{1}(j)=s_j$ for
+$j=0,\ldots,s-1$, solve for $r,s_0, s_1,\ldots,s_{s-1}$ in
+ \bearn
+ Y_{j+1} &=& Y_1 + r \sum_{i=1}^{j} \phi^{i}
+ +  w^{j}s_{j \mod s}  \mfor j=1\ldots s\\
+ 0&= & \sum_{j=1}^s s_j
+  \eearn
+  and do $\hat{r}_{s+1}=\phi^{s}\hat{r}_1 $,
+  $\hat{s}_{s+1}(j)=w^s s_j$.
+After some algebra this gives the \imp{initial
+conditions:}
+ \bear
+ \hat{m}_{s+1}&=&Y_{s+1}\\
+ \hat{r}_{s+1} &=&\frac{\sum_{j=1}^s (Y_{j+1}-Y_1)w^{s-j}}
+{\sum_{j=1}^s \sum_{i=1}^j \phi^{i-s}w^{s-j}}
+%
+\\
+%
+\hat{s}_{s+1}(0) &=&Y_{s+1}-Y_1 -\hat{r}_{s+1} \sum_{i=1}^s
+\phi^{i-s}
+%
+\\
+%
+\hat{s}_{s+1}(j) &=&\left(Y_{j+1}-Y_1 -\hat{r}_{s+1}
+\sum_{i=1}^j \phi^{i-s}\right) w^{s-j}  \; \mfor j=1,\ldots,
+s-1
+ \eear
+%(Note that $\hat{s}_{s+1}(0)=\hat{s}_{s+1}(s)$).
+
+Roberts argues we should impose $\sum_{i=0}^s
+ D_i =0$. \nt{Roberts' Seasonal Model} is obtained
+  by using an exponential family, i.e.
+ \bear D_0&=&1-c^{s-1}\\
+    D_i&=&-c^{i-1}(1-c) \; \mfor i=1,\ldots,s-1
+ \eear
+for some parameter $c$.
+\begin{proposition}[\cite{roberts-82}]
+The Roberts seasonal model with parameters
+$a,b,c,\phi, w$ is equivalent to the zero mean ARIMA
+model
+ \be
+ \left(1 -\phi B\right) \left(1-B\right)
+ \left(1 + \sum_{i=1}^{s-1}w^i B^i\right) Y =
+ \left(1- \sum_{i=1}^{s+1} \theta_i B^i\right)\epsilon
+ \ee
+ with  $\epsilon_t \sim \mbox{iid}
+N_{0, \sigma^2}$ and \bearn
+ \theta_1  &=& 1+\phi - w c - a(1 + \phi  b)
+ \\
+  \theta_i  &=& w^{i-2}\left\{c^{i-2} \left[(1 + \phi)w
+  c- \phi-
+  w^2 c^2  \right]- (w-\phi)a - w \phi ab
+\right\}\\
+&&\; \;\;\;\;\mfor i=2,\ldots,s-1\\
+\theta_s&=&w^{s-2}\left\{
+ c^{s-2}\left[
+  (1+\phi)w c -\phi
+   \right]
+   - (w-\phi)a -w\phi ab
+\right\}
+\\
+\theta_{s+1}&=& -\phi w^{s-1}\left(
+ c^{s-1}-a
+\right)
+  \eearn \label{prop-hw3-1-arima}
+\end{proposition}
+
+
+
+The \nt{Holt-Winters Additive Seasonal Model} is also
+commonly used. It corresponds to $\phi=1, w=1$ (no
+discounting) and
+ \bear D_0&=&c(1-a)\\ D_i&=&0\; \mfor i=1,\ldots,s-1\eear
+It seems more reasonable to impose $\sum_{i=0}^{s-1}
+D_i =0$, and Roberts proposes a variant, the
+\nt{Corrected Holt-Winters Additive Seasonal Model},
+for which $\phi=1, w=1$ and
+ \bear D_0&=&c(1-a)\\
+    D_i&=&-\frac{c(1-a)}{s-1}\; \mfor i=1,\ldots,s
+ \eear
+
+
+\begin{proposition}[\cite{roberts-82}]
+The Holt-Winters Additive Seasonal models with
+parameters $a,b,c$ are equivalent to the zero mean
+ARIMA models
+ \be
+  \left(1-B\right)
+ \left(1 -B^s\right) Y =
+ \left(1- \sum_{i=1}^{s+1} \theta_i B^i\right)\epsilon
+ \ee
+ with $\epsilon_t \sim \mbox{iid} N_{0,\sigma^2}$ and \bearn
+ \theta_1  &=& (1-a)(1+c h)-ab\\
+ \theta_i  &=& -ab \; \mfor i=2,\ldots,s-1\\
+ \theta_{s}&=&1   - a b - (1-a) c (1 +h)\\
+ \theta_{s+1}&=& -(1-a)(1-c)
+  \eearn
+with $h=\frac{1}{s-1}$ (Corrected Holt-Winters
+Additive Seasonal model) and $h=0$ (Holt-Winters
+Additive Seasonal model). \label{prop-hw3-2-arima}
+\end{proposition}
+
+For all of these models, parameter estimation can be
+done by minimizing the mean square one step ahead
+forecast error. Prediction intervals can be obtained
+from the ARIMA model representations.
+
+There are many variants of the Holt Winters seasonal
+model; see for example \cite{holt-winters-01} for the
+multiplicative model and other variants.
+\begin{ex}{Internet Traffic with Roberts Model} We
+applied the seasonal models in this section to the data set of
+\fref{fig-sprint-regress}; the results are in
+\fref{fig-sprint-roberts}. We fitted the models by maximum
+likelihood, i.e. minimizing the one step ahead forecast error.
+We obtained prediction intervals by using the ARIMA
+representation and \pref{prop-forecast-arma}.
+
+The best Roberts seasonal model is for $a =1$,
+$b=0.99$, $c=0.90$, $\phi= 0.050$ and $w=1$. The best
+Holt Winters additive seasonal model is for $a=
+0.090$, $b =0.037$ and $c=0.64$. Both corrected and
+non corrected Holt Winters additive seasonal models
+give practically the same results.
+
+\begin{figure}[!htbp]
+ \begin{center}
+ \subfigure[Roberts Model]{\Ifignc{sprint-roberts}{0.7}{0.4}}
+ \subfigure[Holt Winters Additive Seasonal Model]
+ {\Ifignc{sprint-hw--0}{0.7}{0.4}}
+\end{center}
+  \mycaption{Prediction for internet traffic of
+\fref{fig-sprint-regress}, using Additive Seasonal
+models. (o=actual value of the future, no known at
+time of prediction). The predictions are less accurate
+than in \fref{fig-sprint-arima-constrained} but the
+models are much simpler.} \label{fig-sprint-roberts}
+\end{figure}
+\end{ex}
+
+%
+%
+%
+%
+%
+%Confidence IntervaL comes from the equivalent ARIMA
+%model: $Y_t= F \epsilon_t$ with
+%
+%\be F =
+% \frac{1- \sum_{i=1}^{s+1} \theta_i B^i
+% }
+% {\left(1 -\phi B\right) \left(1-B\right)
+% \left(1 + \sum_{i=1}^{s-1}w^i B^i\right)
+% }
+% \ee with
+% \bear
+% \theta_1&=&1 -a -b -D_1\\
+% \theta_i&=& -b -D_i+ D_{i-1} \; \mfor i=2,\ldots,s-1\\
+% \theta_s&=& 1 -b -D_0+ D_{s-1}\\
+% \theta_{s+1}&=&-1+a +D_0
+% \eear
+
+%\section{Review Questions}
+%\mq{fc-klasdasdkl}{Is there a difference between a
+%prediction interval and a confidence interval for the
+%point prediction~?}{The prediction interval is an
+%interval in which, with probability for example 0.95,
+%a future value will lie. A confidence interval for the
+%point prediction accounts for the fact that the model
+%parameters are not known exactly. The latter is
+%usually much smaller and may often be ignored.}
+%\section{Example: The Campus Internet Traffic Forecasting Contest}
+
+
+
+\section{Proofs}
+ \label{sec-fc-proofs}
+%\paragraph{Proof of
+%\thref{theo-lr-pi}}
+\begin{petit}
+\paragraph{\thref{theo-mle-arma}}
+
+Let $X_t-\mu= F\epsilon_t$ where $F$ is the ARMA
+filter and $\epsilon_t \sim \mbox{iid} N_{0,
+\sigma^2}$. We identify $F$ with an $N\times N $
+invertible matrix as in \eref{eq-fil-mat}. $Y_t$ is a
+gaussian vector with mean $\mu$ and covariance matrix
+$\Omega = \sigma^2 F F^T $. Thus the log-likelihood of
+the data $x_1,\ldots,x_N$ is
+ \ben
+ -\frac{N}{2}\ln(2 \pi) -N \ln \sigma -
+ \frac{1}{2\sigma^2}\left((x^T-\mu\vec{1}^T) F^{-T} F^{-1} (x-\mu  \vec{1})\right)
+ \een
+where $x$ is the column vector of the data and
+ $\vec{1}$ is the
+ column vector with $N$ rows equal to
+ $1$.
+For a given $x$ and $F$ the log-likelihood is maximum
+for \ben \hat{\sigma}^2=\frac{1}{N}
+\left((x^T-\mu\vec{1}^T) F^{-T} F^{-1} (x-\mu
+\vec{1})\right)^2 \een and is equal to
+$-\frac{N}{2}\ln\left(2 \pi \hat{\sigma}^2\right)$.
+Now \ben \hat{\sigma}^2=\frac{1}{N} \norm{ F^{-1}
+(x-\mu \vec{1})}^2 \een and, by definition of the
+model, $F^{-1} (x-\mu \vec{1})$ is the vector of
+residuals (i.e. the value of $\epsilon_t$ that
+correspond to the observed data $x_1, \ldots,x_N$).
+Now use the innovation formula, \eref{eq-inno}, to
+conclude the proof.
+
+\paragraph{\pref{prop-hw1-arima}} Assume that EWMA corresponds to
+an ARIMA model. Let $\epsilon_t=Y_t-\hat{Y}_{t-1}(1)$ be the
+innovation sequence. Re-write \eref{eq-hw1} as \ben \hat{m}_t =
+\hat{m}_{t-1} + a \epsilon_t \een Using filters, this writes as
+$\hat{m}=B \hat{m} + a \epsilon $. Combine with $Y = B \hat{m}
++ \epsilon$ and obtain $(1-B)Y=(1-(1-a)B)\epsilon$, which is
+the required ARIMA model. Conversely, use the forecasting
+equations in \pref{prop-forecast-arma}) to show that we obtain
+the desired forecasting equations.
+
+The proofs of Propositions~\ref{prop-hw2-arima},
+\ref{prop-hw3-1-arima} and \ref{prop-hw3-2-arima} are
+similar.
+\end{petit}
+\section{Review Questions}
+\mq{q-dskjdksjkslksd}{Does the order in which differencing at
+lags $1$ and $16$ is performed matter~?}{No, because filters
+commute.}
+ \mq{q-fc-fdklsjhdlfikujh8723}{When is EWMA adequate~?}{When the data
+ is stationary and we want a very simple model.}
+ \mq{q-fc-fdklsjhdsdlfikujh8723}{When is double EWMA adequate~?}{When the data
+ has trends but no seasonality and we want a very simple model.}
+ \mq{q-fc-fdklsjhdsdlfikujh873}{When is a seasonal Holt Winters model adequate~?}
+ {When the data
+ has trends and seasonality and we want a very simple model.}
+ \mq{q-fc-ldfksajhdsafkzugjhgxas}{For ARMA and ARIMA models, what is the relation
+ between the data $Y_t$,
+ one point ahead forecasts $\hat{Y}_t(1)$ and innovation $\eps_t$~?}
+ {$Y_t=\hat{Y}_{t-1}(1)+\eps_t$, see \eref{eq-inno}.}
+ \mq{q-fc-dlfskajh}{How do we account for uncertainty due to model fitting
+ when using linear regression models~? ARMA models~?}{With linear regression models
+ there are explicit formulas, assuming the residuals are gaussian. In most cases, the
+ uncertainty due to fitting is negligible compared to forecasting undertainty. For ARMA
+ models, the formulas in this chapter simply ignore it.}
+ \mq{q-fc-dfsalfdhiuze32wt9763}{What should one be careful about when interpreting an ACF plot~?}{That the
+ data appears stationary.}
+ \mq{q-fc-kjfadshafdej}{What is the overfitting problem~?}{A model that fits the past
+ data too well might be unable to predict the future.}
+ \mq{q-fc-dfsalkjdfsge32wt9dfg}{When do we need an ARIMA model rather than simply applying
+ differencing filters~?}{When the residuals after differencing appear to be very correlated.}
+ \mq{q-fc-fdlkjhfdsu}{How does one fit a Holt Winters model to the data~?}{Like all ARMA or ARIMA models, by minimizing the average one step ahead forecast error, see \thref{theo-mle-arma}.}
+ \mq{q-fc-dfsalkjhiuzsdfger324}{What are sparse ARMA and ARIMA models~? Why do we use them~?}{These are
+ models with very few parameters, hence the computational procedures are much simpler.}
+ \mq{q-fc-dfsalkjhiudsfgwt9sd2}{When do we need the bootstrap~?}{When the residuals
+ appear iid but non gaussian and we want prediction intervals.}
+ \mq{q-fc-dfsalkjhiuzdd2wte972}{When do we use an information criterion~?}{When we want
+ to decide about the model order (number of parameters). It should be used only
+ if the model seems to make sense for the data, otherwise the results may be aberrant.}
+
+\nfs{\section{Leftovers}
+
+WHITENING FILTER COMPARER A ARMA SUR DIFF
+
+
+
+For a theoretical justification of this type of model,
+see \sref{app-wold}.
+
+
+Ajouter GARCH (tourver du logiciel qui le fasse) comme
+illustration d'autres modeles et de la methode prob
+conditionnelle (Davisson chapitre 6)
+
+
+Fourier : d\'{e}finir ici plutot que en chapitre LRD
+
+stationarit\'{e}: expliquer (supprimer Weber)
+
+Recentrer le discours sur l'utilisation de xreg= et diff de S-PLUS
+et l'equivalent Matlab/E4
+
+
+Verifier que ``le deterministic component $V_t$ is $0$ precisely
+when $\sum_k |\gamma_k| <+\infty$" (dixit Weber). Autres livres
+disent: deterministic part = linear comb of its own past.
+
+
+
+
+ 1.4 discussion des residuals pour sprint data
+
+
+ 1.5
+decider quels exemples garder - aussi peu que possible
+
+   sprint avec linear regression et avec seasonal
+   arima
+
+   faire d'aboord filtrage sur sprint, puis arima puis
+   seasonal arima et aussi multiplicative holt winters
+
+   %%%dinda pour illustrer ARMA et a cause du box
+
+   %Dow Jones pour illustrer la methode de Box jenkins
+%   a partir des donnees publiques de Danilo Careggio
+%   sur http://lib.stat.cmu.edu/datasets/
+
+2. extract deterministic: with linear regression or
+with difference filters
+
+find example where each one is better
+
+3. re-scale
+   box: EPFL contest
+   shows the value of re-scaling
+
+4. outliers
+
+5. holt winters sauf multiplicative comme exemple
+d'ARIMA - faire les maths ?
+
+
+6. Add re-scaling sans exemple num\'{e}rique mais pointer
+sur le cas EPFL contest
+
+Box : EPFL forecasting contest.
+
+
+7. ajouter une remarque sur la methode recursive de
+point predictions \`{a} partir de la representation
+ \be Y_t= \frac{1}{h_0}\left(X_t + h_1 Y_{t-1}+ h_2
+ Y_{t-2}+...+h_{t-1}Y_1\right)
+ \ee
+
+8. say in intro that differencing introduces no parms
+but makes residuals more complex to model.
+
+9. faire garch (matlab: ugarch) pour le cas sprint et
+tester monte carlo - calcul avec variance
+conditionelle
+
+10. mettre wold's decomposition de mes notes blurp in
+appendix of this chapter
+
+11. multiple time series
+
+12. say relation to whitening
+
+
+13. ACf et Fourier transform of ARMA processes. Matlab
+ commands to obtain them.
+}

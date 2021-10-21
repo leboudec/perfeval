@@ -1,0 +1,3192 @@
+\begin{minipage}[b]{0.50\textwidth}
+When computing or measuring a performance metric (as
+defined in \cref{ch-metho}), one should specify which
+observer's \imp{viewpoint} is taken. For example, in a
+simulation study of an information server, one may be
+interested in the metric ``worst case backlog",
+defined as the 95-percentile of the number of pending
+requests.
+
+One way is to measure the queue of pending requests at request
+arrival epochs over a large number of arriving requests, and compute
+the 95-percentile of the resulting empirical distribution. An
+alternative is to measure the queue of pending requests at periodic
+intervals (say every second) over a long period of time and compute
+the 95-percentile of the resulting empirical distribution. The
+former method reflects the viewpoint of an arriving request, the
+latter of an observer at an arbitrary point in time. The former
+method evaluates the metric using a clock that ticks at every
+request arrival, whereas the latter uses a standard clock. Both
+methods will usually provide different values of the metric.
+Therefore, a metric definition should specify which clock, or
+viewpoint is used, and the choice should be relevant for the
+specific issues being addressed.
+\end{minipage}
+%
+\begin{minipage}[b]{0.50\textwidth}
+\insfignc{palmScouacSigne}{1.0} ~\\
+~\\
+~\\
+~\\
+\end{minipage}
+
+In \sref{sec-event-time}, we give an intuitive definition of event
+clocks and of event versus time averages; we show that subtle, but
+possibly large, sampling biases are unavoidable. We also show how to
+use the large time heuristic to derive Palm calculus formulas, i.e.
+formulas that relate metrics obtained with different clocks.
+
+In the rest of the chapter we formally present Palm calculus, i.e. a
+formal treatment of these intuitive definitions and formulas. This
+is a branch of probability which is not well known, though it is
+quite important for any measurement or simulation study, and can be
+presented quite simply. In essence, the Palm probability of an event
+is the conditional probability, given that some specific point
+process has a point. Making sense of this is simple in discrete
+time, but very complex in continuous time, as is often the case in
+the theory of stochastic processes. We do not dwell on formal
+mathematical constructions, but we do give formulas and exact
+conditions under which they apply.
+
+We introduce Feller's paradox, an apparent contradiction in
+waiting times that can explained by a difference in viewpoints.
+We give useful formulas such as the Rate Conservation Law and
+some of its many consequences such as Little's, Campbell's shot
+noise, Neveu's exchange and Palm's inversion formulas. We
+discuss simulations defined as stochastic recurrences, show how
+this can explain when simulations freeze and how to avoid
+transient removals at all (perfect simulation). Last, we give
+practical formulas for computing Palm probabilities with Markov
+models observed along a subchain, and use these to derive the
+PASTA property.
+\minitoc
+%
+\section{An Informal Introduction}
+\label{sec-event-time}
+
+In this section we give an intuitive treatment of event versus time
+averages and explain the use of event clocks. A formal treatment
+involves Palm calculus and is given in \sref{sec-palm}.
+
+\subsection{Event versus Time Averages} Consider a discrete event simulation that
+runs for a long period of time, and let $T_0, T_1, \ldots, T_N$ be a
+sequence of \nt{selected events}, for example, the request arrival
+times at an information server.
+ Assume that we associate to the stream of selected events a clock
+ that ticks at times $T_0, T_1, \ldots, T_N$ (the \nt{event clock}).
+ An \nt{event average} statistic is any performance
+metric that his computed based on sampling the simulation state at
+times $T_n$, i.e. using the event clock.
+%Formally, we assume tthe events are , we By this we mean the
+%sequence of time epochs at which the simulation state does a
+%transition from some state $s$ to some other state $s'$ with $(s,s')
+%\in \calF_0$, where $\calF_0$ is a subset of the set of all possible
+%state transitions.
+For example, the average queue length at the information server upon
+request arrival can be defined as
+ \ben \bar{Q}^0:=\frac{1}{N+1}\sum_{n=0}^N{Q(T_n^-)}
+ \een
+ (where $Q(t^-)$ is the queue size just before time $t$)
+ and is an event average statistic.
+
+In contrast, a \nt{time average} statistic is obtained using the
+standard clock, assumed to have infinite accuracy (i.e. the standard
+clock ticks every $\delta$ time units, where $\delta$ is
+``infinitely small"). For example, the average queue length, defined
+by
+ \ben \bar{Q} := \frac{1}{T_N-T_0}\int_{T_0}^{T_N}Q(s)
+ ds
+ \een
+is a time average statistic.
+
+In signal processing parlance, event averages correspond to
+\nt{adaptive sampling}.
+
+
+\begin{ex}{Gatekeeper}A multitasking system receives jobs. Any arriving
+job is first processed by a ``gatekeeper task", which allocates the
+job to an available ``application processor". Due to power saving,
+the gatekeeper is available only at times, $0, 90, 100, 190, 200,
+...$ (in milliseconds). For example a job that arrives at time 20ms
+is processed by the gatekeeper at time 90ms.
+
+A job that is processed by the gatekeeper at times $0, 100,
+200...$ is allocated to an application processor that has an
+execution time of 1000ms. In contrast, a job that is processed
+by the gatekeeper at times $90, 190, ...$ has an execution time
+of 5000ms (\fref{fig-ex-gk}). We assume there is neither
+queuing nor any additional delay. We are interested in the
+average job execution time, excluding the time to wait until
+the gatekeeper wakes up to process the job.
+
+The system designer thinks that the average job execution time
+is \ben W_s=\frac{1000+5000}{2}=3000\een
+ since there are two
+application processors and this is the average of their execution
+times.
+
+A customer may have a different viewpoint. If she sends a job to the
+system at a random instant, she will be allocated to an application
+processor depending on the time of arrival. She computes her
+performance metric assuming that she picks a millisecond at random
+uniformly in an interval $[0,T]$ where $T$ is large, and obtains
+ \ben
+W_c=\frac{90}{100}\times 5000 + \frac{10}{100}\times 1000 = 4600
+\een
+
+The metric $W_s$ is an event average; it can be measured using the
+event clock that ticks whenever the gatekeeper wakes up. The metric
+$W_c$ is a time average; it can be measured using a clock that ticks
+every millisecond.
+ \label{ex-gk}
+\end{ex}
+\begin{figure}
+  \insfig{gk}{0.6}
+  \mycaption{Gatekeeper: jobs are dispatched to a processor with processing time equal to
+  $50 0 0$ or $1 0 0 0$ ms}\label{fig-ex-gk}
+\end{figure}
+
+%
+%\begin{ex}{Video Server} A video
+%server starts the film on a channel three times per
+%hour. Is it fair to say that the average waiting time
+%is $60 mn/3/2=10mn$~?
+%
+%
+%
+%Assume for example that films are started at the hour,
+%the hour plus 5mn, and the hour plus 20 mn. The
+%provider computes the average time between films, as
+%$\frac{1}{3} 5mn + \frac{1}{3} 15mn + \frac{1}{3} 40
+%mn = 20mn$.
+%
+%A first, naive, estimate of waiting time could be
+%$20mn$. This is indeed the event average of the
+%waiting time, which corresponds to selected events
+%being the startings of films.
+%
+%A customer may have a different viewpoint. If she
+%connects to the system at a random instant, she will
+%have to wait until the next movie starts, and we may
+%take as performance metric the average waiting time.
+%We can compute it by assuming that our customer picks
+%a minute at random uniformly in the hour. She is
+%computing the time average of the waiting time, and
+%she obtains
+% \ben
+%W_c=\frac{5}{60}\times 2.5mn + \frac{15}{60}\times
+%7.5mn + \frac{40}{60}\times 20mn = 15mn 25s  \een
+%Obviously, the event average is different, but this is
+%too simple.
+%
+%Let us assume the provider is smarter and decides to
+%compute the average waiting time experienced by a
+%customer, as follows. Since the average time between
+%films is 20 mn, and since a customer is assumed to
+%arrive uniformly at any time, the provider estimates
+%the average time one needs to wait until the next film
+%starts as \ben W_p={20mn/2=10mn}\een
+%%
+%%The provider is computing an event average and can
+%%claim that he is computing the correct average waiting
+%%time experienced by customers. Indeed, let $T_0,
+%%T_1,\ldots$ be the times at which films are started
+%%and let $X(t)$ be the time at which the next film
+%%after $t$ will start.
+%
+%Both $W_p$ and $W_c$ can qualify as ``average time
+%experienced by a customer until next film starts", but
+%they have different values, though both are honest and
+%report perfectly correct values; but they correspond
+%to different viewpoints, or sampling methods. The
+%former samples an arbitrary film and computes how much
+%time in average one will wait for this film to start.
+%The latter samples an arbitrary time epoch and
+%computes how much time one will wait until the next
+%film starts. \label{ex-video-palm}
+%\end{ex}
+
+This example shows that event averages may be very different from
+time averages, in other words, \imp{sampling bias} may be a real
+issue. Therefore it is necessary, when defining a metric, to specify
+which clock (i.e which viewpoint) is adopted. Further, one should
+discuss which viewpoint makes sense for the performance of interest.
+In the previous example, the time average viewpoint is a better
+metric as it directly reflects customer experience.
+
+\subsection{The Large Time Heuristic}
+Palm calculus is a set of formulas for relating event and time
+averages. They form the topic of the other sections in this chapter.
+However, it may be useful to know that most of these formulas can be
+derived heuristically using the \nt{large time heuristic}, which can
+be described as follows.
+\begin{enumerate}
+    \item formulate each performance metric as a long run ratio, as
+    you would do if you would be evaluating the metric in a discrete event
+    simulation;
+    \item take the formula for the time average viewpoint and break it down into
+    pieces, where each piece corresponds to a time interval between two selected
+    events;
+    \item compare the two formulations.
+\end{enumerate}
+
+We explain it on the following example.
+
+\begin{exnn}{Gatekeeper, Continued} We can formalize
+\exref{ex-gk} as follows. The two metrics are $W_s$ (event average,
+system designer's viewpoint) and $W_c$ (time average, customer's
+viewpoint).
+
+
+\begin{enumerate}
+    \item    In a simulation, we would estimate $W_s$ and $W_c$ as follows.
+Let $T_0, T_1, \ldots, T_N$ be the selected event times (times at
+which gatekeeper wakes up) and $S_n=T_{n}-T_{n-1}$ for $n=1\ldots
+N$. Let $X_n$ be the execution time for a job that is processed by
+the gatekeeper at time $T_n$
+  \bear
+  W_s &:=& \frac{1}{N}\sum_{n=1}^{N} X_{n}
+ \label{eq-palm-ws}
+  \\
+ W_c &:=&  \frac{1}{T_N-T_0}\int_{T_0}^{T_N} X_{N^+(t)}
+ dt
+ \label{eq-palm-wc}
+  \eear
+ where $N^+(t)$ is the index of the next event clock tick after $t$,
+ i.e. a job arriving at time $t$ is processed by the gatekeeper at time $T_{n}$
+ with $n=N^+(t)$.
+    \item We break the integral in \eref{eq-palm-wc} into pieces
+    corresponding to the intervals $[T_{n-1}, T_{n} )$:
+
+\bear
+ W_c &=&\frac{1}{T_N-T_0}\sum_{n=1}^{N}\int_{T_{n-1}}^{T_{n}} X_{N^+(t)}
+ dt  \nonumber
+%\\
+% &=&
+\;=\;\frac{1}{T_N-T_0}\sum_{n=1}^{N}\int_{T_{n-1}}^{T_{n}}
+ X_{n} dt \nonumber
+ \\
+ &=& \frac{1}{T_N-T_0}\sum_{n=1}^{N} S_n X_{n}
+\label{eq-palm-wc-2}
+ \eear
+\item We now compare Eqs.(\ref{eq-palm-ws}) and
+(\ref{eq-palm-wc-2}). Define the sample average sleep time
+$\bar{S}:=\frac{1}{N}\sum_{n=1}^N S_n$, the sample average execution
+time $\bar{X}:=\frac{1}{N}\sum_{n=1}^N X_n$ and the sample
+cross-covariance
+ \ben
+\hat{C} := \frac{1}{N}\sum_{n=1}^N (S_n- \bar{S})( X_n-\bar{X})=
+\frac{1}{N}\sum_{n=1}^N S_n X_n - \bar{S}\bar{X}
+ \een
+We can re-write Eqs.(\ref{eq-palm-ws}) and (\ref{eq-palm-wc-2}) as:
+%
+\bearn W_s & =  \bar{X} \\
+  W_c
+& =& \frac{1}{ N \bar{S}} \sum_{n=1}^N S_n X_n =
+\frac{1}{\bar{S}}(\hat{C}+ \bar{S}\bar{X})   =
+ \bar{X}+\frac{\hat{C}}{\bar{S}}
+ \eearn
+\end{enumerate}
+In other words, we have shown that \be
+ W_c = W_s + \frac{\hat{C}}{\bar{S}}
+\label{eq-palm-1} \ee Numerically, we find
+$\frac{\hat{C}}{\bar{S}}=160 0$ and \eref{eq-palm-1} is
+verified.
+% In general, we see that the
+%difference in viewpoints depends on the covariance: if the time
+%interval $S_n$ and the execution time $X_n$ are positively
+%correlated (as in the numerical example), $W_c > W_s$,
+%otherwise the opposite occurs. If they are uncorrelated, the
+%two viewpoints coincide.
+\end{exnn}
+
+%\begin{exnn}{Feller's Paradox} We can formalize
+%\exref{ex-video-palm} as follows. The two metrics are $W_p$ (event
+%average, provider's viewpoint) and $W_c$ (time average, customer's
+%viewpoint).
+%
+%
+%\begin{enumerate}
+%    \item    In a simulation, we would estimate $W_p$ and $W_c$ as follows.
+%Let $T_0, T_1, \ldots, T_N$ be the selected event times (starting
+%times of films) and $S_n=T_{n}-T_{n-1}$ for $n=1\ldots N$.
+%  \bear
+%  W_p &:=& \frac{1}{N}\sum_{n=1}^{N} \frac{S_{n}}{2}
+% \label{eq-palm-wp}
+%  \\
+% W_c &:=&  \frac{1}{T_N-T_0}\int_{T_0}^{T_N} (T^+(t)-t)
+% dt
+% \label{eq-palm-wc}
+%  \eear
+% where $T^+(t)$ is the start time of the next film,
+% i.e. $T^+(t) =\inf\{T_n \mst T_n > t\}$.
+%
+%    \item We break the integral in \eref{eq-palm-wc} into pieces
+%    corresponding to the intervals $[T_n, T_{n+1} )$:
+%
+%\bearn
+% W_c &=&\frac{1}{T_N-T_0}\sum_{n=0}^{N-1}\int_{T_n}^{T_{n+1}} (T^+(t)-t)
+% dt
+%\\
+% &=& \frac{1}{T_N-T_0}\sum_{n=0}^{N-1}
+% \int_{T_n}^{T_{n+1}} (T_{n+1}-t)
+% dt
+% \eearn
+%Now \ben\int_{T_n}^{T_{n+1}} (T_{n+1}-t)
+% dt= \frac{(T_{n+1}-T_n)^2}{2}=\frac{S_{n+1}^2}{2}\een
+%thus \be
+% W_c =\frac{1}{2(T_N-T_0)} \sum_{n=1}^{N}S_n^2
+%\label{eq-palm-wc-2}
+% \ee
+%
+%\item We now compare Eqs.(\ref{eq-palm-wp}) and
+%(\ref{eq-palm-wc-2}). Define the sample average
+%$\bar{S}:=\frac{1}{N}\sum_{n=1}^N S_n$  and the sample variance of
+%the inter-film times by
+% \ben
+%\hat{\sigma}^2 := \frac{1}{N}\sum_{n=1}^N (S_n-\bar{S})^2=
+%\frac{1}{N}\sum_{n=1}^N S_n^2-\bar{S}^2
+% \een
+%We can re-write Eqs.(\ref{eq-palm-wp}) and (\ref{eq-palm-wc-2}) as:
+%
+%\bearn W_p & = &\frac{1}{2} \bar{S} \\
+%  W_c
+%& =& \frac{1}{2 N \bar{S}} \sum_{n=1}^N S_n^2
+%  =  \frac{1}{2 \bar{S}} (\bar{S}^2 +\hat{\sigma}^2)
+%  \\
+%  & = &
+%\frac{1}{2} \bar{S} + \frac{\hat{\sigma}^2}{2 \bar{S}}
+% \eearn
+%\end{enumerate}
+%In other words, we have shown that \be
+% W_c = W_p + \frac{\sigma^2}{2 \bar{S}}
+%\label{eq-feller-1} \ee
+%\end{exnn}
+
+\eref{eq-palm-1} is our first example of Palm calculus formula; it
+relates the time average $W_s$ to the event average $W_c$. Note that
+it holds quite generally, not just for the system in \exref{ex-gk}.
+We do not need any specific assumptions on the distribution of sleep
+or execution times, nor do we assume any form of independence. The
+only required assumption is that the metrics $W_s$ and $W_c$ can be
+measured using Eqs.(\ref{eq-palm-ws}) and (\ref{eq-palm-wc}). In the
+next section, we give a formal framework where such assumptions
+hold.
+
+\eref{eq-palm-1} shows that, for this example, the difference
+in viewpoints is attributed to the cross-covariance between
+sleep time and execution time. A positive [resp. negative]
+cross-covariance implies that the time average is larger [resp
+smaller] than the event average. In \exref{ex-gk}, the
+cross-covariance is positive and we do find a larger time
+average. If sleep time and execution times are non-correlated,
+the two viewpoints happen to produce the same metric.
+
+
+%The \nt{intensity formula} can be obtained as a straightforward
+%application of the large time heuristic. It says that the intensity
+%$\lambda$, defined as the number of selected events per time unit
+%(it is a time average statistic), is the inverse of the average
+%inter-event time $\bar{S}$ (an event average statistic):
+% \be\lambda
+%=\frac{1}{\bar{S}}\label{eq-inten}\ee
+%
+%Note that the results we have obtained in this section
+%with the large time heuristic are exact realtionships
+%between the different statistics. They do not rely on
+%any stochastic assumption.
+
+\subsection{Two Event Clocks}
+There exist formulas not only for relating time and event averages,
+but also for relating different event averages (see
+\thref{theo-neveu}). We show in this section how such formulas can
+be derived, using the following variant of the large time heuristic:
+\begin{enumerate}
+    \item formulate each performance metric as a long run ratio, as
+    you would do if you would be evaluating the metric in a discrete event
+    simulation;
+    \item take the formula for one event average viewpoint and break it down into
+    pieces, where each piece corresponds the time interval between two selected
+    events of the second viewpoint;
+    \item compare the two formulations.
+\end{enumerate}
+
+%
+\begin{ex}{Stop and Go Protocol} A source sends packets to a destination.
+Error recovery is done by the stop and go protocol, as follows. When
+a packet is sent, a timer, with fixed value $t_1$, is set. If the
+packet is acknowledged before $t_1$, transmission is successful.
+Otherwise, the packet is re-transmitted. The packet plus
+acknowledgement transmission and processing have a constant duration
+equal to $t_0 <t_1$. The proportion of successful transmissions
+(fresh or not) is $1-\alpha$. We assume that the source is greedy,
+i.e., always has a packet ready for transmission. Can we compute the
+throughput $\theta$ of this protocol without making any further
+assumptions~? The answer is yes, using the large time heuristic.
+
+To this end, we compare the average transmission times sampled
+with the two different event clocks. The former (clock ``$a$")
+ticks at every transmission or re-transmission attempt; the
+latter (clock ``$0$") ticks at fresh arrivals. Accordingly, let
+$\tau_a$ be the average time between transmission or
+retransmission attempts, and $\tau_0$ be the average time
+between fresh arrivals (\fref{fig-ex-sg}).
+\begin{figure}
+  \insfig{sg}{0.6}
+  \mycaption{The Stop and Go protocol}\label{fig-ex-sg}
+\end{figure}
+\begin{enumerate}
+    \item
+Consider a simulation such that there are $N+1$ fresh arrivals, at
+times $T_0, T_2, \ldots, T_{N}$, with $N$ large. $T_n$ are the ticks
+of clock $0$. The estimates of $\tau_a$ and $\tau_0$ are
+ \bear
+ \tau_a &=& \frac{T_{N}-T_0}{N_a} \nonumber\\
+ \tau_0 &=& \frac{T_{N}-T_0}{N}\label{eq-sag-1} \eear where
+ $N_a$ is the number of transmission or retransmission
+ attempts generated by packets $1$ to $N$. The estimate of
+ the throughput $\theta$ is \ben \theta = \frac{N}{T_N-T_0}
+ = \frac{1}{\tau_0} \een Also, by definition of the error
+ ratio $\alpha$: $N_a  (1-\alpha)=N$ thus \bearn  \tau_a &=
+ &(1-\alpha) \tau_0 \eearn
+    \item We focus on $\tau_a$ and break it down into pieces
+    corresponding to the ticks of clock $0$:
+    \bearn
+    \tau_a = \frac{T_N-T_0}{N_a}=\frac{1}{N_a}\sum_{n=1}^{N} X_n
+    \eearn
+    where $X_n$ is the total transmission and retransmission time
+    for the $n$th packet, i.e. the time interval between two ticks of clock $0$.
+    Let $A_n$ be the number of unsuccessful
+    transmission attempts for the $n$th packet (possibly 0). It comes:
+    \bear
+    X_n & = & A_n t_1 + t_0  \nonumber
+    \\
+    \tau_a & = & \frac{1}{N_a}\left(t_1\sum_{n=1}^{N} A_n + t_0 N\right)
+    %\nonumber
+    %\\
+    %& = &
+    = \frac{1}{N_a}\left(t_1 (N_a-N) + t_0 N)\right)
+  \nonumber
+    \\
+    & = & \alpha t_1 + (1-\alpha) t_0 \label{eq-sag-2}
+    \eear
+    \item Compare Eqs.(\ref{eq-sag-1}) and (\ref{eq-sag-2})
+        and obtain $\tau_0  =  \frac{\alpha}{1-\alpha} t_1
+        + t_0$; the throughput is thus:
+         \bear \theta & =
+    & \frac{1}{\frac{\alpha}{1-\alpha} t_1 + t_0}
+\label{eq-sag-3}
+    \eear
+\end{enumerate}
+\label{ex-sag}
+\end{ex}
+
+In this example, as in general with Palm calculus formulas, the
+validity of a formula such as  \eref{eq-sag-3} does not depend on
+any distributional or independence assumption. We did not make any
+particular assumption about the arrival and failure processes, they
+may be correlated, non Poisson, etc.
+
+\subsection{Arbitrary Sampling Methods}
+To conclude this section we describe how different viewpoints
+occur in various situations, with clocks that may not be
+related to time. Here too, the large ``time" heuristic provides
+useful relationships.
+ \begin{figure}[htb]
+ \begin{center}
+ \subfigure[Empirical Complementary CDFs]{\Ifignc{ecdf}{0.5}{0.25}}\\
+ \subfigure[Histogram, flow viewpoint]{\Ifignc{histFlow}{0.45}{0.25}}
+ \subfigure[Histogram, packet viewpoint]{\Ifignc{histPacket}{0.45}{0.25}}
+ \mycaption{Distribution of flow sizes, viewed by an arbitrary flow and an
+ arbitrary packet, measured by an internet service provider.}
+ \label{fig-palm-flows}
+ \end{center}
+ \end{figure}
+
+
+ \begin{ex}{Flow versus Packet Clock \cite{shaikh1999lsr}} Packets arriving at a router
+ are classified in ``flows". We would like to plot the empirical distribution
+ of flow sizes, counted in packets.
+We measure all traffic at the router for some extended period
+of time. Our metric of interest is the probability distribution
+of flow sizes.
+%
+We can take a flow ``clock", or viewpoint, i.e. ask: pick an
+arbitrary flow, what is its size ? Or we could take a packet
+viewpoint and ask: take an arbitrary packet, what is the magnitude of its flow ?
+We thus have two possible metrics (\fref{fig-palm-flows}):
+\begin{description}
+    \item[Per flow] $f_F(s)=1/N \times$ number of flows with length
+    $s$, where $N$ is the number of flows in the dataset;
+    \item[Per packet] $f_P(s)=1/P \times$ number of packets that belong to a flow of length
+    $s$, where $P$ is the number of packets in the dataset;
+\end{description}
+The large time heuristic helps us find a relation between the
+two metrics.
+\begin{enumerate}
+    \item For $s$ spanning the
+set of observed flow sizes:
+  \bear
+ f_F(s) &= &\frac{1}{N}\sum_{n=1}^N \ind{S_n = s} \label{eq-flows-gf}
+ \\
+ f_P(s) &=&  \frac{1}{P}\sum_{p=1}^P \ind{S_{F(p)} =s}
+ \label{eq-kdlskjlasd}
+ \eear
+where $S_n$ be the size in bytes of flow $n$, for $n=1,\ldots N$,
+and $F(p)$ is the index of the flow that packet number $p$ belongs
+to.
+    \item We can break the sum in \eref{eq-kdlskjlasd} into pieces
+    that correspond to ticks of the flow clock:
+    \bear
+f_P(s) &=& \frac{1}{P}\sum_{n=1}^N\sum_{p: F(p)=n} \ind{S_n =s}
+ = \frac{1}{P}\sum_{n=1}^N\sum_{p=1}^P \ind{F(p)=n}\ind{S_n
+ =s}
+ \nonumber
+ \\
+  &=&\frac{1}{P}\sum_{n=1}^N\ind{S_n=s}\sum_{p=1}^P \ind{F(p)=n}
+=\frac{1}{P}\sum_{n=1}^N\ind{S_n=s} s = \frac{s}{P}
+\sum_{n=1}^N\ind{S_n=s}  \label{eq-flows-gp}
+ \eear
+  \item Compare Eqs.(\ref{eq-flows-gf}) and (\ref{eq-flows-gp}) and
+  obtain that for all flow size $s$:
+  \be
+  f_P(s) = \eta s f_F(s)
+  \label{eq-flows}
+  \ee
+  where $\eta$ is a normalizing constant ($\eta=N/P$).
+\end{enumerate}
+ %The required
+%histogram is the empirical distribution of the data set $s_f$,
+%$f=1,\ldots F$.
+%Say that the histogram uses bins $B_1, \ldots, B_I$, we then have
+%the histogram values:
+% \ben
+% G_i = \frac{1}{F}\sum_{f=1}^F \ind{s_f \in B_i}
+% \een
+%
+%We could also take the \imp{per packet} viewpoint, which is
+%equivalent to asking: pick an arbitrary packet, what is its size ?
+%Assuming we take the same bins as before, the histogram values are
+%now
+%  \ben
+% H_i = \frac{1}{P}\sum_{p=1}^P \ind{s_{f(p)} \in B_i}
+% \een%
+%
+%s to.
+%
+%We can find a relation between the two viewpoints by breaking the
+%sum in \eref{eq-kdlskjlasd} per flow:
+% \bearn
+% H(s) &=& \frac{1}{P}\sum_{f=1}^F\sum_{p: F(p)=f} \ind{S_{f} =s}
+% = \frac{1}{P}\sum_{f=1}^F\sum_{p=1}^P \ind{F(p)=f}\ind{S_{f}
+% =s}\\
+%  &=&\frac{1}{P}\sum_{f=1}^F\ind{S_{f}=s}\sum_{p=1}^P \ind{F(p)=f}
+%=\frac{1}{P}\sum_{f=1}^F\ind{S_{f}=s} s= \frac{F}{P} s G(s)
+% \eearn
+%thus \be H(s) = \eta s G(s)\ee for some constant $\eta$.
+\label{ex-flows}
+ \end{ex}
+\eref{eq-flows} relates the two ways of computing the distribution
+of flow sizes. Note that they differ by one exponent, so it could be
+that the flow size is heavy tailed when sampled with a packet clock,
+but light tailed when sampled with a flow clock.
+
+ \begin{ex}{Kilometer versus Time Clock: Cyclist's Paradox}A cyclist rides swiss
+ mountains; his speed is $10$ km/h uphill and $50$ km/h downhill. A
+ journey is made of $50$\% uphill slopes and $50$\% downhill slopes. At
+ the end of the journey, the cyclist is disappointed to read on his speedometer
+ an average speed of only 16.7 km/h, as he was expecting an average of
+ $\frac{10+50}{2}=30$ km/h.
+ \nfs{
+ PUT A FIGURE OF SCOUAC AND PILOU WITH DIFFERENT AVERAGES
+   }
+ Here, we have two ways of measuring the average speed: with the
+ standard clock (speedometer), or with the kilometer clock (cyclist's
+ intuition). Let us apply the large time heuristic.
+
+ \begin{enumerate}
+    \item Pick a unit of length (perhaps smaller than the
+    kilometer) such that the cyclist's speed is constant on a piece of trip of length 1, and let $v_l$
+    be the speed at the $l$th piece of the trip, $l=1,...,L$, where $L$ is the trip length.
+    The average speed
+    measured with the standard clock, $S_t$ and with the kilometer
+    clock, $S_k$ are:
+    \bear
+    S_t &=& L/T \nonumber \\
+    S_k &=& \frac{1}{L}\sum_{l=1}^L v_l \label{eq-cyclist-sk}
+    \eear where $T$ is the trip duration.
+    \item Break $L$ into pieces corresponding to the km clock:
+    \bear
+    T & = &\sum_{l=1}^L\frac{1}{v_l}
+    \nonumber \\
+    S_t &=& \frac{L}{\sum_{l=1}^L\frac{1}{v_l}} \label{eq-cyclist-st}
+    \eear
+    \item Thus $S_t$ (\eref{eq-cyclist-st}) is the harmonic
+        mean of $v_l$  whereas $S_k$ (\eref{eq-cyclist-sk})
+        is the arithmetic mean (\sref{sec-conf-rescale}).
+        The harmonic mean is the inverse of the mean of the
+        inverses. If the speed is not constant throughout
+        the whole trip, the harmonic mean is smaller than
+        the arithmetic mean \cite{wikipedia-hm}, thus the
+        cyclist's intuition will always have a positive
+        bias (leading to frustration).
+ \end{enumerate}
+In this case the large time heuristic does not give a closed form
+ relationship between the two averages; however, a closed form relationship can be
+ obtained for the two distributions of speeds. Using the same method as in \exref{ex-flows}, one
+ obtains
+  \be
+ f_t(v) = \eta \frac{1}{v}f_k(v)
+  \ee
+where $f_t(v)$ [resp. $f_k(v)$] is the PDF of the speed, sampled
+with the standard clock [resp. km clock] and $\eta$ is a normalizing
+constant; $f_t$ puts more mass on the small values of the speed $v$,
+this is another explanation to the cyclist's paradox.
+ \end{ex}
+
+
+\section{Palm Calculus}
+\label{sec-palm}
+
+Palm calculus is a branch of probability that applies to stationary
+point processes. We give an intuitive, but rigorous, treatment. A
+complete mathematical treatment can be found for example in
+\cite{baccelli-87,robert-03} or in \cite{serfozo2009basics} in the context of continuous time Markov chains.
+
+\subsection{Hypotheses}
+\paragraph*{Stationarity}
+We assume that we are observing the output of a simulation,
+which we interpret as a sample of a stochastic process $S(t)$.
+Time $t$ is either discrete or continuous.This process is
+\nt{stationary} if for any any $n$, any sequence of times
+$t_1<t_2<...<t_n$ and any time shift $u$ the joint distribution
+of $(S(t_1+u),S(t_2+u),...,S(t_n+u))$ is independent of $u$. In
+other words, the process does not change statistically as it
+gets older. In practice, stationarity occurs if the system has
+a stationary regime and we let the simulation run long enough
+(\cref{ch-simul}).
+
+We also assume that, at every time $t$, we are able to make an
+observation $X(t)$ from the simulation output. The value of
+$X(t)$ may be in any space. We assume that the process $X(t)$
+is \nt{jointly stationary} with the simulation state process
+$S(t)$ (i.e. $(X(t), S(t))$ is a stationary process). Note that
+even if the simulation is stationary, one might easily define
+outputs that are not jointly stationary (such as: $X(t)$ = the
+most recent request arrival time at an information server). A
+sufficient condition for $X(t)$ to be jointly stationary with
+$S(t)$ is\begin{enumerate}
+    \item at every time $t$, $X(t)$ can be computed from the present,
+    the
+    past and/or the future of the simulation state $S(t)$, and
+    \item $X(t)$ is invariant under of change of the origin of times.
+\end{enumerate}
+For example, if an information server can be assumed to be
+stationary, then $X(t)=$ time elapsed since the last request arrival
+time and $X(t)=$ the queue size at time $t$ satisfy the conditions.
+
+\subsection{Definitions}
+\label{sec-point-process}
+\paragraph*{Point Process}
+We introduce now the definition of \nt{stationary point process}.
+Intuitively, this is the sequence of times at which the simulation
+does a transition in some specified set.
+
+Formally, a stationary point process in our setting is associated
+with a subset $\calF_0$ of the set of all possible state transitions
+of the simulation. It is made of all time instants $t$ at which the
+simulation does a transition in $\calF_0$, i.e. such that $(S(t^-),
+S(t^+))\in \calF_0$.
+
+In practice, we do not need to specify $\calF_0$ explicitly. In
+contrast, we have a simulation in steady state and we consider times
+at which something of a certain kind happens; the only important
+criterion is to make sure that the firing of a point can be entirely
+determined by observing only the simulation. For example, we can
+consider as point process the request arrival times at an
+information server.
+
+Technically, we also need to assume that the simulation process
+is such that the point process is simple, i.e. with probability
+1 two instants of the point process cannot be equal; (this is
+true in practice if the simulation cannot have several
+transitions at the same time), and non explosive, i.e. the
+expected number of time instants over any finite interval is
+finite. This implies that the instants of the point process can
+be enumerated and can be described as an increasing sequence of
+(random) times $T_n$, where $n$ is integer, and $T_n <
+T_{n+1}$.
+
+In continuous time, to avoid ambiguities, we assume that all
+processes are right continuous, so that if there is a transition at
+time $t$, $S(t)$ is the state of the simulation just after the
+transition.
+
+The sequence $T_n$ is (as a thought experiment) assumed to be
+infinite both in the present and the past, i.e. the index $n$ spans
+$\Ints$. With the terminology of \sref{sec-event-time}, $(T_n)_{n
+\in \Ints}$ is the sequence of ticks of the event clock.
+
+\paragraph*{The Arbitrary Point in Time}
+Since the simulation is in stationary regime, we imagine that, at
+time $0$, the simulation has been running for some time. Because the
+point process is defined in terms of transitions of the simulation
+state $S(t)$, it is also stationary. It is convenient, and
+customary, to denote the time instants of the point process $T_n$
+such that
+  \be...<T_{-2}< T_{-1} < T_{0} \leq 0 < T_1 < T_2 < ...
+  \label{eq-def-arbiti}
+  \ee
+In other words, $T_0$ is the last instant of the point process
+before time $0$, and $T_1$ the next instant starting from time $0$.
+This convention is the one used by mathematicians to give a meaning
+to ``an arbitrary point in time": we regard $t=0$ as our random time
+instant, in some sense, we fix the time origin arbitrarily.
+
+This differs from the convention used in many simulations, where
+$t=0$ is the beginning of the simulation. Our convention, in this
+chapter, is that $t=0$ is the beginning of the observation period
+for a simulation that has a stationary regime and has run long
+enough to be in steady state.
+
+\paragraph*{Intensity}
+The \nt{intensity} $\lambda$ of the point process is defined as the
+expected number of points per time unit. We have assumed that there
+cannot be two points at the same instant. In discrete or continuous
+time, the intensity $\lambda$ is defined as the unique number such
+that the number $N(t, t+\tau)$ of points during any interval $[t, t
++ \tau]$ satisfies \cite{baccelli-87}:
+ \be
+ \E(N(t, t+\tau))= \lambda \tau
+ \label{eq-def-intensity}
+ \ee
+In discrete time, $\lambda$ is also simply equal to the probability
+that there is a point at an arbitrary time: \be
+ \lambda = \P(T_0=0) = \P(N(0)=1)= \P(N(t)=1)
+ \ee where the latter is valid for any $t$, by stationarity.
+
+One can think of $\lambda$ as the (average) rate of the event clock.
+\paragraph*{Palm Expectation and Palm Probability}
+%\paragraph*{Palm Expectation}
+Let $Y$ be a one time output of the simulation, assumed to be
+integrable (for example because it is bounded). We define the
+expectation $\E^t(Y)$ as the conditional expectation of $Y$ given
+that a point occurs at time $t$:
+ \be
+ \E^t(Y)=\E(Y|\exists n\in \Ints, T_n= t )
+ \mylabel{eq-palmt-def}
+ \ee
+If $Y=X(t)$ where $X(t)$ and the simulation are jointly stationary,
+$\E^t(X(t))$ does not depend on $t$. For $t=0$, it is called the:
+
+\begin{sh}
+\begin{definition}[Palm
+expectation] \be
+ \E^0(X(0))=\E(X(0)|\mbox{ a point of the process $T_n$ occurs at time } 0 )
+ \mylabel{eq-palm-def}
+ \ee
+\end{definition}
+\end{sh}
+By the labeling convention in \eref{eq-def-arbiti}, if there is a
+point of the process $T_n$ at $0$, it must be $T_0$, i.e.
+ \ben
+ \E^0(X(0))=\E(X(0)|T_0=0 )
+ \een
+Note that there is some ambiguity in the notation, as the process
+$T_n$ is not explicitly mentioned (in \sref{sec-2clocks} we will
+need to remove this ambiguity).
+
+The Palm {\em probability} is  defined similarly, namely
+ \ben
+ \P^0(X(0) \in W)= \P(X(0) \in W|\mbox{ a point of the process $T_n$ occurs at time } 0 )
+ \een for any measurable subset $W$ of the set of values of $X(t)$.
+In particular, we can write $\P^0(T_0=0)=1$.
+
+ \begin{petit}
+The interpretation of the definition is easy in discrete time, if,
+as we do, we assume that the point process is ``simple", i.e. there
+cannot be more than one point any instant $t$. In this case,
+\eref{eq-palmt-def} has to be taken in the usual sense of
+conditional probabilities:
+ \ben
+\E^t(Y)=\E(Y|N(t)=1)=\frac{\E(Y N(t))}{\E(N(t))}=\frac{\E(Y
+N(t))}{\P(N(t)=1)} = \frac{\E(Y N(t))}{\la}
+ \een
+ where $N(t)=1$ if there is a point at time $t$, $0$ otherwise.
+
+
+In continuous time, ``there is a point at time $t$" has probability
+$0$ and cannot be conditioned upon. However, it is possible to give
+a meaning to such a conditional expectation, similar to the way one
+can define the conditional probability density function of a
+continuous random variable:
+ \be
+ \E^t(Y) = \lim_{\tau \rightarrow  0}\frac{\E\left(Y N(t,t+\tau)\right)}{\E(N(t,t+\tau))}
+ =\lim_{\tau \rightarrow  0}\frac{\E\left(Y N(t,t+\tau)\right)}{\lambda \tau}
+ \ee
+where the limit is in the Radon-Nykodim sense, defined as follows.
+For a given random variable $Y$, consider the measure $\mu$ defined
+for any measurable subset $B$ of $\Reals$ by
+ \be \mu(B)= \frac{1}{\lambda}\E\left(Y \sum_{n \in \Ints}\ind{T_n\in B}\right)
+ \label{eq-1}
+ \ee
+where $\lambda$ is the intensity of the point process $T_n$. If $B$
+is negligible (i.e. its Lebesgue measure, or length, is $0$) then,
+with probability $1$ there is no event in $B$ and $\mu(B)=0$. By the
+Radon-Nykodim theorem \cite{rudin-87}, there exists some function
+$g$ defined on $\Reals$ such that for any $B$: $\mu(B)=\int_B g(t)
+dt$. The Palm expectation $\E^t(Y)$ is defined as $g(t)$. In other
+words, for a given random variable $Y$, $\E^t(Y)$ it is defined as
+the function of $t$ that satisfies, for any $B$: \be \E\left(Y
+\sum_{n \in \Ints}\ind{T_n\in B}\right)=\lambda \int_B \E^t(Y) dt
+ \ee
+\end{petit}
+
+
+\subsection{Interpretation as Time and Event Averages}
+In this section we make the link with the intuitive treatment in
+\sref{sec-event-time}.
+
+\paragraph*{Time Averages.} If $X(t)$ is jointly stationary with the simulation, it follows
+that the distribution of $X(t)$ is independent of $t$; it is called
+the \emph{time stationary} distribution of $X$.
+
+Assume that, in addition, $X(t)$ is ergodic, i.e that time
+averages tend to expectations, (which, is for example true on a
+discrete state space if any state can be reached from any
+state)), for any bounded function $\phi$, we can estimate
+$\E(\phi(X(t)))$ by (in discrete time):
+ \ben
+ \E(\phi(X(t))) \approx \frac{1}{T}\sum_{t=1}^T \phi(X(t))
+ \een
+when $T$ is large. An equivalent statement is that for any
+(measurable) subset $W$ of the set of values of $X(t)$:
+ \ben
+ \P(X(t) \in W) \approx \mbox{fraction of time that }X(t) \mbox{ is in the set }W
+ \een
+
+In other words, the time stationary distribution of $X(t)$ can be
+estimated by a time average.
+
+\paragraph*{Event Averages.}  We can interpret the
+Palm expectation and Palm probability as event average if the
+process $X(t)$ is ergodic (note however that Palm calculus does not
+require ergodicity). Indeed, it follows from the definition of Palm
+expectation that
+ \ben
+ \E^0\lp\phi(X(0))\rp\approx  \frac{1}{N}\sum_{n=1}^N
+\phi\lp X\lp T_n\rp\rp
+ \een
+for $N$ large.
+ \begin{petit}It can be shown \cite{baccelli-87} that if the process
+$X(t)$ is ergodic and integrable then
+$\limit{N}{\infty}\frac{1}{N}\sum_{n=1}^N \phi \lp X\lp
+T_n\rp\rp=\E^0\lp\phi(X^0)\rp$.
+
+ \end{petit}
+An equivalent statement is that, for any (measurable) subset $W$ of
+the set of values of $X(t)$:
+ \ben
+ \P^t(X(t) \in W)= \P^0(X(0) \in W) \approx\mbox{ fraction of points
+ of the point process at
+ which }  X(t) \mbox{ is in }W
+ \een
+ Thus the Palm expectation and the Palm probability can be
+ interpreted as event averages. In other words, they are ideal
+ quantities, which can be estimated by observing $X(t)$ sampled with
+ the event clock.
+
+\subsection{The Inversion and Intensity Formulas}
+ \index{Inversion formula} \index{Intensity formula}
+
+formulas that relate time and event averages. Also known under
+the name of Ryll-Nardzewski and Slivnyak's formula, the
+inversion formula relates the time stationary and Palm
+probabilities. The proof for discrete time, a direct
+application of the definition of conditional probability, is
+given in appendix.
+
+\begin{shadethm}(Inversion Formula.) \label{theo-inversion}
+ \begin{itemize}
+ \item
+In discrete time:
+   \be
+  \E(X(t))=\E(X(0)) =  \lambda \E^0\left(\sum_{s=1}^{T_1} X(s)\right)=\lambda
+   \E^0\left(\sum_{s=0}^{T_1-1} X(s)\right) \label{eq-inversion-dt}
+ \ee
+    \item
+In continuous time:
+ \be
+\E(X(t))=\E(X(0)) =  \lambda \E^0\left(\int_{0}^{T_1} X(s) d\!s
+\right)
+ \mylabel{eq-inversion}
+ \ee
+\end{itemize}
+\end{shadethm}
+%
+By applying the inversion to $X(t)=1$ we obtain the following
+formula, which states that the intensity of a point process is the
+inverse of the average time between points.
+
+\begin{shadethm}(Intensity Formula.)
+ \be
+ \frac{1}{\lambda} = \E^0(T_1-T_0)= \E^0(T_1)
+ \mylabel{eq-intensity}
+ \ee
+ \end{shadethm}
+Recall that the only assumption required is stationarity. There
+is no need for independence or Poisson assumptions.
+ %%
+ %
+\begin{ex}{Gatekeeper, continued} Assume we model the gatekeeper
+example as a discrete event simulation, and consider as point
+process the waking ups of the gatekeeper. Let $X(t)$ be the
+execution time of a hypothetical job that would arrive at time
+$t$. The average job execution time, sampled with the standard
+clock (customer viewpoint) is
+ \ben
+ W_c = \E(X(t))= \E(X(0))
+ \een
+ whereas the average execution time, sampled with the event clock (system designer viewpoint),
+ is
+ \ben
+ W_s = \E^t(X(t))=\E^0(X(0))
+ \een
+The inversion formula gives
+ \bearn
+ W_c = \lambda  \E^0\lp
+\int_0^{T_1} X(t) dt
+ \rp = \lambda  \E^0\lp
+ X(T_1^-) T_1
+ \rp
+ \eearn
+ (recall that $T_0=$0 under the Palm probability); here $X(T_1^-)$ is the
+ execution time for a job that arrives just before time $T_1$). Define $X_1=X(T_1^-)$ and let $C$ be the cross-covariance between sleep time and execution
+time at the end of the sleep time: \ben C := \E^0(T_1 X_1)-\E^0(T_1)\E^0(X_1)\een then
+ \bearn
+ W_c &=& \lambda  \lb C +
+\E^0(X_1)\E^0(T_1)
+ \rb
+ \eearn
+ By the inversion formula $\lambda={1
+\over
+ \E^0(T_1)}$ thus
+ \bearn
+ W_c &=& W_s + \lambda C
+ \eearn
+ which is the formula we had derived using the heuristic in
+ \sref{sec-event-time}.
+
+ \begin{petit}To be rigorous we need to make sure that the process
+ being simulated is stationary. With the data in \exref{ex-gk}, this
+ appears to be false, as the wakeup times are periodic, starting at
+ time $0$. This is not a problem for such cases: when the simulation
+ state is periodic, say with period $\theta$, then it is customary to
+ consider the simulation as a realization of the
+ stochastic process obtained by drawing the origin of times
+ uniformly in $[0,\theta]$. This produces a stochastic process which is
+ formally stationary. In practical terms, this amounts to choosing
+ the arbitrary point in time uniformly at random in $[0,\theta]$.
+ \end{petit}
+ \end{ex}
+
+
+\begin{figure}
+\begin{center}
+  % Requires \usepackage{graphicx}
+\Ifignc{eventSpeed0.2}{0.45}{0.2}
+\Ifignc{timeSpeed0.2}{0.45}{0.2}
+\end{center}
+  \mycaption{Distribution of speed sampled at waypoint (first panel) and at an arbitrary time instant (second panel). $v_{\min}= 0.2, v_{\max}= 2 $m/s.}
+  \label{ex-palm-speed}
+\end{figure}
+
+\begin{ex}{Stationary Distribution of Random Waypoint
+\cite{LCA-ARTICLE-2007-004}}\label{ex-palm-rwp} The random
+waypoint model is defined in \exref{ex-rwp-sim}, but we repeat
+the
+ definitions here. A mobile moves from one waypoint to the next in some bounded
+ space $\calS$.
+ When arrived at
+ a waypoint, say $M_n$, it picks a new one, say $M_{n+1}$ randomly uniformly in $\calS$,
+ picks a speed $V_n$ uniformly at random between $v_{\min}$ and $v_{\max}$ and goes to the next waypoint $M_{n+1}$ at this constant speed.
+
+\fref{ex-palm-speed} shows that the distribution of \imp{speed},
+sampled at waypoints, is uniform between $v_{\min}$ and $v_{\max}$,
+as expected. In contrast, the distribution, sampled at an arbitrary
+point in time, is different. We can explain this by Palm's inversion
+formula.
+
+ We assume that this model has a stationary regime, i.e. that $v_{\min}>0$ (see
+ \sref{sec-freeze}). The stationary distribution of $V(t)$ is obtained if we know
+$\E(\phi(V(t))$ for any bounded, test function $\phi$ of the speed.
+Let $f^0_V(v)$ be the PDF of the speed chosen at a waypoint, i.e.
+$f^0_V(v)=\frac{1}{v_{\max}-v_{\min}}\ind{v_{\min}\leq v \leq
+v_{\max}}$. We have
+ \begin{eqnarray}
+ \E(\phi(V(t))
+& =& \lambda \E^0\left( \int_0^{T_1} \phi(V(t)) \, dt \right) \nonumber \\
+ & = &  \lambda \E^0\left(T_1 \phi(V_0)\right)=
+ \lambda \E^0\left(\frac{\norm{M_1-M_0}}{V_0}\phi(V_0)\right)=
+ \lambda
+ \E^0\left(\norm{M_1-M_0}\right)\E^0\left(\frac{1}{V_0}\phi(V_0)\right) \nonumber \\
+ & = & K_1 \int \frac{1}{v}\phi(v) f^0_V(v) \, dv \mylabel{eq-speed-dist}
+ \end{eqnarray}
+ where $T_n$ is the time at which the mobile arrives at the waypoint $M_n$ and $K_1$ is some
+ constant. This shows that the distribution of speed sampled at
+ an arbitrary point in time has PDF
+ \be
+ f(v)= K_1 \frac{1}{v} f^0_V(v)
+ \ee
+ This explains the shape in $\frac{1}{v}$ of the second histogram in
+ \fref{ex-palm-speed}.
+
+A similar argument can be made for the distribution of location. At
+a waypoint, it is uniformly distributed, by construction.
+\fref{ex-palm-location} shows that, at an arbitrary time instant, it
+is no longer so. Palm's inversion formula can also be used to derive
+the PDF of location, but it is very complex~\cite{leboudec2007usm}.
+It is simpler to use the perfect simulation formula explained in
+\sref{sec-perfect}.
+\end{ex}
+\begin{figure}
+\begin{center}
+%\Ifignc{testStatRWPpreviousWP}{0.3}{0.3}
+\Ifignc{tmp-2009-StatRWPcurrentP}{0.45}{0.3}
+%  \Ifignc{testStatRWPnextWP}{0.3}{0.3}
+  \end{center}
+  \mycaption{A sample of $10^4$ points drawn from the stationary distribution of the random waypoint.
+  The distribution is not uniform, even though waypoints are picked uniformly in the area.}
+  \label{ex-palm-location}
+\end{figure}
+
+
+\section{Other Useful Palm Calculus Results}
+In this section we consider a stationary simulation and a point
+process following the assumptions in the previous section.
+\subsection{Residual Time
+and Feller's Paradox} \label{sec-feller}In this section we are
+interested in the \nt{residual time}, i.e. the time from now to the
+next point. More precisely, let $T^+(t)$\index{Tplus@$T^+(t)$}
+[resp. $T^-(t)$\index{Tminus@$T^-(t)$}] be the first point after
+[resp. before or at] $t$. Thus, for example, $T^+(0)=T_1$ and
+$T^-(0)=T_0$. The following theorem is an immediate consequence of
+the inversion formula.
+\begin{shadethm}
+\mylabel{theo-fel} Let $X(t)=T^+(t)-t$ (time until next point, also
+called residual time), $Y(t)=t-T^-(t)$ (time since last point),
+$Z(t)=T^+(t)-T^-(t)$ (duration of current interval). For any $t$,
+the distributions of $X(t)$ and $Y(t)$ are equal, with PDF:
+ \be
+ f_X(s)=f_Y(s)=\lambda \P^0(T_1 > s) = \lambda \int_s^{+\infty} f^0_T(u)d\!u
+ \label{eq-res-time}
+ \ee where $f^0_T$ is the Palm PDF of
+$T_1-T_0$ (PDF of inter-arrival times).
+ The PDF of $Z(t)$ is
+ \be
+ f_Z(s)= \lambda s f^0_T(s)
+\ee In particular, it follows that
+ \bear
+ \E(X(t))&=\E(Y(t))=&\frac{\lambda}{2}\E^0(T_1^2) \midwor{ in continuous
+ time} \label{eq-wt}\\
+ \E(X(t))&=\E(Y(t))=&\frac{\lambda}{2}\E^0(T_1(T_1+1))
+ \midwor{ in discrete
+ time}
+ \\
+\E(Z(t))&=&\lambda\E^0(T_1^2)
+ \label{eq-feller}
+ \eear
+  \label{theo-feller}
+\end{shadethm}
+Note that in discrete time, the theorem means that
+$\P(X(t)=s)=\P(Y(t)=s)=\lambda \P^0(T_1\geq s)$ and
+$\P(Z(t)=s)=\lambda s \P^0(T_1=s)$.
+
+\begin{ex}{Poisson Process}Assume that $T_n$ is a Poisson process (see \sref{sec-mcr}).
+We have $f^0_T(s)=\lambda e^{-\lambda s}$ and
+$\P^0(T_1>s)=\P^0(T_1\geq s)=e^{-\lambda s}$ thus
+$f_X(s)=f_Y(s)=f^0_T(s)$.
+
+This is expected, by the memoriless property of the Poisson process:
+we can think that at every time slot, of duration $dt$, the Poisson
+process flips a coin and, with probability $\lambda dt$, decides
+that there is an arrival, independent of the past. Thus, the time
+$X(t)$ until the next arrival is independent of whether there is an
+arrival or not at time $t$, and the Palm distribution of $X(t)$ is
+the same as its time average distribution. Note that this is special
+to the Poisson process; processes that do not have the memoriless
+property do not have this feature.
+
+
+ The distribution of $Z(t)$ has density
+ $$
+ f^0_T(s)=\lambda^2 s e^{-\lambda s}
+ $$
+i.e., it is an Erlang-2 distribution\footnote{For
+$k=1,2,3,...$, the \nt{Erlang-$k$ } distribution with parameter
+$\lambda$ is the distribution of the sum of $k$ independent
+exponential distributions with rate $\lambda$.}. Note here that
+it differs from the Palm distribution, which is exponential
+with rate $\lambda$. In particular, the average duration of the
+current interval, sampled at an arbitrary point in time, is
+$\frac{2}{\lambda}$, i.e. twice the average inter-arrival time
+$\frac{1}{\lambda}$ (this is an instance of Feller's paradox,
+see later in this section).
+%
+A simple interpretation for this formula is as follows:
+$Z(t)=X(t)+Y(t)$, both $X(t)$ and $Y(t)$ are exponentially
+distributed with rate $\lambda$ and are independent.
+\label{ex-poisson}
+\end{ex}
+
+
+
+\begin{ex}{At the Bus Stop}  $T_n$ is the sequence of bus arrival
+instants at a bus stop. We do \emph{not} assume here that the bus
+interarrival times $T_n-T_{n-1}$ are iid.
+ $\E^0(T_1)=\frac{1}{\lambda}$ is the average
+time between buses, seen by an inspector standing at the bus stop
+and who spends the hour counting intervals from bus to bus.
+$\E(T_1)=\E(X(0))$ is the average waiting time experienced by you
+and me.
+
+\Ifig{scouacAttendBusSigne}{0.95}{0.5}
+
+By \eref{eq-wt}:
+ \be
+\E(X(t))=\E(X(0))=\frac{1}{2}\left(\frac{1}{\lambda}+\lambda
+\var^0(T_1-T_0)\right)
+ \ee
+ where $\var^0(T_1-T_0)$ is the variance,
+under Palm, of the time between buses, i.e. the variance estimated
+by the inspector. The expectation $\E(X(t))$ is minimum, equal to
+$\frac{1}{2 \lambda}$ when the buses are absolutely regular
+($T_{n}-T_{n-1}$ is constant). The larger the variance, the larger
+is the waiting time perceived by you and me. In the limit, if the
+interval between buses seen by the inspector is heavy tailed, then
+$\E(X(t))$ is infinite. Thus the inspector should report not only
+the mean time between buses, but also its variance. \label{ex-bus}
+\end{ex}
+
+\paragraph{Feller's Paradox.}
+We continue to consider \exref{ex-bus} and assume that Joe
+would like to verify the inspector's reports by sampling one
+bus inter-arrival time. Joe arrives at time $t$ and measures
+$Z(t)=($ time until next bus $-$ time since last bus$)$. By
+\eref{eq-feller}
+ \ben
+\E(Z(t))=\frac{1}{\lambda}+\lambda \var^0(T_1-T_0)
+ \een
+where $\var^0(T_1-T_0)$ is the variance of the inter-arrival time
+($=\int_{0}^{\infty} s^2 f^0_T(s) ds- \frac{1}{\lambda^2}$). Thus,
+the average of Joe's estimate is {\em always larger} than the
+inspector's (which is equal to $\frac{1}{\la}$) by a term equal to
+$\lambda \mathrm{var}^0(T_1-T_0)$. This happens although both
+observers sample the same system (but not with the same viewpoint).
+This systematic bias is known as \nt{Feller's paradox}. Intuitively,
+it occurs because a stationary observer (Joe) is more likely to fall
+in a large time interval.
+
+We did not make any assumption other than stationarity about the
+process of bus arrivals in this example. Thus Feller's paradox is
+true for any stationary point process.
+
+\subsection{The Rate Conservation Law and Little's Formula}
+
+\subsubsection{Miyazawa's Rate Conservation Law}
+\index{Rate Conservation Law}
+This is a fundamental result in queuing systems,
+but it applies to a large variety of systems,
+well beyond queuing theory. It is best expressed
+in continuous time.
+
+\begin{figure}[htb]
+  % Requires \usepackage{graphicx}
+  \insfig{rcl}{0.7}
+  \mycaption{Rate Conservation Law.}\label{fig-palm-rcln}
+\end{figure}
+
+Consider a random, real valued stochastic process
+$X(t)$ with the following properties
+(\fref{fig-palm-rcln}):
+\begin{itemize}
+    \item $X(t)$ is continuous everywhere except perhaps at
+        instants of a stationary point process $T_n$;
+    \item $X(t)$ is continuous to the right;
+    \item $X(t)$ has a right-handside derivative $X'(t)$
+        for all values of $t$.
+\end{itemize}
+
+Define $\Delta_t$ by $\Delta_t$=0 if $t$ is
+not a point of the point process $T_n$ and
+$\Delta_{T_n}=X(T_n)- X(T_n^-)$, i.e. $\Delta_t$ is the amplitude of the discontinuity at
+time $t$. Note that it follows that
+ \be
+ X(t)= X(0) + \int_0^t X'(s) ds + \sum_{n \in
+ \Nats} \Delta_{T_n} \ind{t \geq T_n}
+ \ee
+
+\begin{shadethm}(Rate Conservation Law \cite{miyazawa1983derivation})
+Assume that the point process $T_n$ and $X(t)$
+are jointly stationary. If $\E^0\abs{\Delta_0 }<
+\infty$ and $\E\abs{X'(0))}< \infty$ then
+  \ben
+  \esp{X'(0)}+ \la \E^0\lp\Delta_0\rp=0
+  \een
+  where $\la$ is the intensity of the point
+  process $T_n$ and $E^0$ is the Palm
+  expectation.\label{theo-rcl}
+\end{shadethm}
+The proof in continuous time can be found for
+example in \cite{Miyazawa94}. We can interpret
+the theorem as follows.
+
+\begin{itemize}
+    \item $\esp{X'(0)}$ (also equal to
+    $\esp{X'(t)}$ for all $t$) is the average rate of
+    increase of the process $X(t)$, excluding
+    jumps.
+    \item $\E^0\lp\Delta_0\rp$ is the expected
+    amplitude of one arbitrary jump. Thus $\la
+    \E^0\lp\Delta_0\rp$ is the expected rate of
+    increase due to jumps.
+    \item The theorem says that, if the system is
+    stationary, the sum of all jumps cancels out,
+    in average.
+\end{itemize}
+\doitemsep
+
+\textbf{Remark. } The theorem can be extended
+somewhat to the cases where some expectations are
+infinite, as follows \cite{Miyazawa94}. Assume
+the point process $T_n$ can be decomposed as the
+superposition of the stationary point processes
+$T_n^j$, $j=1...J$ and that these point processes
+have no point in common. Let $\Delta^j_t$ be the
+jump of $X(t)$ when $t$ is an instant of the
+point process $T_n^j$, i.e.
+ \be
+ X(t)= X(0) + \int_0^t X'(s) ds + \sum_{j=1}^J\sum_{n \in
+ \Nats} \Delta_{T_n}^j \ind{t \geq T_n^j}
+ \ee and $\Delta_t^j=0$ whenever $t$ is not an
+ instant of the point process $T^j_n$.
+
+Assume that $X'(t)\geq 0$ and the jumps of a
+point process are all positive or all negative.
+More precisely, assume that $\Delta^j_t \geq 0$
+for $j=1...I$ and $\Delta^j_t \leq 0$ for
+$j=I+1,...J$. Last, assume that $X(t)$ and the
+point processes $T_n^j$ are jointly stationary.
+Then \be
+ \esp{X'(0)} + \sum_{j=1}^I \la_j\E^0_j\lp \Delta_0^j\rp
+ = -\sum_{j=I+1}^J \la_j \E^0_j\lp \Delta_0^j\rp
+\ee where $\E^0_j$ is the Palm expectation with
+respect to the point process $T^n_j$ and the
+equality holds even if some of the expectations
+are infinite.
+
+ \begin{ex}{M/GI/1 queue and Pollaczek-Khinchine Formula}
+Consider the M/GI/1 queue, i.e. the single server
+queue with Poisson arrivals of rate $\la$ and
+independent service times, with mean $\bar{S}$
+and variance $\sigma^2_S$. Assume $\rho=\la
+\bar{S}<1$ so that there is a stationary regime
+(\thref{theo-loynes}). Apply the rate
+conservation law to $X(t)= W(t)^2$, where $W(t)$
+is the amount of unfinished work at time $t$.
+
+The jumps occur at arrival instants, and when
+there is an arrival at time $t$, the jump is
+ \ben\Delta_t= \lp W(t) + S\rp^2-W(t)^2
+ = 2 S W(t) + S^2\een where $S$ is the service
+ time of the arriving customer.
+ By hypothesis,
+ $S$ is independent of $W(t)$ thus the
+ expectation of a jump is
+$2 \E^0\lp W(t)\rp \bar{S} + \bar{S}^2 +
+ \sigma^2_S$. By the PASTA property
+(\exref{ex-mg1-pasta}), $\E^0\lp
+ W(t)\rp=\esp{W(t)}$. Thus, the rate conservation
+ law gives
+ \ben
+ \esp{X'(t)} + 2 \rho \esp{W(t)} + \la \lp \bar{S}^2 +
+ \sigma^2_S\rp = 0
+ \een
+
+Between jumps, $W(t)$ decreases at rate $1$ if
+$W(t)>0$, thus the derivative of $X$ is $X'(t) =
+2 W(t) \ind{W(t)>0}$ and $\esp{X'(t)}=- 2
+\esp{W(t)}$. Putting things together:
+ \ben
+ \esp{W(t)} = \frac{\la\lp\bar{S}^2+\sigma^2_S\rp}{2(1-\rho)}
+ \een
+
+By the PASTA property again, $\esp{W(t)} $ is the
+average workload seen by an arriving customer,
+i.e. the average waiting time. Thus the average
+response time (waiting time + service time) is
+(\nt{Pollaczek-Khinchine formula for means}) :
+ \be
+ \bar{R}=\frac{\bar{S} (1 -\rho(1-\kappa))}{1-\rho}
+ \ee
+ with $\kappa=
+ \frac{1}{2}\left(1+\frac{\sigma^2_S}{\bar{S}^2}\right)$.
+
+Similarly, applying the rate conservation law to
+$X(t)= e^{-s W(t)}$ for some arbitrary $s \geq0$
+gives the Laplace Stieltjes transform of the
+distribution of $W(t)$ (see
+\eref{eq-q-lts-mg1}).\label{ex-mg1-rcl}
+ \end{ex}
+
+
+\subsubsection{Campbell's Shot Noise Formula}
+\index{Campbell's Shot Noise Formula}
+\index{Shot noise}
+Consider the following system, assumed to be described by the state
+of a stationary simulation $S(t)$. Assume that we can observe
+arrivals of jobs, also called customers, or ``shots", and that the
+the arrival times $T_n$ form a stationary point process.
+
+The n$th$ customers also has an ``attribute", $Z_n$, which may
+be drawn according to the specific rules of the system. As
+usual in this chapter, we do not assume any form of iid-ness,
+but we assume stationarity; more precisely the attribute $Z_n$
+is obtained by sampling the simulation state at time $T_n$
+(this is quite general as we do not specify what we put in the
+simulation state). If the attributes have this property, we say
+that they are \nt{marks} of the point process $T_n$ and that
+the process $(T_n, Z_n)$ is a \nt{stationary marked point
+process}. We do not specify the nature of the attribute, it can
+take values in any arbitrary space.
+
+When the $n$th customer arrives, she generates a
+load on the system, in the form of work to be
+done. Formally, we assume that there is a
+function $h(s,z)\geq 0$ (the ``shot") such that
+$h(s,z)$ is the load at time $s$, due to a
+hypothetical customer who arrived at time $0$ and
+would have mark $z$. The total load in the system
+at time $t$, is
+  \ben
+  X'(t) = \sum_{n\in \Ints} \ind{T_n \leq t} h(t-T_n, Z_n)
+  \een
+and the total amount of work to be performed, due
+to customers already present in the system is
+ \ben
+ X(t) = \sum_{n\in \Ints} \ind{T_n \leq t} \int_t^{\infty}h(s-T_n,
+ Z_n)ds
+ \een
+\begin{figure}
+  % Requires \usepackage{graphicx}
+  \insfig{sn}{0.7}
+  %\insfig{rcl}{0.7}
+  \insfig{little}{0.64}
+  \mycaption{Shot Noise (top) and Little's formula (bottom)}\label{fig-palm-sn}
+\end{figure}
+
+For example, in \cite{barakat2003mib}, a customer
+is an internet flow, its mark is its size in
+bytes, and the total system load is the aggregate
+bit rate (\exref{fig-palm-sn}). The average load
+$\bar{L}$, at an arbitrary point in time, is
+ \bearn
+ \bar{L} &=& \E \lp\sum_{n\in \Ints} \ind{T_n \leq t} h(t-T_n, Z_n) \rp
+ =  \E \lp\sum_{n\leq 0} h(-T_n, Z_n) \rp
+ \eearn
+where the latter is obtained by taking $t=0$. The
+work generated during her lifetime by one
+customer, given that her mark is $z$, is $
+ \int_0^{\infty} h(t,z) dt $. The average load generated by
+ one arbitrary customer can be expressed as a Palm expectation,
+ relative to the point process of customer arrivals, namely as
+  \be
+  \mbox{work per customer } =
+\E^0\lp
+ \int_0^{\infty} h(t,Z_0) dt
+ \rp \label{eq-def-load}
+  \ee
+($Z_0$ in the formula stands for the attribute of
+an arbitrary customer). Let $\la$ be the
+intensity of the point process $T_n$, i.e. the
+customer arrival rate.
+
+The total work decreases at the rate $X'(t)$ and
+when a customer arrives at time $T_n$, jumps by
+$\Delta_t= \int_0^{\infty} h(t,Z_0) dt$. The
+jumps are nonnegative and the derivative is
+nonpositive thus we can apply \thref{theo-rcl},
+more precisely, the remark after it to $-X(t)$,
+with $J=1$ and $I=0$. We have thus shown:
+\begin{shadethm}[Shot Noise]  The average load at an arbitrary point in time is
+\be
+ \bar{L} = \la \times \mbox{work per customer }
+ \label{eq-shot-noise}
+\ee \label{theo-shot-noise} where equality holds
+also if either $\bar{L}$ or the work per customer
+is infinite.
+\end{shadethm}
+\eref{eq-shot-noise} is also known as \nt{Campbell's Formula}.
+
+\begin{ex}{TCP flows} In \cite{barakat2003mib}, a customer is a TCP flow, $h(t,z)$ is the bit rate generated at
+time $t$ by a TCP flow that starts at time $0$ and has a size
+parameter $z\in \Reals^+$. Thus $\bar{V}=\E^0\lp
+ \int_0^{\infty} h(t,Z_0) dt\rp$ is the average volume of data, counted in bits,
+  generated by a flow during its entire lifetime.
+Campbell's formula says that the average bit rate on the system
+$\bar{L}$, measured in b/s, is equal to $\lambda\bar{V}$, where
+$\lambda$ is the flow arrival rate.
+\end{ex}
+
+
+
+\subsubsection{The $H=\la G$ Formula} This is an interpretation of
+the rate conservation law that is quite useful in
+applications. Consider some arbitrary system
+where we can observe arrival and departure of
+jobs (also called customers). Let $T_n$ be the
+point process of arrivals times, with intensity
+$\lambda$ (not necessarily Poisson, as usual in
+this chapter). Also assume that when a job is
+present in the system, it uses some amount of
+resource, per time unit (for example, electrical
+power or CPU cycles). Assume the system is
+stationary.
+
+Let $G_n$ be the total amount of system resource
+consumed by job $n$ during its presence in the
+system; and let $\bar{G}$ be the average resource
+consumption per job, i.e. the expectation of
+$G_n$ when $n$ is an arbitrary customer, and let
+$\bar{H}$ be the average rate at which the
+resource is allocated to jobs, i.e. the
+expectation of $H(t)$ at any time $t$.
+\eref{eq-shot-noise} can be re-formulated as
+follows.
+
+\begin{sh}
+The \nt{$H=\la G$ Formula}, or \nt{Extended
+Little Formula}: \be
+ \bar{H} = \la \bar{G}
+ \label{eq-HlaG}
+\ee
+\end{sh}
+%
+%$\bar{H}$ can be interpreted as the rate at which
+%resource is allocated and $\la \bar{G}$ is then
+%the rate at which resources are consumed. This is
+%why \eref{eq-HlaG} is also called a \nt{rate
+%conservation law} \cite{Miyazawa94}.
+
+\begin{ex}{Power Consumption per Job}
+A system serves jobs and consumes in average
+$\bar{P}$ watts. Assume we allocate the energy
+consumption to jobs, for example by measuring the
+current when a job is active. Let $\bar{E}$ be
+the total energy consumed by a job, during its
+lifetime, in average per job, measured in Joules.
+By \eref{eq-HlaG}: \ben \bar{P}=\la \bar{E}\een
+where $\la$ is the number of jobs per second,
+served by the system.
+\end{ex}
+
+\subsubsection{Little' s Formula}
+\index{Little's Formula}
+Consider again some arbitrary system where we can
+observe arrival and departure of jobs (also
+called customers), with $T_n$ the point process
+of arrivals times, with intensity $\lambda$. Let
+$R_n$ be the residence time of the $n$th
+customer, $n \in \Ints$ (thus her departure time
+is $T_n+R_n$). Let $N(t)$ be the number of
+customers present in the system at time $t$.
+Assume that the mean residence time $\bar{R}$
+(i.e. the expectation of $R_n$) is finite (by the
+stationarity assumption it is independent of
+$n$).
+
+\begin{petit}
+We did not exactly define what a customer and the system are,
+therefore we need, formally, to be more precise; this can be
+done as follows. We are given a sequence $(T_n\in \Reals,
+R_n\in \Reals^+)_{n\in \Ints}$ stationary with respect to index
+$n$. Assume that $T_n$ can be viewed as a stationary point
+process, with intensity $\lambda$, (i.e. the expectation of
+$T_n-T_{n-1}$ is finite, \thref{thm:inversecontr}). The number
+of customers in the system at time $t$ is then defined by
+ \ben
+ N(t)=\sum_{n \in \Ints}\ind{T_n \leq t < R_n + T_n}
+ \een
+\end{petit}
+
+Note that, by stationarity, $\lambda$ is also equal to the departure
+rate. Define $R(t)$ by $R(t)=R_n$ if and only if $T_n\leq
+t<T_{n+1}$, i.e. $R(t)$ is the residence time of the most recently
+arrived customer at time $t$. Also let
+\bearn
+   \E^t(R(t)) &=& \E^0(R(0))=\bar{R}
+   \\
+   \E(N(t)) &= & \E(N(0))= \bar{N}
+  \eearn
+We can apply Campbell's formula by letting
+$Z_n=R_n$ and $h(t,z)=\ind{0 \leq t < z}$, i.e.
+the load generated by one customer is $1$ as long
+as it is present in the system; equivalently, we
+can apply the rate conservation law with $X(t)=$
+residual time to be spent by customers present in
+in the system. This gives the celebrated theorem:
+\begin{shadethm}[\nt{Little's Formula}]
+\label{theo-little}
+ The mean number of customers in the system at time $t$,
+$\bar{N}:=\E(N(t))$, is independent of $t$ and satisfies \ben
+ \bar{N}= \lambda \bar{R}
+\een where $\lambda$ is the arrival rate and $\bar{R}$ the
+average response time, experienced by an arbitrary customer.
+\end{shadethm}
+
+Little's formula makes no assumption other than
+stationarity. In particular, we do not assume
+that the residence times are independent of the
+state of the system, and we \emph{do not} assume
+that the arrival process is Poisson. Also note
+that the formula holds even if either $\bar{N}$
+or $\bar{R}$ is infinite.
+
+Little's formula is very versatile, since it does
+not say what we call a system and a customer. The
+next section is an example of this versatility.
+
+\subsubsection{Distributional Little Formula}
+Assume we are interested not just in the average number of customers
+in a system, but in the distribution of ages in the system. More
+precisely, fix $r_0 >0$; we would like to know $\bar{N}(r_0)$,
+defined as the average number of customers in the system with an age
+$\geq r$. Call $f_R()$ the PDF of customer residence time. Consider
+the virtual system, defined such that we count only customers that
+have been present in the system for at least $r_0$ time units:
+\begin{description}
+    \item[Original System] The $n$th customer arrives at time $T_n$
+    and stays for a duration $R_n$
+    \item[Virtual System] The $n$th customer arrives at
+        time $T_n+r_0$. If $T_n< r_0$, this customer leaves
+        immediately. Else, this customer stays for a
+        duration $R_n-r_0$.
+\end{description}
+Apply Little's formula to the virtual system. The average customer
+residence time in the virtual system is
+ \bearn
+  \int_{r_0}^{\infty}(r-r_0)
+f_R(r) dr &=& \int_{r_0}^{\infty}\lb \int_{r_0}^r ds \rb f_R(r) dr
+ = \int_{r_0}^{\infty} \int_{r_0}^r f_R(r)  ds dr\\
+ &=& \int_{r_0}^{\infty} \lb\int_{s}^{\infty} f_R(r)  dr\rb ds
+ = \int_{r_0}^{\infty} F^c_R(s)   ds
+ \eearn
+ where $F^c_R()$ is the complementary CDF of the residence time,
+ i.e. $F^c_R(r)=\int_r^{\infty} f_R(r) dr$. Thus
+  \ben
+ \bar{N}(r_0) = \lambda \int_{r_0}^{\infty} F^c_R(r)   dr
+  \een
+
+Let $f_N()$ the PDF of the distribution of ages at an arbitrary
+point in time, i.e. such that
+$\bar{N}(r_0)=\bar{N}\int_{r_0}^{\infty}f_N(r) dr$. It follows that
+$
+ f_N(r) = \frac{\lambda}{ \bar{N}}  F^c_R(r) =\frac{1}{ \bar{R}} F^c_R(r)
+$, i.e.
+ \be
+f_N(r) = \frac{1}{ \bar{R}} \int_r^{\infty}f_R(r) dr
+ \label{eq-dis-lt}
+ \ee
+\eref{eq-dis-lt} is called a \nt{Distributional Little
+Formula}. It relates the PDF $f_N$ of the age of a customer
+sampled at an arbitrary point in time to the PDF of residence
+times $f_R$. Note the analogy with \eref{eq-res-time} (but the
+hypotheses are different).
+
+
+
+
+%\begin{shadethm}[Little]
+%\mylabel{theo-little}Consider a sequence $(T_n, S_n)_{n\in \Ints}$
+%stationary with respect to index $n$. Assume that $T_n$ can be
+%viewed as a stationary point process, with intensity $\lambda$ (see
+%\thref{thm:inversecontr}). Let $N(t)=\sum_{n \in \Ints}\ind{T_n \leq
+%t < S_n + T_n}$ and define $R_t$ by $R_t=S_n$ if and only if
+%$T_n\leq t<T_{n+1}$.
+%
+%We interpret $T_n$ as customer arrival times, $S_n$ as the residence
+%time of the $n$th customer, $R_t$ as the residence time of the last
+%customer who arrived before or at $t$ and $N(t)$ as the number of
+%customers present in the system at time $t$. Then for any $t$
+%$$
+% \E(N(0))=\lambda\E^0(R_0)
+%$$
+%\end{shadethm}
+
+
+
+
+\subsection{Two Event Clocks}
+\label{sec-2clocks}
+Assume in this section that we observe two point
+processes from the same stationary simulation, say $A_n, B_n$,
+$n\in\Ints$. Let $\lambda(A)$ [resp. $\la(B)$] be the intensity of
+the $A$ [resp. $B$] point process. Whenever $X(t)$ is some
+observable output, jointly stationary with the simulation, we can
+sample $X(t)$ with the two event clocks $A$, or $B$, i.e. we can
+define two Palm probabilities, denoted with $E^0_A(X(0))$ and
+$E^0_B(X(0))$.
+
+We can also measure the intensity of one point process using the
+other process's clock; for example, let $\la_A(B)$ be the intensity
+of the $B$ point process measured with the event clock $A$. Let
+$N_B[t_1,t_2)$ be the number of points of process $B$ in the time
+interval $[t_1,t_2)$. We have
+ \be
+ \la_A(B) = \E^0_A \lp\ N_B[A_0,A_1)  \rp
+\label{eq-laab}
+ \ee
+i.e. it is the average number of $B$ points seen between two $A$
+points.
+
+\begin{shadethm}(Neveu's Exchange Formula)
+    \bear
+    \la_A(B) & = & \frac{\la(B)}{\la(A)} \label{eq-neveu-int}\\
+    \E^0_A(X(0)) & = & \la_A(B) \E^0_B\lp
+    \sum_{n\in\Ints} X\lp A_n\rp\ind{B_0 \leq A_n < B_1}
+    \rp \label{eq-neveu}
+    \eear \label{theo-neveu}
+\end{shadethm}
+
+
+\eref{eq-neveu} is the equivalent of the inversion formula
+\eref{eq-inversion-dt}, if we replace the standard clock by clock
+$A$ and the point process $T_n$ by $B_n$; indeed the last term in
+\eref{eq-neveu} is the sum of the $X(t)$ values observed at all $A$
+points that fall between $B_0$ and $B_1$.
+
+It follows from this theorem that
+ \be
+ \frac{1}{\la_A(B)} = \E^0_B \lp N_A[0,B_1) \rp= \E^0_B \lp N_A[B_0,B_1)\rp
+ \label{eq-int-nev}
+ \ee
+which is the equivalent of \eref{eq-intensity}, namely, the
+intensity of the point process $B$, measured with $A$'s clock, is
+the inverse time between two arbitrary $B$ points, again measured
+with $A$'s clock (the last term, $N_A[B_0,B_1)$, is the number of
+ticks of the $A$ clock between two $B$ points).
+
+The following theorem follows immediately from \thref{theo-neveu}
+and \eref{eq-int-nev}.
+
+\begin{shadethm}(Wald's Identity)
+    \be
+    \E^0_A(X(0))  =  \frac{ \E^0_B\lp
+    \sum_{n\in\Ints} X \lp A_n \rp\ind{B_0 \leq A_n < B_1}
+    \rp}
+    {\E^0_B \lp N_A[B_0,B_1)\rp}
+    \label{eq-wald}
+    \ee
+\end{shadethm}
+%\eref{eq-wald}
+
+\eref{eq-wald} is called \nt{Wald's identity}. It is often
+presented in the context of renewal processes (where interarrival times are i.i.d.), but this need
+not be: like all Palm calculus formulae, it requires only
+stationarity, and no independence assumption.
+
+\begin{ex}{The Stop and Go protocol} We re-visit the
+computation of the stop and go protocol given in \exref{ex-sag}. The
+$A$ point process consists of the emission times of successful
+transmissions, and the $B$ point process consists of all
+transmission and retransmission attempts. Apply \eref{eq-int-nev}:
+ \ben
+ \frac{1}{\la_A(B)} =\E^0_B\lp N_A[B_0, B_1)\rp
+  \een
+Note that $N_A[B_0, B_1)$ is 1 if the attempt at $B_0$ is successful
+and $0$ otherwise, thus the right-handside in the equation is the
+probability that an arbitrary transmission or retransmission attempt
+is successful. By definition of $\alpha$, this is $1-\alpha$. Thus
+$
+ \frac{\la(A)}{\la(B)}= 1-\alpha
+$. Compute $\la(B)$ from \eref{eq-intensity}:
+$
+  \frac{1}{\la(B)}=(1-\alpha) t_0 + \alpha t_1
+$.  Combining the two gives \ben
+\la(A)=\frac{1}{\frac{\alpha}{1-\alpha}t_1+t_0} \een as already
+found.
+\end{ex}
+
+\begin{petit}
+All formulas in this section continue to hold if we replace the
+semi-closed intervals that span one tick of an event clok to the
+next, such as $[A_0, A_1)$ [resp. $[B_0, B_1)$], by the semi-closed
+intervals $(A_0, A_1]$ [resp. $(B_0, B_1]$], but do not hold if we
+replace them by closed or open intervals (such as $[A_0, A_1]$ or
+$(A_0, A_1)$).
+
+One can even replace them by the so-called \nt{Voronoi} cells, which
+are the intervals that are bounded by the middle of two successive
+points, for example one can replace $[A_0, A_1)$ by
+$[\frac{A_{-1}+A_0}{2},\frac{A_0+A_{1}}{2})$ or
+$(\frac{A_{-1}+A_0}{2},\frac{A_0+A_{1}}{2}]$. Thus, for example,
+
+\bearn
+ \la_A(B)& = &\E^0_A \lp\ N_B[A_0,A_1)  \rp
+ = \E^0_A \lp\ N_B(A_0,A_1]\rp
+ \\
+ & = &  \E^0_A \lp N_B[\frac{A_{-1}+A_0}{2},\frac{A_0+A_{1}}{2})\rp
+ =   \E^0_A \lp
+N_B(\frac{A_{-1}+A_0}{2},\frac{A_0+A_{1}}{2}]\rp \eearn and
+\eref{eq-neveu} can be generalized to
+ \bearn
+\E^0_A(X(0)) & = & \la_A(B) \E^0_B\lp
+    \sum_{n\in\Ints} X\lp A_n\rp\ind{B_0 \leq A_n <  B_1}
+    \rp=\la_A(B) \E^0_B\lp
+    \sum_{n\in\Ints} X\lp A_n\rp\ind{B_0 < A_n \leq  B_1}
+    \rp\\
+    & = &
+ \la_A(B) \E^0_B\lp
+    \sum_{n\in\Ints} X\lp A_n\rp\ind{\frac{B_{-1}+B_0}{2} \leq A_n < \frac{B_1+ B_2}{2}}
+    \rp
+    \\
+    & = &
+ \la_A(B) \E^0_B\lp
+    \sum_{n\in\Ints} X\lp A_n\rp\ind{\frac{B_{-1}+B_0}{2} < A_n \leq \frac{B_1+ B_2}{2}}
+    \rp
+ \eearn
+\end{petit}
+
+\section{Simulation Defined as Stochastic Recurrence}
+\label{sec-freeze}
+\subsection{Stochastic Recurrence, Modulated Process} A simulator can be defined as discrete event or as
+stochastic recurrence (\cref{ch-simul}). This also provides a
+simple, yet powerful model, to analyze stationary but time
+correlated systems.
+
+Recall that a stochastic recurrence is defined by a sequence
+$Z_n$, $n \in \Ints$, (also called the modulator state at the
+$n$th epoch) and a sequence $S_n
+>0$, interpreted as the duration of the $n$th epoch. The state space
+for $Z_n$ is arbitrary, not necessarily finite or even enumerable.
+We assume that $(Z_n, S_n)$ is random, but stationary\footnote{This
+means that the joint distribution of $(Z_{n},S_n
+\ldots,Z_{n+m},S_{n+m})$ is independent of $n$.} with respect to the
+index $n$. As usual, we do not assume any form of independence.
+
+We are interested in the \nt{modulated process} $(Z(t), S(t))$
+defined by $Z(t)=Z_n, S(t)=S_n$ whenever $t$ belongs to the $n$th
+epoch (i.e. when $T_n \leq t < T_{n+1}$). We would like to apply
+Palm calculus to $(Z(t), S(t))$.
+
+\begin{figure}
+  % Requires \usepackage{graphicx}
+  \Ifig{gilbert}{0.5}{0.25}
+  \mycaption{The Gilbert Loss Model. When the channel is in
+  state $0$ the packet loss ratio is $0$, in state $1$ it is
+  $p_1$. The average number of consecutive periods in state $i$ is
+  $\frac{1}{q_i}$ ($i=0,2$).}\label{fig-palm-gilbert}
+\end{figure}
+
+
+\begin{ex}{Loss Channel Model} A path on the internet is modelled as a
+loss system, where the packet loss ratio at time $t$, $p(t)$ depends
+on a hidden state $Z(t)\in \{1,...,I\}$ (called the modulator
+state). During one epoch, the modulator remains in some fixed state,
+say $i$, and the packet loss ratio is constant, say $p_i$. At the
+end of an epoch, the modulator changes state and a new epoch starts.
+
+Once in a while we send a probe packet on this path, thus we
+measure the time average loss ratio $\bar{p}$. How does it
+relate to $p_i$ ? Apply the inversion formula:
+ \ben \bar{p}=\frac{\sum_i \pi^0_i p_i
+\bar{S}_i}{\sum_i \pi^0_i \bar{S}_i}
+ \een
+ where $\pi^0_i$ is the probability that the modulator is in state
+ $i$ at an arbitrary epoch (proportion of $i$ epochs) and $\bar{S}_i$
+ is the average duration
+ of an $i$-epoch.
+
+For example, assume that $Z_n$ is the \nt{Gilbert loss model}
+shown in \fref{fig-palm-gilbert}, i.e. a discrete time two
+state Markov chain, and $S_n$ is equal to one round trip time.
+We have $\pi^0_i= \frac{q_{1-i}}{q_0+q_1}$, for $i=0,1$. It
+follows that
+ \ben
+ \bar{p} = \frac{q_0 p_1}{q_0+q_1}
+  \een
+\end{ex}
+
+\subsection{Freezing Simulations} In the previous example, we had implicitly assumed that
+we can apply Palm calculus, i.e. that the process $Z(t)$ is
+stationary. In the rest of this section we give conditions for
+this assumption to be valid.
+
+We first make a technical assumption. It says that the number of
+epochs per time unit does not explode. More precisely, for any fixed
+$t_0>0$, call
+ \ben D(t_0)= \sum_{n=1}^{\infty} \ind{S_0+ \ldots + S_{n-1}\leq t_0}
+  \een
+We interpret $D(t_0)$ as the number of epochs that are entirely
+included in the interval $(0,t_0]$, given that we start the first
+epoch at time $0$. The technical assumption is
+
+\begin{description}
+    \item[H1] For every $t_0$, the expectation of $D(t_0)$ is finite.
+\end{description}
+
+Surprisingly, though $(Z_n,S_n)$ is stationary with respect to $n$,
+this is not enough to guarantee stationarity of $Z(t)$. To see why,
+assume that $Z(t)$ is stationary and that there exists a stationary
+point process $T_n$ such that $T_{n+1}-T_n= S_n$. Apply the
+inversion formula:
+
+\be
+ \lambda = \frac{1}{\int_0^{\infty} t f^0_S(t) dt}
+ \ee
+ where $f^0_S(t)$ is the probability density function of $S_n$
+ (it does not depend on $n$ by hypothesis). Thus we need to assume that the expectation of
+ $S_n$ is finite. The next theorem says that, essentially,
+ this is also sufficient.
+
+
+
+\begin{shadethm}\label{thm:inversecontr}
+Assume that the sequence $S_n$ satisfies \textbf{H1} and has finite
+expectation. There exists a stationary process $Z(t)$ and a
+stationary point process $T_n$ such that
+\begin{enumerate}
+    \item $T_{n+1}-T_n = S_n$
+    \item $Z_n=Z(T_n)$
+\end{enumerate}
+\end{shadethm}
+The theorem says that we can apply Palm calculus, and in particular
+treat $Z_n$ as the state of a stationary simulation sampled with the
+event clock derived from $S_n$. The proof can be found in
+\cite{baccelli-87}, where it is called ``inverse construction".
+
+
+Condition \textbf{H1} is often intuitively obvious, but may be hard
+to verify in some cases. In the simple case where $S_n$ are
+independent (thus iid since we assume stationarity with respect to
+$n$) the condition always holds:
+
+\begin{theorem}[Renewal Case]\label{theo-renewal}
+If the $S_n$ are iid and $S_n>0$, then condition \textbf{H1} holds
+\end{theorem}
+
+The next example shows a non iid case.
+
+\begin{ex}{Random Waypoint, Continuation of
+\exref{ex-palm-rwp}}\label{ex-palm-rwp-2}
+ For the random waypoint model, the sequence of modulator states is
+ \ben Z_n = (M_n, M_{n+1}, V_n)
+ \een
+ and the duration of the $n$th epoch is
+ \be
+ S_n = \frac{d\lp M_n,M_{n+1}\rp}{V_n}  \label{eq-rwp-sn}
+ \ee where $d\lp M_n,M_{n+1}\rp$ is the distance from $M_n$ to
+ $M_{n+1}$.
+
+Can this be assumed to come from a stationary process ? We
+ apply \thref{thm:inversecontr}. The average epoch time is
+ \ben
+ \E(S_0)=\esp{\frac{d\lp M_n,M_{n+1}\rp }{ V_n}}=\esp{d\lp
+ M_n,M_{n+1}\rp}\esp{\frac{1}{ V_n}}
+ \een
+since the waypoints and the speed are chosen independently. Thus we
+need that $\esp{\frac{1}{ V_n}}< \infty$, i.e. $v_{\min} >0$.
+
+We also need to verify $\textbf{H1}$. We cannot apply
+\thref{theo-renewal} since the epoch times are not independent (two
+consecutive epoch times depend one one common waypoint). However,
+but $S_m$ and $S_n$ are independent if $n-m \geq 2$, and one can
+show that $\textbf{H1}$ holds using arguments similar to the proof
+of \thref{theo-renewal} \cite{LCA-ARTICLE-2007-004}. \end{ex}
+
+\begin{figure}
+  \begin{center}
+ \Ifignc{notPerfecttimeInstantSpeedOne0}{0.45}{0.25}
+ \Ifignc{notPerfecttimeSpeedAvg0}{0.45}{0.25}
+ \end{center}
+  \mycaption{Freezing simulation: random waypoint with $v_{\min} =0$. The model does not have
+  a stationary regime and the simulation becomes slower and slower. First panel: sample of instant speed versus time for one
+  mobile. Second panel: speed averaged over $[0;t]$ for one mobile (zig zag curve) or for 30 mobiles (smoother curve).
+  The average speed slowly tends to $0$.}\label{fig-palm-freeze}
+\end{figure}
+
+What happens if the expectation of $S_n$ is infinite ? It can be
+shown (and verified by simulation) that the model \imp{freezes}: as
+you run the simulation longer and longer, it becomes more likely to
+draw a very long interval $S_n$, and the simulation state stays
+there for long. This is an interesting case where non stationarity
+is not due to explosion, but to \nt{aging} (\fref{fig-palm-freeze}).
+In the random waypoint example above, this happens if we choose
+$v_{\min}=0$.
+
+\subsection{Perfect Simulation of Stochastic Recurrence}
+\label{sec-perfect} Assume we are interested in simulating the
+modulator process $(Z(t), S(t))$. A simple method consists in
+drawing a sample of $(Z_0,S_0)$ from the joint distribution
+with PDF $f^0_{Z,S}(z,s)$, then decide that the simulation
+stays in this state for a duration $S_0$, then draw $Z_1, S_1$
+from its conditional distribution given $(Z_0,S_0)$ and so on.
+For a stochastic recurrence satisfying the hypotheses of
+\thref{thm:inversecontr}, as the simulation time gets large,
+the simulation will get into its stationary regime and its
+state will be distributed according to the stationary
+distribution of $(Z(t),S(t))$.
+
+It is possible to do better, and start the simulation directly in
+the stationary regime, i.e. avoid transients at all. This is called
+\nt{perfect simulation}. It is based on Palm's inversion formula,
+which gives a way to sample from the stationary distribution, as we
+explain now.
+
+We want to start a simulation of the modulator process $(Z(t),
+S(t))$, in stationary regime. We need to draw a sample from the
+stationary distribution of  $(Z(t), S(t))$ but this is not
+sufficient. We also need to sample the time until the next change of
+modulator state. Therefore, it is useful to consider the joint
+process $(Z(t), S(t), T^+(t))$, where $T^+(t)$ is the residual time,
+defined in \sref{sec-feller} as the time to run until the next
+change in modulator state, i.e.
+ \ben
+ \mif T_n \leq t < T_{n+1} \mthen T^+(t)=T_{n+1}-t
+ \een
+
+\begin{shadethm}[Stationary Distribution of Modulated Process]
+Let $(Z_n, S_n)_{n \in \Ints}$ satisfy the hypotheses of
+\thref{thm:inversecontr} and let $f_{Z,S}^0(z,s)$ be the joint PDF
+ of $(Z_n, S_n)$, independent of
+$n$ by hypothesis. The stationary distribution of $(Z(t), S(t),
+T^+(t))$ (defined above) is entirely characterized by the
+following properties:\begin{enumerate}
+    \item The joint PDF of $(Z(t), S(t))$ is
+     \be
+     f_{Z,S}(z,s) = \eta s f_{Z,S}^0(z,s)  \label{eq-palm-stpdfsz}
+     \ee where $\eta$ is a normalizing constant, equal to the
+     inverse of the expectation of $S_n$;
+    \item The conditional distribution of $T^+(t)$ given that
+    $Z(t)=z$ and $S(t)=s$ is uniform on $[0,s]$.
+\end{enumerate}
+\label{theo-perfect}
+\end{shadethm}
+Recall that $Z_n$ takes values in any arbitrary space, but you may
+think of it as an element of $\Reals^k$ for some integer
+$k$\footnote{Formally, $Z_n$ may take values in some arbitrary space
+$\calZ$ and $S_n$ is a positive number. We assume that there is a
+measure $\mu$ on $\calZ$ and the PDF $f_{Z,S}^0(z,s)$ is defined
+with respect to the measure product of $\mu$ and the Lebesgue
+measure on $(0,\infty)$}.
+
+Note that the theorem does not directly give a formula for the joint
+PDF of $(Z(t), S(t), T^+(t))$, though this can be derived, at least
+in theory, from the combination of items 1 and 2 (see
+\cite{leboudec2007usm} for an example).
+
+Also do not confuse item 2 with the unconditional distribution of
+the residual time $T^+(t)$. From \thref{theo-fel}, we know that the
+distribution of $T^+(t)$ has PDF proportional to $1-F^0_S(t)$, where
+$F^0_S()$ is the CDF of $S_n$, i.e. it is not uniform.
+
+\begin{petit}
+We can recover this result from the above theorem, as follows.
+Consider a test function $\phi()$ of the residual time $T^+(t)$. The
+theorem says that
+ \ben
+ \espc{\phi(T^+(t))}{Z(t)=s, S(t)=s} =  \frac{1}{s}\int_0^s
+ \phi(t) dt
+ \een
+ thus
+ \bearn
+ \esp{\phi(T^+(t))} &= & \eta\int_{z \in \calZ}\int_0^{\infty}\lp\frac{1}{s}\int_0^s
+ \phi(t) dt \rp s f^0_{Z,S}(z,s) dz ds
+ \\
+ & = & \eta \int_{z \in \calZ}\int_0^{\infty}\lp\int_0^s
+ \phi(t) dt \rp f^0_{Z,S}(z,s) dz ds
+ \\
+ & = & \eta \int_0^{\infty}\lp\int_0^s
+ \phi(t) dt  \rp f^0_{S}(s) ds
+ \\
+ & = &
+ \eta \int_0^{\infty}\lp\int_t^{\infty}f^0_{S}(s) ds\rp
+ \phi(t) dt
+ \\
+ &= & \eta \int_0^{\infty}\lp 1-F^0_S(t)\rp
+ \phi(t) dt
+ \eearn
+ which shows that the PDF of $T^+(t)$ is $\eta (1-F^0_S(t))$, as given
+ in \thref{theo-fel}.
+ \end{petit}
+
+We obtain a perfect simulation algorithm by immediate application of
+the above theorem, see \aref{algo-palm-perfect}. Note the factor $s$
+used when sampling the initial time interval: we can interpret this
+by saying that the probability, for an observer who sees the system
+in its stationary regime, of falling in an interval of duration $s$
+is proportional to $s$. This is the same argument as in Feller's
+paradox (\sref{sec-feller}).
+
+\begin{algorithm}\mycaption{Perfect simulation of Modulated Process}
+ \begin{algorithmic}[1]
+%
+  \State Sample $(z,s)$ from the joint distribution with PDF
+  $\eta s f_{Z,S}^0(z,s)$ (\eref{eq-palm-stpdfsz})
+  \State Sample $t$ uniformly in $[0,s]$
+  \State Start the simulation with $Z(0)=z, S(0)=s, T^+(0)=T$
+\end{algorithmic}\label{algo-palm-perfect}
+ \end{algorithm}
+
+\begin{figure}
+\begin{center}
+  \Ifignc{statRWPcurrentSegment7}{0.45}{0.45}
+  \Ifignc{statRWPnextWP}{0.45}{0.45}
+\end{center}
+  \mycaption{Perfect Simulation of Random Waypoint.
+First Panel: 7 samples of previous waypoint ($P$), current mobile
+location ($M$), and next waypoint ($N$) sampled at an arbitrary
+point in time. $P$ and $N$ are not independent; their joint PDF is
+proportional to their distance. (Compare to the distribution
+obtained when sampling an arbitrary waypoint: there, by
+construction, P and N are independent and uniformly distributed),
+they are independent, by definition of the model). Given $P$ and
+$N$, $M$ is uniformly distributed on $[P,N]$. Second panel: 10000
+samples of the next waypoint, sampled at an arbitrary point in time.
+The distribution is not uniform, with a larger density towards the
+edges.}\label{fig-rwp-perfect}
+\end{figure}
+
+ \begin{ex}{Perfect Simulation of Random Waypoint}
+ We assume that the model in \exref{ex-palm-rwp-2}
+ has a stationary regime, i.e. that $v_{\min}>0$.
+The modulator process is here $Z(t)=(P(t), N(t), V(t), S(t))$ where
+$P(t)$ [$N(t)$] is the previous [next] waypoint, $V(t)$ is the
+instant speed and $S(t)$ is the duration of the current trip. Note
+that $S(t)$ is determined by \eref{eq-rwp-sn}, i.e.
+ \ben
+ S(t) = \frac{d(P(t), N(t)}{V(t)}
+ \een so it is a deterministic function of $(P(t), N(t), V(t))$
+ and can be omitted from the description of the modulator process.
+
+Note that by standard change of variable arguments:
+ \bearn
+ f_{P,N,V}(p,n,v)&=& \frac{d(p,n)}{v^2}f_{P,N,S}(p,n,s)
+ \\
+ f^0_{P,N,V}(p,n,v)&=& \frac{d(p,n)}{v^2}f_{P,N,S}^0(p,n,s)
+ \eearn
+A direct application of \thref{theo-perfect}, item 1, gives the
+joint PDF of $(P(t), N(t), V(t))$:
+ \bearn
+ f_{P,N,V}(p,n,v) &=& \frac{d(p,n)}{v^2} \eta s f_{P,N,S}^0(p,n,s) =
+ \eta s f_{P,N,V}^0(p,n,v)
+ \\
+ &=& \eta f_{P,N,V}^0(p,n,v) \frac{d(p,n)}{v}
+ \eearn
+Now, by definition of the random waypoint model, speed and waypoints
+are chosen independently at a waypoint, i.e.
+  \ben
+f_{P,N,V}^0(p,n,v) = f_{P,N}^0(p,n) f_{V}^0(v)
+  \een
+Thus \be
+ f_{P,N,V}(p,n,v) = \eta d(p,n) f_{P,N}^0(p,n) \frac{1}{v}f_{V}^0(v)
+\ee
+
+Since the joint PDF is the product of the PDFs of $(P, N)$ on one
+hand, $V$ on the other hand, it follows that these two are
+independent, i.e., when sampled at an arbitrary point in time, the
+trip endpoints on one hand, and the chosen speed on the other hand,
+are independent. Furthermore, by marginalization, the joint PDF of
+$(P(t), N(t))$ is
+  \be
+ f_{P,N}(p,n) = \eta_1 d(p,n)
+  \ee for $p,n$ in the area of interest, and $0$ otherwise, and where $\eta$ is a normalizing constant.
+Thus the joint PDF of trip endpoints is proportional to their
+distance, i.e. we are more likely to see long trips in average (this
+is reminiscent of Feller's paradox in \sref{sec-feller}, though in
+space, not in time). It follows also that the distribution of a trip
+endpoint is not uniform, and that the two endpoints are \emph{not}
+independent (though they are when sampled at waypoints).
+\fref{fig-rwp-perfect} shows samples from the marginal distribution
+of $P(t)$ (which is the same as that of $N(t)$). We used rejection
+sampling (\thref{theo-rj2}), which does not require knowing the
+normalizing constant $\eta_1$.
+
+We also obtain that the distribution of speed at an arbitrary point
+in time is proportional to $\frac{1}{v}f_{V}^0(v)$, which we had
+already found in \exref{ex-palm-rwp}. After some algebra, one finds
+that the CDF of $V(t)$ is
+ \be F_V(v) =\frac{\ln v-\ln v_{\min}}{\ln v_{\max}-\ln v_{\min}}
+ \label{eq-CDF-FV}
+ \ee
+ for $v_{\min} \leq v \leq v_{\max}$, $0$ if $v \leq v_{\min}$ and
+ $1$ if $v \geq v_{\max}$.
+
+
+Let $M(t)$ be the mobile location at time $t$. The residual time is
+related to $M(t)$ by
+ \ben
+ N(t)- M(t)  = \frac{T^+(t)V(t)}{d(P(t), N(t)} \lp N(t)-P(t)\rp
+ \een so that adding either $T^+(t)$ or $M(t)$ to the modulator process
+ are equivalent. Thus we can take as process state $(P(t), N(t), V(t),
+ M(t))$. A direct application of \thref{theo-perfect}, item 2, together with change of
+variable arguments as above, give that the conditional
+distribution of $M(t)$ given that $P(t)=p, N(t)=n, V(t)=v$ is
+uniform on the segment $[p, n]$. In particular, it is
+independent of the speed $V(t)$.
+
+We summarize the findings in \aref{algo-perfect-rwp}.
+\begin{algorithm}\mycaption{Perfect simulation of Random Waypoint}
+ \begin{algorithmic}[1]
+%
+  \State
+  Sample speed $v$ from the distribution with CDF $F_V$ in
+  \eref{eq-CDF-FV}
+  (e.g. using CDF inversion, \thref{theo-cdf-inversion}).
+    \State Sample previous waypoint $p$ and next waypoint $n$
+    from the distribution with PDF proportional
+  to the distance from $p$ to $n$
+(e.g. using rejection sampling \thref{theo-rj2}).
+  \State Sample $m$ uniformly on the segment
+  that joins $p$ and $n$, e.g. by sampling $u$ uniformly in $[0,1]$ and
+  letting $m=(1-u)p + u n$.
+  \State Start the simulation with $P(0)=p, N(0)=n, V(0)=v, M(0)=m$.
+\end{algorithmic}\label{algo-perfect-rwp}
+ \end{algorithm}
+\label{ex-palm-rwp-3}
+ \end{ex}
+
+
+\section{Application to Markov Chain Models and the PASTA
+Property}
+
+In this section we consider a stochastic process $S(t)$ (the
+state of the simulation) that can be expressed as a Markov
+chain, in discrete or continuous time. Formally, this means
+that the state at time $t$ contains all information for
+advancing the simulation. Most simulations that we perform in a
+computer fall in this framework, since the simulation program
+uses only information available in memory. This does not mean
+that Markov models are always the best models to analyze a
+problem, as the state space may be prohibitively large. But it
+does provide a convenient framework to reason about what we are
+doing, for example to understand what the PASTA property means
+(\sref{sec-pasta}). In this section we limit ourselves to
+Markov chains over a finite state space, as this provides
+considerable simplifications.
+
+In appendix of this chapter (\sref{sec-mcr}) we give a quick
+review of Markov chains. There are many very good books on the
+topic, see for example \cite{Cinlar,ycart-2000,bremaud1999mcg}.
+
+
+\subsection{Embedded Sub-Chain}\mylabel{sec-palm-esc}
+
+If we observe a Markov chain just after some selected transitions,
+we obtain an \nt{embedded sub-chain}, which is itself a discrete
+time Markov chain, clocked by the selected transitions. We explain
+in this section how to compute all elements of the embedded
+subchain, in particular the Palm probabilities for events observed
+with the clock of the embedded subchain.
+
+Consider first discrete time.  $S(t)$ is a stationary Markov
+chain with enumerable state space $\calS$. We are interested in
+observing the transitions of $S(t)$, which is equivalent to
+observing the process $(S(t-1), S(t))$. Note that this is also
+a Markov chain. Let $\calF_0 \subset \calS^2$ be a subset of
+the set of possible transitions, and call $T_n$, $n=1,2...$ the
+time instants at which the chain does a transition in
+$\calF_0$, i.e.,
+   \bearn
+   T_1 &\eqdef& \inf\lc t>1: (S(t-1), S(t)) \in \calF_0 \rc
+   \\
+   T_n & \eqdef & \inf\lc t> T_{n-1}: (S(t-1), S(t)) \in \calF_0 \rc
+   \eearn
+We assume that there is an infinity of such times, i.e. $T_n <
+\infty$ with probability $1$, and further, that the expected
+time between visits is also finite\footnote{this is true for
+example if $\calF_0$ consists of only recurrent non null states
+of the chain $(S(t-1), S(t)$. }. Then, by
+\thref{thm:inversecontr}, we can treat $T_n$ as a stationary
+point process associated with the stationary process $S(t)$.
+
+The sequence of states observed just after a transition,
+$S(T_n)$, is itself a discrete time Markov chain, since the
+knowledge of the state at the $n$th transition is sufficient to
+compute the probabilities of future events (this is the strong
+Markov property). The sequence $Y_n=S(T_n)$ is called the
+\nt{embedded sub-chain}. We call \nt{matrix of selected
+transitions} the matrix of probabilities $C$ defined by
+ \ben
+ C_{i,j} = Q_{i,j} \ind{(i,j) \in \calF_0}
+ \een for all $(i,j)$ and where $Q$ is the transition matrix of $S$
+ (see \eref{eq-palm-tm}). The matrix $C$ is simply derived by
+ inspection.
+%
+ We also define the matrix $J_{i,j}$
+ by
+ \ben
+ J_{i,j} \eqdef \P(S(T_1)=j | S(0)=i)
+ \een
+so that $J_{i,j}$ is the transition probability of the chain
+$Y_n$ if $i$ is a reachable state of $Y_n$. Note that $J$ is
+not equal to $C$, as the next theorem shows.
+
+ In continuous time, the definitions are similar (recall that
+ we assume right-continuous sample paths, so a selected transition
+ occurs at time $t$ if $\lp S(t^-),S(t)\rp \in \calF_0$). The
+ matrix of selected
+transitions is now a rate matrix, given by
+ \ben
+ C_{i,j} = A_{i,j} \ind{(i,j) \in \calF_0}
+ \een for all $(i,j)$ and
+ where $A$ is the transition rate matrix of $S$ (with
+ $A_{i,i}=-\sum_{j \neq i}A_{i,j}$). Here we assume that looping transitions are
+ not possible, i.e. $(i,i) \nin \calF_0$ for all $i$. Note that $Y_n$ is a
+ discrete time Markov chain even if $S(t)$ is in continuous time.
+%
+%Note that $C$ is not the transition matrix of the chain $Y_n$,
+%as the next theorem shows.
+\begin{shadethm}(\nt{Embedded Subchain})
+\mylabel{theo-incluse} Consider a stationary Markov chain in
+discrete or continuous time $S(t)$ with $t \in \Ints$ or $t\in
+\Reals$, with stationary probability $\pi$, defined over some
+enumerable state space. Consider an
+ embedded sub-chain $Y_n$, $n \in \Nats$, with the assumptions
+ above, and with
+matrix of selected transitions $C$.
+\begin{enumerate}
+  \item The transition matrix $J$ of the embedded sub-chain
+      $Y_n$ satisfies $ (\I -Q +C)J= C$ (discrete time) or
+      $(C-A)J= C$ (continuous time).
+  \item The intensity of the point process of selected
+      transitions is $\la=\sum_{i,j} \pi_i C_{i,j}$.
+   \item The probability that an arbitrary selected
+       transition is $(i,j)$ is $\frac{1}{\la}\pi_i
+       C_{i,j}$ (in discrete time this is defined as
+       $\P^0(S_{-1}=i,S_{0}=j)$; in continuous time as
+       $\P^0(S_{0^-}=i,S_{0}=j)$).
+    \item The probability to be in state $j$ just after an
+        arbitrary selected transition is
+        $\frac{1}{\la}\sum_{i}\pi_i C_{i,j}$. The
+   probability to be in state $i$ just before an arbitrary
+   selected transition is $\frac{1}{\la}\pi_i \sum_{j}
+   C_{i,j}$.
+\end{enumerate}
+\end{shadethm}
+
+%
+%Note that the embedded subchain may not be irreducible even if
+%the original one is, as it may have states that are never
+%reached.
+
+\begin{ex}{Queuing Network in \fref{fig-double3}} There are two stations,
+called ``Gate" and ``Think Time", one class of customers; we
+assume to simplify that the service times in both stations are
+exponentially distributed with parameters $\mu$ (at ``Gate")
+and $\nu$ (at ``Think Time"). The system can be described as a
+continuous time Markov chain with state $=$ number of customers
+at station ``Gate", so that $n \in \lc 0,..,K \rc$ where $K$ is
+the total population size. This is a single class product form
+network, and from \thref{theo-q-pf}, the stationary probability
+is
+ \ben
+ p(n|K) = \frac{1}{\eta(K)} \frac{1}{\mu^n}\frac{1}{(K-n)!\nu^{K-n} }
+ \een where we explicitly wrote the dependency on the total population
+ size and $\eta(K)$ is a normalizing constant.
+
+Consider as selected transitions the arrivals at station
+``Gate". The matrix of selected transitions is given by
+  \ben C_{n,n+1} = (K-n)\nu  \mand C_{n,n'}= 0 \mif n' \neq n+1
+  \een
+The probability that the number of customers is $n$ just after
+an arrival is, by item 4 of \thref{theo-incluse}:
+  \ben
+  p^0(n) = \frac{1}{\la}p(n-1)C(n-1,n) = \frac{1}{\la \eta(K)}\frac{1}{\mu^{n-1}}
+  \frac{1}{(K-n)!\nu^{K-n}}
+  \een
+ This is the same as $p(n-1|K-1)$ if we ignore the normalizing
+ constants, more precisely:
+  \be
+  p^0(n) = \frac{\eta(K-1)}{\la \eta(K)} p(n-1|K-1)
+  \ee
+ Since
+ $\sum_{n=1}^Kp^0(n)=\sum_{n=1}^Kp(n-1|K-1)=1$, the
+ constant $ \frac{\eta(K-1)}{\la \eta(K)}$is $1$. i.e.
+ \be
+    p^0(n) = p(n-1|K-1)
+ \ee In other words, an arriving customer samples the network
+ in the same way as if this customer would be removed (this is
+ an instance of the Arrival Theorem~\ref{theo-arrival}). It follows
+ also that
+ \be
+ \la = \frac{\eta(K-1)}{\eta(K)}
+ \ee which is an instance of the Throughput
+ Theorem~\ref{theo-q-qnet-th}.\label{ex-palm-qnet}
+ \end{ex}
+%
+%\begin{ex}{ARP Requests Without Refreshes} \mylabel{ex:arp}IP packets delivered by a host
+%are produced according to a Point process with $\lambda$
+%packets per second in average. The packet delivery is a renewal
+%source model, with the time between packet arrivals having a
+%phase type distribution (\sref{sec-q-ph}). This approximates
+%any arbitrary inter-arrival time distribution. When a packet is
+%delivered, if an ARP request was emitted not more than $t_a$
+%seconds ago, no ARP request is generated. Else, an ARP request
+%is generated. ($t_a$ is the ARP timer). What is the probability
+%$p$ that an arriving packet causes an ARP request to be sent~?
+%
+%Consider discrete time. We can model the system as a Markov chain
+%$X(t)$ with state $(i,s)$ where $i$ is the phase of the
+%inter-arrival time model and $s \in \{0,1,...,t_a\}$ is the
+%remaining lifetime of the timer. Let $Q_{i,j}$ be the transition
+%matrix of the modulator and $\theta_i$ the arrival rate given that
+%the modulator is in state $i$. The transitions of $X(t)$ are
+%$$
+%\bracket{
+% (i,s) \rightarrow (j,s-1) \mbox{ with probability } Q_{i,j} \mbox{ for } s \neq 0\\
+% (i,0) \rightarrow (j,0) \mbox{ with probability } Q_{i,j} (1-\theta_i)\\
+%  (i,0) \rightarrow (j,t_a) \mbox{ with probability } Q_{i,j} \theta_i
+%}
+%$$
+%We can thus compute the stationary probability
+%$\pi_s(i):=\E(X(t)=(i,s))$ from the steady-state equations ($\pi_s$
+%is a row matrix and $\Theta=\diag(\theta_i)$) :
+%$$\bracket{
+% \pi_s =\pi_{s+1}Q  \;\; 0<s<t_a\\
+% \pi_{t_a} = \pi_0 \Theta Q\\
+% \pi_0 = \pi_1 Q + \pi_0 (\I - \Theta)Q
+% }
+%$$
+%which solves into
+%$$\pi_s= \pi_0 \Theta Q^{t_a+1-s} $$
+%and
+%$$
+%\pi_0=\pi_0\Theta Q^{t_a+1} + \Pi_0 (\I-\Theta)Q
+%$$
+%The last equation gives $\pi_0$ up to a multiplicative
+%constant.
+%
+%Now we apply \thref{theo-incluse} with selected transitions
+%corresponding to a packet arrival. Call $q(i,s)$ the
+%probability that an arriving packet sees the system in a state
+%$(i,s)$. We have $$p=\sum_{i} q(i,t_a)$$
+%
+%Now $q(i,s)=\eta^{-1} (\pi_{s+1}\Theta Q)[i]$ for $s\neq t_a$
+%and $q(i,t_a)=\eta^{-1} (\pi_{0}\Theta Q)[i]=\eta^{-1}
+%(\pi_{t_a})[i]$. Thus $p=\eta^{-1} \sum_i \pi_{t_a}[i]$. We
+%compute $\eta$ by the normalizing condition
+%$\sum_{i,s}q(i,s)=1$.
+% \nfs{
+%PUT HERE SOME NUMERICAL EXAMPLE
+%
+%EXPLAIN PHASE TYPE DISTRIB
+%
+%FAIRE EN TEMPS CONTINU ?
+%  }
+%\end{ex}
+%
+%%
+%
+%
+%\paragraph{``Observable Transitions" of a Discrete Time Chain. }Consider a chain with more than
+%1 state, such that $Q_{i,i}>0$ for some $i$, i.e., there are
+%some looping states. Let $C$ be the set of non-looping
+%transitions: $C_{i,j}=Q_{i,j}$ for $i\neq j$ and $C_{i,i}=0$.
+%The embedded sub-chain is the chain that is observable. Its
+%transition matrix is
+%$J=D^{-1}C=\diag((1-Q_{i,i})^{-1})(Q-\diag(Q_{i,i})$.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \mq{q-palm-skkkdii}{Why is $1-Q_{i,i}\neq 0$
+%in this example~?}{Because $Q_{i,i}<1$ otherwise the chain is
+%not irreducible.}
+
+%\subsection{Discrete Time chain Embedded in a Continuous Time
+%Chain.} Consider a stationary ergodic continuous time chain
+%$X_t$ with generator $A$. Let $T_n$ be the point process of
+%transition epochs. The embedded sub-chain has transition matrix
+%$J=D^{-1} (A+D)$ where $D=-\diag{A_{i,i}}$ is the diagonal
+%matrix whose $i$th element is the rate of transition out of
+%state $i$. Put differently, this says that the probability that
+%the next transition leads to state $j$, starting from $i$, is
+%$\frac{A_{i,j}}{D_{i,i}}$.
+%
+%Define $\bar{T}_i=\E^0(T_1|X_0=i)$ the mean sojourn time is
+%state $i$. We know that $\bar{T}_i=\frac{1}{D_{i,i}}$. By
+%application of \pref{prop-mmod1} we find the relation between
+%state probabilities at an arbitrary time and at an arbitrary
+%transition:
+%$$
+%\pi_i=\eta \frac{\pi^0_i}{D_{i,i}}
+%$$
+%The rate of transitions $\eta$ is obtained by expressing that
+%$\sum_i \pi_i=1$:
+%$$
+%\frac{1}{\eta}=\sum_i \frac{\pi^0_i}{D_{i,i}}
+%$$
+\subsection{PASTA}
+\mylabel{sec-pasta}
+\index{PASTA}
+Consider a system that can be modeled by a stationary Markov
+chain $S(t)$ in discrete or continuous time (in practice any
+simulation that has a stationary regime and is run long
+enough). We are interested in a matrix of $C\geq 0$ of selected
+transitions such that
+%
+\begin{description}
+  \item[Independence] For any state $i$ of $S(t)$, $\sum_j
+      C_{i,j}\eqdef\lambda$ is independent of $i$.
+\end{description}
+%
+i.e. the rate of occurrence of a selected transition is
+independent of the global simulation state. Further, this
+assumption implies that the Point process of selected
+transitions is a Bernoulli process (discrete time) or a Poisson
+process (continuous time) with intensity $\lambda$ (see
+\sref{sec-mcr} for the definition of Poisson and Bernoulli
+processes).
+
+\begin{shadethm}[PASTA]\mylabel{theo-pasta}
+Consider a point process of selected transitions as defined
+above. The Palm probability just before a transition is the
+stationary probability.
+\end{shadethm}
+
+The theorem says that, in stationary regime, the Bernoulli, or
+Poisson clock of selected transitions sees the system in the
+same way as the standard clock.
+
+Interpret $C$ as external arrivals into a queuing system. The
+theorem is known as ``Poisson Arrivals See Time Averages",
+hence the acronym. Note however that this denomination is
+misleading: Poisson alone is not sufficient, we need that the
+point process of selected transition has a rate independent of
+the state (see \exref{ex-non-pasta}).
+
+%\begin{shadethm}[PASTA]\mylabel{theo-pasta}Consider a system that can be modeled by a stationary, ergodic Markov
+%chain with stationary probability $\pi$.  We are interested in a matrix of $C\geq 0$ of selected
+%transitions such that
+%\begin{itemize}
+%  \item For any state $i$, there
+%  is only one state $j$ for which $C_{j,i} >0$. Let $i^-$ be that unique state.
+%  \item $C(i^-,i)$ is a constant $\lambda$ (i.e. is independent of $i$)
+%\end{itemize}
+%The point process of selected transitions is a Bernoulli process (discrete time) or Poisson
+%process (continuous time) with intensity $\lambda$. The Palm probability $\pi^0_i$ to be in
+%state $i$ just after a transition is the stationary probability $\pi_{i^-}$.
+%\end{shadethm}
+%A \nt{Bernoulli process} is a Point process in discrete time such
+%that $N(t)$ is an iid sequence.
+%
+%\begin{preuve} (discrete time) The probability that there is a transition at time $1$, given that $X_0=i$,
+%is $\lambda$, independent of $i$. Thus $N(1)$ is independent of the state at time $0$. Since we
+%have a Markov chain, the state at time $1$ depends on the past only through the state at time
+%$0$. Thus $N(1)$ is independent of $N(t0$ for all $t\geq 0$. By stationarity, it follows that
+%$N(t)$ is iid.
+%
+%The relation between Palm and stationary probabilities follows rom \thref{theo-incluse}. We
+%have
+%$$
+%\pi^0_i=\frac{1}{\eta} C(i^-,i)\pi_{i^-}=\frac{\lambda}{\eta}\pi_i
+%$$Now $\sum_i \pi^0_i=1$ thus $\lambda=\eta$ and $\pi^0_i=\pi_{i^-}$
+%\end{preuve}
+
+
+
+\begin{ex}
+{ARP Requests Without Refreshes} \label{ex-arp} IP packets
+delivered by a host are produced according to a Poisson process
+with $\lambda$ packets per second in average. When a packet is
+delivered, if an ARP request was emitted not more than $t_a$
+seconds ago, no ARP request is generated. Else, an ARP request
+is generated. What is the rate of generation of $ARP$
+requests~?
+%
+%Consider again \exref{ex:arp}, but assume that the IP packets
+%delivered by a host are produced according to a Poisson process
+%with intensity $\lambda$. What is the probability $p$ that an
+%arriving packet causes an ARP request to be sent~?
+
+Call $T_n$ the point process of ARP request generations, $\mu$
+its intensity and $p$ the probability that an arriving packet
+causes an ARP request to be sent. First, we have $\mu = p
+\lambda$ (to see why, assume time is discrete and apply the
+definition of intensity).
+
+Second, let $Z(t)=1$ if the ARP timer is running, $0$ if it has
+expired. Thus $p$ is the probability that an arriving packet
+sees $Z(t)=0$. The PASTA property applies, as the IP packet
+generation process is independent of the state of the ARP
+timer. (You may establish a formal link with \thref{theo-pasta}
+as follows. Think in discrete time. The system can be modeled
+by a Markov chain with $X(t)=i=$ the residual value of the
+timer. We have $Q_{i,i-1}=1$ for $i>0$, $Q_{0,t_a}=\lambda$,
+$Q_{0,0}=1-\lambda$. The selected transitions are IP packet
+deliveries, and the probability that one IP packet is delivered
+in one slot is $\la$, and does not depend on the state $i$.)
+
+By the inversion formula: \be p=\P(Z(t)=0)=\mu
+\E^0(T_1-t_a)=\mu \left(\frac{1}{\mu}-t_a\right)=1 -\mu t_a\ee
+Combining with $\mu = p \la$ gives $p=\frac{1}{\lambda t_a
++1}$, and the rate of generation of $ARP$ requests is
+$\mu=\frac{\lambda}{1+\lambda t_a}$.
+\end{ex}
+
+\begin{ex}
+{M/GI/1 Queue}A similar reasoning shows that for
+a queuing system with Poisson arrivals and
+independent service times, an arriving customer
+sees the system (just before its own arrival) in
+the same way as an external observer arriving at
+an arbitrary instant.\label{ex-mg1-pasta}
+\end{ex}
+\begin{ex}
+{A Poisson Process that does not Satisfy PASTA} The PASTA
+theorem requires the event process to be Poisson or Bernoulli
+\emph{and} independence on the current state. Here is an
+example of Poisson process that does not satisfy this
+assumption, and does not enjoy the PASTA property.
+
+Construct a simulation as follows. Requests arrive as a Poisson
+process of rate $\lambda$, into a single server queue. Let $T_n$ be
+the arrival time of the $n$th request. The service time of the $n$th
+request is assumed to be $\frac{1}{2}(T_{n+1}-T_n)$. The service
+times are thus exponential with mean $1 \over 2 \lambda$, but not
+independent of the arrival process. Assuming the system is initially
+empty, there is exactly 1 customer during half of the time, and 0
+customer otherwise. Thus the time average distribution of queue
+length $X(t)$ is given by $\P(X(t)=0)=\P(X(t)=1)=0.5$ and
+$\P(X(t)=k)=0$ for $k\geq 2$. In contrast, the queue is always empty
+when a customer arrives. Thus the Palm distribution of queue length
+just before an arrival is different from the time average
+distribution of queue length.
+
+The arrival process does not satisfy the independence
+assumption: at a time $t$ where the queue is not empty, we know
+that there cannot be an arrival; thus the probability that an
+arrival occurs during a short time slot depends on the global
+state of the system.\label{ex-non-pasta}
+\end{ex}
+
+
+\paragraph{Application to measurements.} The PASTA property shows that sampling
+a system at random observation instants, distributed like a
+Poisson or Bernoulli process, independent of the system state,
+provides an unbiased estimator of the time average
+distribution.
+
+
+%
+%%%%% BEGIN REMOVE IN FINAL VERSION
+%\section*{CHECK LIST}
+%
+%\begin{verbatim}
+%
+%
+%        Bianchi
+%
+%
+%Pollaczek Khinchine
+%
+%Appendix
+%      Poisson
+%      Bernoulli
+%      Conditional Probability distribution; density
+%Nova Science Publishers
+%
+%\end{verbatim}
+%%%% END REMOVE IN FINAL VERSION
+
+\section{Appendix: Quick Review of Markov Chains}
+\label{sec-mcr}
+ \nfs{ refaire une passe ici; voir cours msc}
+\subsection{Markov Chain in Discrete Time}
+\label{sec-distime} Let $\calS$ be a \imp{finite} set. A
+discrete time stochastic process $S(t)$ is a Markov chain on
+$\calS$ if the future evolution of $S$ given all past up to
+time $t$ is entirely determined by $S(t)$. The \nt{transition
+matrix} is the matrix of probabilities $Q_{i,j}$ defined by
+ \be
+ Q_{i,j} = \P(S(t+1)=j|S(t)=i)
+ \label{eq-palm-tm}
+ \ee
+for all $i$ and $j$ in $\calS$.
+
+The state space can be partitioned in \nt{communication
+classes} as follows: two states $i$ and $j$ are in the same
+communication class if $i=j$ or if the chain $S(t)$ can go from
+$i$ to $j$ in a finite number of transitions (each transition
+must have a positive probability), and vice-versa, from $j$ to
+$i$. A communication class is either \nt{recurrent} (once the
+chain $S(t)$ has entered the class it will remain in the class
+forever) or not, also called \nt{transient}. If a class is
+transient, with probability 1, the chain will leave it and
+never return. States that belong to a transient class are also
+called transient.
+
+Let $\pi(t)$ be the row vector of probabilities at time $t$,
+i.e $\pi_i(t)=\P(S(t)=i)$. Then for all $t \in \Nats$:
+ \be
+\pi(t)=\pi(0) Q^t \label{eq-trans-dis}
+ \ee
+
+For the chain $S(t)$ to be stationary, we need $\pi(t)$
+independent of $t$, which implies that $\pi$ satisfies the
+linear system
+ \be
+ \bracket{
+\pi = \pi Q
+ \\
+ \sum_{i\in \calS} \pi_i  =  1
+ }
+ \label{eq-proba-stat}
+ \ee
+
+It turns out that this also sufficient, i.e if $\pi(0)$ is
+solution of \eref{eq-proba-stat},  then $S(t)$ is stationary. A
+solution of \eref{eq-proba-stat} is called a \nt{stationary
+probability} of the Markov chain.
+
+Note that, because $Q$ is a stochastic matrix, any solution
+$\pi\in \Reals^{\calS}$ of \eref{eq-proba-stat} is necessarily
+nonnegative.
+ Since $\calS$ is finite the
+situation is simple: stationary probabilities correspond to
+recurrent classes. More precisely \noitemsep
+ \begin{itemize}
+   \item There is at least one recurrent class.
+   \item For every recurrent class $c$ there is one
+       stationary probability vector $\pi^c$, such that
+       $\pi_i^c > 0 $ if $i \in c$ and $\pi_i^c= 0 $
+       otherwise; any stationary probability is a weighted
+       average of the $\pi^c$'s.
+   \item If there is only one recurrent class, the chain is
+       called \nt{irreducible}. If the chain is
+       irreducible, there is exactly one stationary
+       probability, and vice-versa, i.e.  if
+       \eref{eq-proba-stat} has only one solution  the
+       chain is irreducible.
+       \item The chain is \nt{ergodic} in the wide
+           sense\footnote{Some authors use a more
+           restrictive definition and say that a finite
+           space markov chain is ``ergodic" if it is
+           irreducible and aperiodic, see later. We prefer
+           to use the general definition, which is that
+           time averages tend to expectations.} if it is
+           irreducible, and vice-versa.
+       \item If there is more than one recurrent class, the
+           chain will eventually enter one recurrent class
+           and remain there forever. The probability that
+           the chain enters recurrent class $c$ depends on
+           the initial condition.
+           \item
+If $\pi$ is a stationary probability vector and $i$ is a
+transient state, $\pi_i=0$.
+ \end{itemize}
+
+Thus, when $\calS$ is finite, there is always at least one
+stationary regime. If the  chain $S(t)$ is not irreducible
+(i.e. not ergodic) there may be several stationary regimes, and
+the stationary regime that the chain eventually enters may be
+random. This happens for example for systems that may have
+several failure modes.
+
+Consider an ergodic chain (with finite state space). It is
+stationary if the initial distribution of state is the
+stationary probability. Otherwise, it becomes stationary as $t
+\to {\infty}$, but there is a technicality due to periodicity.
+A recurrent class $c$ is called \nt{periodic} with period $d$
+if all cycles in the class have a length multiple of some
+$d\geq 2$ (i.e. whenever $X(t)=i, X(t+s)=i$ for $i \in c$ and
+$s >0$, $s$ must be a multiple of $d$); otherwise, the class is
+aperiodic. A chain with a single recurrent class is said
+periodic [resp. aperiodic] if its unique recurrent class is
+periodic [resp. aperiodic].
+
+If the chain is ergodic and aperiodic then
+ \ben
+ \limit{t}{\infty}\pi(t)= \pi
+\een where $\pi$ is the unique stationary probability and thus
+the chain becomes stationary for large $t$. Else, if the chain
+is periodic with period $d$
+ \ben
+ \limit{t}{\infty}\frac{1}{d}\lp \pi(t)+ \pi(t+ 1) + \ldots + \pi(t+d-1)\rp= \pi
+\een which can be interpreted as follows. Change the time
+origin randomly uniformly in $\{0,1,\ldots,d-1\}$. Then as $t
+\to {\infty}$, the chain becomes stationary.
+
+
+If the state space is enumerable but infinite, the situation is
+more complex; there may not exist a recurrent class, and even
+if there is, there may not exist a stationary probability (the
+chain ``escapes to infinity"). However, there is a simple
+result. If the chain is irreducible, then \eref{eq-proba-stat}
+has $0$ or $1$ solution. If it has $1$ solution, then it is
+ergodic and all statements above for an ergodic chain over a
+finite space continue to hold.
+\subsection{Markov Chain in Continuous Time}
+In continuous time, the definition of the Markov Chain is
+similar, i.e. $\calS$ is an enumerable set and the continuous
+time stochastic process $S(t)$ is a Markov chain on $\calS$ if
+the future evolution of $S$ given all past up to time $t$ is
+entirely determined by $S(t)$. We assume as usual that $S(t)$
+is right-continuous, i.e. $S(t^+)=S(t)$, so that if there is a
+transition at time $t$, $S(t)$ is the state just after the
+transition\footnote{Transitions in continuous time are often
+called ``jumps"}. Note that some authors reserve the term
+Markov \emph{chain} to discrete time, whereas some others
+reserve it to discrete or continuous time processes over a
+discrete state space (as we do).
+
+
+The transition matrix is replaced by a matrix of rates, called
+the \nt{rate transition matrix}, or \nt{generator matrix}, $A$.
+It has the property that
+ \be
+ \P(S(t+dt)=j|S(t)=i)=A_{i,j}dt + o(dt)
+\ee for $i\neq j$. Thus $A_{i,j }$ is interpreted as the rate
+of transition from state $i$ to $j$ and is necessarily
+nonnegative. If the state space is infinite, we need to assume
+that the process is not explosive, which means here that for
+all $i \in \calS$:
+ \be
+ \sum_{j\neq i} A_{i,j} < {\infty}
+ \ee
+ It is customary to pose
+ \be
+ A_{i,i} = -\sum_{j \neq i} A_{i,j}
+ \ee
+so that $A$ has non-negative entries everywhere except on the
+diagonal and $\sum_j A_{i,j}=0$. It can be shown that the time
+until the next jump given that $S(t)=i$ is an exponential
+random variable with parameter $-A_{i,i}$.
+
+Let $\pi(t)$ be the row vector of probabilities at time $t$,
+i.e $\pi_i(t)=\P(S(t)=i)$. Then for all $t \geq 0$:
+ \be
+\pi(t)=\pi(0) e^{t A}\label{eq-trans-con}
+ \ee
+(the exponential of a matrix is defined like for complex numbers by
+$e^{A}=\sum_{n=0}^{\infty} A^n/n!$).
+
+A stationary probability is a row vector $\pi$ that satisfies
+ \be
+ \bracket{
+\pi A= 0
+ \\
+ \sum_{i\in \calS} \pi_i  =  1
+ }
+ \label{eq-proba-stat-cont}
+ \ee
+ which is the replacement for \eref{eq-proba-stat}. Otherwise, the rest of \sref{sec-distime} applies, mutatis
+ mutandi, with one simplification: there is no issue of
+ periodicity. Thus, in particular, a continuous time Markov
+ chain over a finite state space becomes stationary as $t \to
+ \infty$.
+
+
+ For more details about Markov chains in continuous time, see
+ \cite{serfozo1999introduction}.
+%A \nt{phase type} distribution is the lifetime of a finite,
+%transient markov chain $S(t)$, defined as follows. There are
+%$I+1$ states labeled $0,1,...,I$; state $0$ is the final state.
+%The random variable $T$ is the first time $t \geq 0$ for which
+%$S(t)=0$. Let $A_{i,j}$ be the rate of transition from state
+%$i\neq 0$ to state $j$, $d(i)=\sum_{j: i\neq i} A_{i,j}$
+%(departure rate), and $\alpha_i$ the probability that the chain
+%in in state $i$ at time $0$. We assume that $\alpha_0=0$. The
+%moment generating function of $T$, $m(s):=\E(e^{sT})$, is
+%obtained by solving the set of linear equations, defined for
+%all $i=1...I$:
+%$$
+%m_i(s)=\left(\sum_{j: j\neq 1}\frac{A_{i,j}}{d(i)} m_j(s) +
+%\frac{A_{i,1}}{d(i)} \right)\frac{d(i)}{d(i)-s}=m_i(s)
+%$$
+%which are obtained by letting $m_i(s):=\E(e^{sT}|S_0=i)$.
+%
+%Special cases often used are
+%\begin{itemize}
+%  \item the hypo-exponential distribution, for which
+%      $A_{i,j}=0$ except for $i<I,j=i+1$ or $i=I, j=0$. If
+%      the non-zero rates $A_{i,j}$ are all the same, this
+%      is the Erlang-$I$ distribution.
+%  \item the hyper-exponential distribution, for which
+%      $A_{i,j}=0$ except for $j=0$
+%\end{itemize}
+%
+%PH-type distributions have a rational moment generating
+%function (quotient of two polynoms). They can approximate any
+%distribution, in some sense.
+%
+%
+\subsection{Poisson and Bernoulli}
+Those are the two memoriless stationary point processes.
+
+A \nt{Bernoulli process} with intensity $q\in [0,1]$ is a point
+process $T_n\in \Ints$ in discrete time, such that the points
+are independently drawn. In other words, at every time $t$,
+toss a coin and with probability $q$ decide that there is a
+point, otherwise there is not. With the terminology of
+\sref{sec-palm}, the sequence $N(t)$ is iid. The time intervals
+between points, $S_n=T_{n+ 1}-T_n$, are independent and are
+such that $S_n-1$ has a geometric distribution with parameter
+$q$. The same holds for the time from now to the next point.
+
+A \nt{Poisson process} $T_n\in \Reals$  with intensity
+$\lambda>0$ is the continuous time equivalent of a Bernoulli
+process. We do not define it here formally, but, instead, give
+its main properties:
+\begin{itemize}
+  \item The probability that there is a point in $[t, t+
+      dt]$ is $\lambda dt + o(dt)$
+  \item The number of points in disjoint time intervals are
+      independent random variables.
+  \item The number of points in an interval of duration $t$
+      is a random variable with distribution
+      Poisson($\lambda t$)
+  \item The time intervals between points, $S_n=T_{n+
+      1}-T_n$, are independent and have an exponential
+      distribution with parameter $\lambda$. The time from
+      now to the next point has the same distribution (but
+      see also \exref{ex-poisson}).
+\end{itemize}
+
+ It can be shown that the Poisson process with intensity $\lambda$ is the limit, in
+ various  senses, when $dt \to 0$, of the Bernoulli process with
+ intensity $q = \lambda dt$, when we map the time slot of
+ the Bernoulli process to a continuous time interval of
+ duration $dt$.
+
+
+\section{Proofs}\begin{petit}Except for \thref{theo-renewal} and \thref{theo-incluse},
+we give the proofs in discrete time, as they are
+simple and require only a first course on
+probability. The proofs in continuous time that
+are not given can be found in \cite{baccelli-87},
+\cite{robert-03} or \cite{Miyazawa94}.
+\paragraph{\thref{theo-inversion}}
+Let $N(t)=1$ if the point process has a point at time $t$, $0$
+otherwise. We show only that $\E(X(0)) = \lambda
+\E^0\left(\sum_{s=1}^{T_1} X(s)\right)$, as the second equality is
+similar. By definition of a conditional probability and of
+$\lambda$:
+ \ben
+ \lambda \E^0\left(\sum_{s=1}^{T_1}X(s)\right)=
+ \E\left(\sum_{s=1}^{T_1}X(s) N(0)\right)
+ \een
+Now for $s>0$, the event ``$s\leq T_1$" is equivalent to
+``$N(1,s-1)=0$" thus
+ \bearn
+ \lambda \E^0\left(\sum_{s=1}^{T_1}X(s)\right)&=&
+ \E\left(\sum_{s=1}^{\infty} X(s) N(0)\ind{N(1,s-1)=0}\right) \\
+  &=&\E\left(\sum_{s=1}^{\infty} X(0) N(-s)\ind{N(1-s,1)=0}\right)=
+  \E\left( X(0)\sum_{s=1}^{\infty} N(-s)\ind{N(1-s,1)=0}\right)
+\eearn
+
+where the last line is by stationarity. Let $T^-(-1)$ be the most
+recent time at which a selected event occured before or at time
+$-1$. This time is finite with probability 1, by stationarity. We
+have $N(-s)\ind{N(1-s,1)=0}=1$ if and only if $T^-(-1)=-s$, thus,
+with probability $1$: \ben 1= \sum_{s=1}^{\infty}
+N(-s)\ind{N(1-s,1)=0}\een which shows the formula.
+
+\paragraph{\thref{theo-feller}}
+$X(t)$ is jointly stationary with
+ $T_n$, thus its distribution is independent of $t$, and we can apply the inversion formula.
+ For any $s \geq 0$ we have
+ $$\P(X(0)=s)=\E(\ind{X(0)=s})=\lambda\E^0\left(\sum_{u=0}^{T_1-1}\ind{X(u)=s}\right)
+ $$
+ Given that there is a point at $0$ and $0\leq u\leq T_1-1$, we have $X(u)=T_1-u$, thus
+ $$
+ \P(X(0)=s)=\lambda\E^0\left(\sum_{u=0}^{T_1-1}\ind{T_1=u+s}\right)
+ $$
+Now the sum in the formula is $1$ if $T_1> s$ and $0$ otherwise.
+Thus
+ $$  \P(X(0)=\tau)=\lambda\E^0\left(\ind{T_1>s}\right)=\lambda\P^0(T_1>s)$$
+which shows the formula for $X(t)$. The formula for $Y(t)$ is
+similar, using $Y_u=u$ for $0\leq u\leq T_1-1$.
+
+For $Z(t)$, apply the inversion formula and obtain
+ $$\P(Z_0=s)=\lambda \E^0\left(\sum_{u=0}^{T_1-1}\ind{Z_u=s}\right)$$
+Now under $P^0$, $Z_u=T_1$ does not depend on $u$ for $0\leq u\leq
+T_1-1$ thus
+$$\P(Z_0=s)=\lambda
+\E^0\left(\ind{T_1=s}\sum_{u=0}^{T_1-1}1\right)=\lambda\E^0\left(T_1\ind{T_1=s}\right)=
+\lambda s\P^0(T_1=s)
+$$
+
+%\paragraph{\thref{theo-rcl}}
+%In discrete time we have
+% \ben
+% X(t) = X(0) + \sum_{s=0}^{t-1}X'(s) + \sum_{n \in
+% \Ints}\Delta_{T_n}\ind{0\leq T_n < t}
+ %
+%\paragraph{\thref{theo-shot-noise}}
+%Define $Z(t) = Z_{T^-(t)} $ where $T^-(t)$ is the last point of the
+%point process before or at $t$. It follows from the hypotheses on
+%stationarity that $Z(t)$ is jointly stationary with the simulation
+%state. The left-handside in the theorem is
+% \bearn
+% \E\lp \sum_{t \leq 0} h(-t,Z(t)) \rp &=& \sum_{t \leq 0}\E\lp h(-t,Z(t))| N(t)=1
+% \rp\P(N(t)=1) = \la \sum_{t \leq 0}\E^t\lp h(-t,Z(t))
+% \rp
+%\eearn For any fixed $u \in \Nats$, $\E^t\lp h(u,Z(t))
+% \rp= \E^0\lp h(u,Z_0)
+% \rp$ by joint stationarity. Apply this to $t=-u$ and obtain
+% \ben
+% \E^t\lp h(-t,Z(t))
+% \rp= \E^0\lp h(-t,Z_0)\rp
+% \een
+\paragraph{\thref{theo-neveu}}
+Apply the inversion formula to the $B$ point process and to $X(t)
+N^A(t)$ where $N^A(t)$ is $1$ if there is an $A$ point at $t$ and
+$0$ otherwise. Note that \ben \sum_{n \in \Ints}
+ X \lp A_n \rp \ind{B_0\leq A_n < B_1}= \sum_{s=B_0}^{B_1-1}
+X_{s}N^A(s) \een thus
+ \bear
+  \la(B) \E\lp X(0) N^A(0)\rp & = & \E^0_B\lp
+ \sum_{n \in \Ints}
+ X \lp A_n \rp \ind{B_0\leq A_n < B_1} \rp
+  \nonumber \\
+ \la(B) \frac{\E^0_A \lp X(0)\rp}{\la(A)} & = & \E^0_B\lp
+ \sum_{n \in \Ints}
+ X \lp A_n \rp \ind{B_0\leq A_n < B_1}
+  \rp
+ \nonumber \\
+\la(B)  \E^0_A \lp X(0)\rp & = &\la(A) \E^0_B\lp
+ \sum_{n \in \Ints}
+ X \lp A_n \rp \ind{B_0\leq A_n < B_1}
+  \rp \label{eq-neveu-0}
+ \eear
+Apply the last equation to $X(t)=1$ and obtain \eref{eq-neveu-int}.
+Combine \eref{eq-neveu-0} with \eref{eq-neveu-int} and obtain
+\eref{eq-neveu}.
+
+\paragraph{\thref{theo-renewal}}
+First note that the expectation of $N(t_0)$ is
+ \be
+ \mylabel{eq.dkkdj8998}
+ \sum_{n\geq 1} \P(S_0+\ldots+S_{n-1} \leq t)
+ \ee
+Pick some arbitrary, fixed $s>0$; by Markov's inequality:
+ \bearn
+ \P(S_0+\ldots+S_{n-1}  \leq t_0)& \leq &e^{st_0} \E\left( e^{-s\lp S_0+\ldots+S_{n-1}\rp}\right)
+ \\
+ &=&e^{st_0}G(s)^n
+ \eearn
+   where $G(s):=\E\left(e^{-s S_0}\right)$ is the Laplace-Transform
+  of $S_0$. We have $G(s)=1$ if and only if $s S_0=0$ with probability
+  1. Thus, by hypothesis,  $G(s) <1$ since $s >0$. By
+  \eref{eq.dkkdj8998}:
+  \ben
+E\lp N(t_0)\rp \leq e^{st}\sum_{n\geq 1 }\lp G(s)\rp^n < \infty
+  \een
+
+
+\paragraph{\thref{theo-perfect}}
+Let $\phi$ be an arbitrary bounded test function of $Z(t), S(t)$.
+Apply Palm's inversion formula:
+ \bearn
+ \esp{\phi(Z(t),S(t)}& = &\lambda \E^0\lp \int_0^{T_1} \phi(Z_0,T_1)dt
+ \rp
+ \\
+ & = & \lambda \E^0\lp T_1 \phi(Z_0,T_ 1)\rp =   \lambda \E^0\lp S_0 \phi(Z_0,S_
+ 0)\rp
+ \\
+ & = & \lambda\int_{\calZ \times (0, \infty)}
+ \phi(z,s) s f_{Z,S}^0(z,s) d\mu(z) ds
+ \eearn
+ from where item 1 follows, with $\eta = \lambda$.
+
+ Since the knowledge of $\esp{\phi(Z(t), S(t)) \psi(T^+(t))}$
+ for any $\phi, \psi$ determines the joint distribution of $(Z(t),
+ S(t),T^+(t))$, to show item 2, it is sufficient to show that for any  bounded, test function $\psi$
+ of $T^+(t)$ and any bounded test function of $Z(t), S(t)$, we have:
+  \ben
+  \esp{\phi(Z(t), S(t)) \psi(T^+(t))} = \int_{z \in \calZ, s>0}
+   \phi(z,s)  s f_{Z,S}^0(z,s) \lp \int_0^s \frac{1}{s}\psi(t) dt\rp d\mu(z) ds
+ \een which, is equivalent to
+ \be
+  \esp{\phi(Z(t), S(t)) \psi(T^+(t))} = \int_{z \in \calZ, s>0}
+   \phi(z,s)    f_{Z,S}^0(z,s)  \lp\int_0^s \psi(t)dt \rp d\mu(z) ds
+  \label{eq-amon-sdkl}
+ \ee
+Apply Palm's inversion formula again: \bearn
+ \esp{\phi(Z(t),S(t)\psi(T^+(t))}& = &
+ \lambda \E^0\lp \int_0^{S_0} \phi(Z_0,S_0)\psi(S_0-u) du
+ \rp\\
+ & = & \lambda \E^0\lp s \phi(Z_0,S_0)\frac{1}{s}\int_0^{S_0} \psi(S_0-u)
+ du
+ \rp
+ \\
+ & = & \lambda \int_{z \in \calZ, s>0}
+   \phi(z,s)    f_{Z,S}^0(z,s)  \lp\int_0^s \psi(s-u) du \rp d\mu(z) ds
+\eearn which, after the change of variable $t=s-u$ in the inner
+integral is the same as \eref{eq-amon-sdkl}.
+
+\paragraph{\thref{theo-incluse}}
+By the strong markov property:
+$$
+J_{i,j}=\P^0(X_{T_1}=j|X_{T_0}=i)=\P(X_{T^+(0)}=j|X_0=i)
+$$
+Condition with respect to the next transition, selected or not:
+$$
+J_{i,j}=\sum_{k: (i,k) \in F}Q_{i,k} + \sum_{k: (i,k) \not\in F}Q_{i,k}\P(X_{T^+(0)}=j | X_1=k
+\mand X_0=i)
+$$
+Now, for $(i,k) \not\in F$, given that $X_0=i, X_1=k$, we have
+$T^+(0)=T^+(1)$. Thus, the last term in the previous equation
+is
+$$
+\sum_{k: (i,k) \not\in F}Q_{i,k}\P(X_{T^+(1)}=j |X_1=k \mand X_0=i)=\sum_{k: (i,k) \not\in
+F}Q_{i,k}J_{k,i}
+$$
+Combining the two gives $J=C+ (Q -C)J$ which shows item 1.
+
+Now, by definition of an intensity, $\la=\sum_{(i,j)\in
+F}\P(X_0=j,X_{-1}=i)$ and $\P(X_0=j,X_{-1}=i)=\pi_i Q_{i,j}$,
+which shows item 2.
+
+By definition of the Palm probability:
+$$\P^0(X_{-1}=i,X_{0}=j)=\frac{1}{\la}\E(\ind{X_{-1}=j} \ind{ X_0=i} \ind{(i,j)\in F})
+=\frac{1}{\la}\P(X_{-1}=j, X_0=i) \ind{(i,j)\in F}$$ which shows item 3. Item 4 follows
+immediately.
+
+
+\paragraph{\thref{theo-pasta}} The probability that
+there is a transition at time $1$, given that $X_0=i$, is
+$\lambda$, independent of $i$. Thus $N(1)$ is independent of
+the state at time $0$. Since we have a Markov chain, the state
+at time $1$ depends on the past only through the state at time
+$0$. Thus $N(1)$ is independent of $N(t0)$ for all $t\geq 0$.
+By stationarity, it follows that $N(t)$ is iid, i.e. is a
+Bernoulli process.
+
+The relation between Palm and stationary probabilities follows
+from \thref{theo-incluse}, item 4. The Palm probability to be
+in state $i$ just before a transition is
+$$
+\frac{1}{\la_0}\pi_{i}\sum_i C(i,j)=\frac{\lambda}{\la_0}\pi_i
+$$where $\la_0$ is the $\la$ of \thref{theo-incluse}. The sum of probabilities is 1, thus necessarily $\frac{\lambda}{\la_0}=1$.
+
+
+\end{petit}
+\section{Review Questions}
+% \section{Exercices}
+% \m{p-palm-residual-quiz}
+
+
+
+
+\mq{q-palm-dslkfjwehfd7}{Consider the Surge model with one user
+equivalent in \sref{sec-modfit-surge-1}. Assume the average
+inactive off period id $Z$, the average active off period is
+$Z'$, the average number of URLs requested per active period is
+$V$, and the average response time for a URL request is $R$.
+What is the throughput of requets $\lambda$~?}{Using the large
+time heuristic, one finds $ \lambda =\frac{1}{V(R+Z')+Z} $ }
+
+\mq{q-palm-dsffdswejkjkghuu1}{A distributed protocol
+establishes consensus by periodically having one host send a
+message to $n$ other hosts and wait for an acknowledgement
+\cite{bakr2002ert}. Assume the times to send and receive an
+acknowledgement are iid, with distribution $F(t)$. What is the
+number of consensus per time unit achieved by the protocol~?
+Give an approximation using the fact that the mean of the $k$th
+order statistic in a sample of $n$ is approximated by
+$F^{-1}(\frac{k}{n+1})$.} {Call $T_n$ the point process of the
+starting points for consensus rounds. The required answer is
+the intensity $\lambda$ of $T_n$. We have $\lambda=\E^0(T_1)$.
+Now assuming that a round starts at time $0$, we have $T_1
+=\max_{i=1...n}S_i$ where $S_i \sim$ iid with distribution
+$F()$. Thus
+$$
+\P^0(T_1 <t)=\P^0(S_1 <t \mand ... \mand S_n <t)=F(t)^n
+$$
+thus
+$$
+\E^0(T_1)=\int_0^{+ \infty}(1-F(t)^n)d\!t
+$$
+and
+$$
+\lambda=\frac{1}{\int_0^{+ \infty}\left(1-F(t)^n\right)d\!t}
+$$
+The Palm distribution of $T_1$ is that of the maximum of $n$
+iid random variables, thus $\E^0(T_1)\approx
+F^{-1}\left(\frac{n}{n+1}\right)$.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mq{q-palm-dsffewdsjkjkghuu1}{(ARP protocol \imp{with}
+refreshes) IP packets delivered by a host are produced
+according to a stationary point process with $\lambda$ packets
+per second in average. Every packet causes the emission of an
+ARP if the previous packet arrived more than $t_a$ seconds ago
+($t_a$ is the ARP timer). What is the average number of ARP
+requests generated per second~?
+ }
+ {Apply Neveu's exchange formula to :
+first process = ARP request emissions (intensity $\lambda_1$);
+second process =
+ all packet arrivals (intensity $\lambda$) and $X_s=1$. This gives
+ $\lambda_1 = \lambda \E^0(N_1(0,^T_1])$, where $\E^0$ is the Palm probability for the
+second point process and $N_1$ is the number of ARP requests.
+Given that there is a packet arrival at time $0$,
+$N_1(0,^T_1]=\ind{T_1-T_0>t_a}$. Thus the required throughput
+is $\lambda_1=\lambda \P^0(T_1 > t_a)$. It depends only on the
+tail of the packet inter-arrival time.}
+
+\mq{q-palm-dslkwefjhfeqd72}{Consider the notation of
+\thref{theo-fel}. Is the distribution of $Z(t)$ equal to the
+convolution of those of $X(t)$ and $Y(t)$~?}{On one hand,
+$Z(t)=X(t)+Y(t)$, so it seems tempting to say yes. It is true
+for a Poisson process. However, consider the case where
+$T_{n+1}-T_n$ is constant equal to some $T$ under Palm. Then
+$X(t)$ and $Y(t)$ are uniform on $[0,T]$, the convolution has a
+positive density on $(0,2T)$, whereas $Z(t)$ is constant equal
+to $T$. The answer is no; $X(t)$ and $Y(t)$ are not
+independent, in general.}
+%
+%\begin{problem}Consider again ARP without refreshes as in
+%\exref{ex-arp} but assume that the packet arrival process is
+%not Poisson (it is correlated). Propose a modelling method to
+%evaluate the throughput. \sol{One can use a 2-state modulator.
+%We have, in discrete time: $q_i$, $i= 0,1$ proba of a move from
+%$i$ to $1-i$; $S\in\lc0, ... t_a-1 \rc$ is the residual timer
+%state. Write the equations of state upon a packet arrival. The
+%throughput is the proba of a packet arrival that finds $S =0$.}
+%\end{problem}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{problem}[Rate Control in the Internet] Read
+%\cite{Vojnovic2002mAugust} and answer the following questions.
+%\begin{enumerate}
+%   \item What is a TCP friendly rate control~?
+%   \item Why is there a difference between TCP friendly and
+%       conservative~?
+%   \item What is the loss parameter $\bar{p}$~?
+%   \item What is the ``loss event interval" $\theta_n$~?
+%       What is the estimator $\hat{\theta}_n$~?
+%   \item What is the basic control~? What is the relation
+%       between average rate and $\hat{\theta}_n$~?
+%   \item What is the main argument in the proof of
+%       Theorem~1~?
+%   \item What is the main conclusion of Section 5.1~?
+%  \item Do we need the Markov chain property in Section
+%      5.1~? \sol{No.}
+%  \item Why do the authors expect TCP to see a higher loss
+%      parameter than a rate controlled application~?
+%      \sol{because TCP reacts to losses strongly by
+%      reducing its rate, thus sends fewer packets during
+%      congestion periods.}
+%  \item Why does a Poisson source experience the stationary
+%      loss estimator~? \sol{by PASTA.}
+%\end{enumerate}
+%\end{problem}
+%
+% \m{p-neveu-ARP-H1}
+% %\m{p-pnni}
+% %\m{p-markov-rekeying}
+% \m{p-sigcomm2002-leboudec}
+ %\m{m2a8}
+ %\m{m2a9}
+ %\m{p-palm-campbell}
+ %\nfs{Exam: Boorstyn}

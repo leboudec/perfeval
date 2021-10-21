@@ -1,0 +1,775 @@
+%Cas particulier des matrices de Toeplitz = processus stationaires.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\chapter{Appendix: Gaussian Vectors}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\minitoc
+\section{Notation and a Few Results of Linear Algebra}
+\subsection{Notation}Unless otherwise specified, we view a vector
+in $\Reals^n$ as a column vector, and denote
+identifiers of vectors with an arrow, as in
+\ben \vX = \bmat{c}X_1\\
+\vdots\\X_n\emat\een
+
+The identity matrix is denoted with $\I$.
+
+Matrix transposition is denoted with $ ^T$, so, for example
+ $\vX^T=(X_1, \ldots,X_n)$ and $\vX=(X_1, \ldots,X_n)^T$.
+
+ The \nt{inner
+ product} of $\vu,\vv \in\Reals^n$ is \ben\vu^T \vv = \vv^T \vu =
+ \sum_{i=1}^n u_i v_i\een
+
+ The \nt{norm} of $\vu$ is, otherwise specified, the euclidian norm,
+ i.e.
+ \ben\norm{\vu}= \sqrt{\vu^T \vu}
+ \een
+
+An \nt{orthogonal matrix} $U$ is one that satisfies
+any one of the following equivalent properties:
+\begin{enumerate}
+\item its columns have unit norm and are
+orthogonal \item its rows have unit norm and are
+orthogonal \item $U U^T = \I$ \item $U^T U = \I$ \item
+$U$ has an inverse and $U^{-1}= U^T$.
+\end{enumerate}
+\subsection{Linear Algebra} If $M$ is a linear subspace
+of $\Reals^n$, the \nt{orthogonal projection} on $M$
+is the linear mapping, $\Pi_M$, from $\Reals^n$ to
+itself such that $\Pi_M(\vx)$ is the element of $M$
+that minimizes the distance to $\vx$:
+ \be
+ \Pi_M(\vx) = \arg\min_{\vy \in M}\norm{\vy -\vx}
+ \label{eq-def-proj-o}
+ \ee
+$\Pi_M(\vx)$ is also the unique element $\vy \in M$
+such that $\vy-\vx$ is orthogonal to $M$. $\Pi_M $ is
+symmetric ($\Pi_M =\Pi_M^T$) and idempotent ($\Pi_M^2
+=\Pi_M$).
+
+
+$\Pi_M$ can always be put in diagonal form as follows:
+ \bear
+ \Pi_M &=& U^T D U\nonumber \\
+ \mbox{with } D &=&\bmat{cccccc}
+ 1 & 0 & \hdots\\
+  & \ddots &   &  \\
+\hdots&0 &1 & 0& \hdots\\
+&&\hdots&0&\hdots\\
+&&&&\ddots\\
+&&&&\hdots&0
+ \emat
+ \label{eq-dia-form-proj}
+ \eear
+ where the number of
+ $1$s on the diagonal is the dimension of $M$ and
+ $U$ is an orthogonal matrix.
+
+Let $H$ be an $n \times p$ matrix , with $p\leq n$,
+and $M$ the linear space spanned by the columns of the
+matrix $H$, i.e.
+ \ben
+ M = \{\vy \in \Reals^n: \vy = H \vz \mbox{ for some }
+ \vz \in \Reals^p\}
+ \een
+If $H$ has full rank (i.e. has rank $p$) then $H^T H$
+has an inverse and
+ \be
+ \Pi_M = H (H^T H)^{-1} H^T
+ \label{eq-proj-orth-im}
+ \ee
+
+
+\section{Covariance Matrix of a Random Vector in $\Reals^n$}
+\mylabel{sec-nv1}\label{sec-covmat}
+\subsection{Definitions}Let $\vX$ be a random vector with values in $\Reals^n$.
+If each of the components $X_1,\ldots,X_n$ has a well defined
+expectation, then $\E(\vX)$ is defined as
+ \ben \E(\vX) = \bmat{c}\E(X_1)\\
+\vdots \\ \E(X_n)\emat
+ \een
+
+For any non-random matrices $H$ and $K$ (with appropriate dimensions
+such that the matrix products are valid): \be\E(H \vX K)=H \E(\vX)
+K\ee
+
+Further, if $\E(X_i^2)< \infty$ for each $i=1,\ldots,n$, the
+\nt{covariance matrix} of $\vX$ is defined by \be \Omega =
+E\left((\vX-\vmu) (\vX-\vmu)^T\right)\ee with $ \vmu=\E(\vX)$. This
+is equivalent to
+ \be
+  \Omega_{i,j}=\cov(X_i, X_j)\eqdef \E\left((X_i-\E(X_i))(X_j-\E(X_j))
+  \right)
+\ee for all $i,j \in \{1,\ldots,n\}$.
+
+Further, for any $\vu,\vv \in \Reals^n$: \be \E\left((\vu^T
+(\vX-\vmu)) (\vv^T (\vX-\vmu))\right) = \vu^T \Omega
+\vv\label{eq-cov-bilin}\ee Also \be \Omega_{i,i}=\var(X_i)\ee
+
+If $\vX$ and $\vY$ are random vectors in $\Reals^n$
+and $\Reals^p$ with a well covariance matrices, the
+\nt{cross covariance matrix} of $X$ and $Y$ is the $n
+\times p$ matrix defined by \be \Gamma =
+E\left((\vX-\vmu) (\vY-\vec{\nu})^T\right)\ee with $
+\vmu=\E(\vX)$ and $\E(\vY)=\vec{\nu}$.
+
+
+\subsection{Properties of Covariance Matrix}
+\label{sec-app-n-propcv}
+The covariance matrix is symmetric ($\Omega=\Omega^T$)
+and \nt{positive semi-definite}. The latter means that
+$u^T\Omega u \geq 0 \mfa u \in \Reals^n$, which
+follows immediately from \eref{eq-cov-bilin}.
+
+If $\vX'=\vX + \nu$ where $\nu\in\Reals^n$ is a non-random vector,
+then the covariance matrices of $\vX'$ and $\vX$ are identical.
+
+If $\vX'=AX$ with $\vX'$ a random vector in $\Reals^{n'}$ and $A$ a
+non random $n'\times n$ matrix, then the covariance matrix $\Omega'$
+of $\vX'$ is \be \Omega'=A\Omega A^T \label{eq-cov-ll}\ee
+
+
+Any covariance matrix can be
+put in standard diagonal form as follows:
+ \be\Omega = U^T \bmat{cccccc}
+\lambda_1 & 0 & \hdots\\
+  & \ddots &   &  \\
+\hdots&0 &\lambda_r & 0& \hdots\\
+&&\hdots&0&\hdots\\
+&&&&\ddots\\
+&&&&\hdots&0
+ \emat U \label{eq-diagform-omega}
+ \ee where $U$ is an orthogonal matrix ($U^T=U^{-1}$), $r$ is the rank of
+ $\Omega$ and $\lambda_1 \geq \ldots \geq
+ \lambda_r >0$.
+
+It follows from this representation that the equation $\vx^T \Omega \vx = 0$ has a non zero solution ($\vx \neq \vzero$) if and only if $\Omega$ has full rank.
+
+\subsection{Choleski's Factorization} \eref{eq-diagform-omega} can be
+replaced by a computationally much less expensive
+reduction, called \nt{Choleski's Factorization}. This
+is a polynomial time algorithm for finding a lower
+triangular matrix $L$ such that $\Omega=L L^T$. Choleski's factorization
+applies to positive semi-definite matrices and is
+readily available in many software packages.
+
+\subsection{Degrees of Freedom}
+Let $V=\mbox{span}(\Omega)$ be the linear sub-space of
+$\Reals^n$ spanned by the columns (or rows, since $\Omega$ is
+symmetric) of $\Omega$. Recall that $\vX$ is not necessarily
+gaussian.
+\begin{proposition}
+$\vX$ is constrained to the affine sub-space parallel to $V$ that
+contains $\vmu=\E(\vX)$, i.e. $\vX-\vmu \in V$ with probability
+1.\label{prop-span-cov}
+\end{proposition}
+It follows that the number of \nt{degrees of freedom} of $\vX$
+(defined in this case as the smallest dimension of an affine
+space that $\vX$ can be imbedded in) is equal to the dimension
+of $V$, namely, the rank of $\Omega$. In particular, if
+$\Omega$ does not have full rank, $V$ has zero mass (its
+Lebesgue measure is $0$) and the integral of any function on
+$V$ is 0. Thus, it is impossible that $\vX$ has a probability
+density function. Conversely:
+ \begin{corollary}If $\vX$ has a probability density
+ function (pdf) then its covariance matrix $\Omega$
+ is invertible.\label{coro-pdf-fr}
+ \end{corollary}
+%Note that $V$ can also be obtained as the orthogonal
+%of the kernel of $\Omega$, i.e.
+% \ben
+% V = \{ u \in \Reals^n: \forall v \in \Reals^n, \Omega
+% v=0 \Rightarrow u^T v =0\}
+% \een
+\begin{ex}{}
+In $\Reals^3$, let the covariance matrix of $\vX$ be \be \Omega =
+\left(
+\begin{array}{ccc}
+a & 0 & a\\ 0 & b & b\\ a &  b & a+b
+\end{array} \right)\label{eq-omeg-nfr}
+\ee where $a, b$ are positive constants. The rank is
+$r=2$. The linear space generated by the columns of
+$\Omega$ is the plane defined by $x_1+x_2-x_3=0$. Thus
+the random vector $\vX=(X_1,X_2,X_3)^T$ is in the
+plane defined by $X_1+X_2-X_3=\mu_1+\mu_2-\mu_3$ where
+$\vmu=(\mu_1,\mu_2,\mu_3)^T$.
+\label{ex-kj-fr-ssr}\end{ex}
+\section{Gaussian Random Vector}
+
+\subsection{Definition and Main Properties}
+\begin{definition}
+A random vector $\vX$ with values in $\Reals^n$ is a \nt{gaussian
+vector} if any of the following is true:
+\begin{enumerate}
+    \item For any non random $u \in \Reals^n$, $u^T \vX$
+    is a normal random variable.
+    \item $\vX$ is a non random linear combination of
+    $p$ iid normal random variables, for some $p\in \Nats$
+    \item The expectation $\vmu$ and covariance matrix
+        $\Omega$ of $\vX$ are well defined and its
+        \nt{characteristic function} is \be
+        \phi_{\vX}(\vomega) \eqdef \E(e^{j \vomega^T \vX})=
+        e^{j \vomega^T\vmu-\frac{1}{2}\vomega^T\Omega
+        \vomega} \ee for all $\vomega \in \Reals^n$
+\end{enumerate}
+\end{definition}
+
+\begin{exnn}{}
+The vector $(\epsilon_1, \ldots,\epsilon_n)^T$ with $\epsilon_i \sim
+N_{0, \sigma^2}$, and $\sigma \neq 0$ is a gaussian vector, called
+\nt{white gaussian noise}. It has $\vmu=0$ and $\Omega=\sigma^2 Id$.
+
+The vector
+ \ben \vX=\bmat{c}
+ \sqrt{a}\epsilon_1\\
+\sqrt{b}\epsilon_2\\
+\sqrt{a}\epsilon_1+\sqrt{b}\epsilon_2
+ \emat
+ \een is gaussian with $\vmu=0$ and $\Omega$ as in
+ \eref{eq-omeg-nfr}.
+
+The constant (non-random) vector $\vX=\vmu$ is gaussian with
+covariance matrix $\Omega=0$.
+
+\end{exnn}
+
+It follows immediately that any (non-random) linear
+combination of gaussian vectors is gaussian. In
+particular, if $\vX$ is gaussian and $A$ is a non
+random matrix, then $A \vX$ is gaussian.
+
+ Gaussian vectors are entirely defined by their first
+ and second order properties. In particular:
+\begin{theorem}[Independence equals Non-Correlation]
+Let $\vX$ [resp. $\vY$] be a gaussian random vector in
+$\Reals^n$ [resp. $\Reals^p$]. $\vX$ and $\vY$ are
+independent if and only if their cross-covariance
+matrix is $0$, i.e.
+ \ben \cov(X_i, Y_j) =0 \mfa i=1,\ldots,n,\;\;
+ j=1,\ldots,p
+ \een \label{theo-ind-gau}
+\end{theorem}
+Note that this is special to gaussian vectors. For non
+gaussian random vectors, independence implies non
+correlation, but the converse may not be true.
+\begin{theorem}[Density] If $\Omega$ is invertible, $\vX$ has a density,
+given by
+$$
+f_{\vX}(\vx)=\frac{1}{\sqrt{(2\pi)^n\det
+\Omega}}e^{-\frac{1}{2}(\vx-\vmu)^T\Omega^{-1}(\vx-\vmu)}
+$$\end{theorem}
+Conversely, we know from \coref{coro-pdf-fr} that if $\Omega$
+is not invertible (as in the previous
+example), $\vX$ cannot have a density.
+% However, using
+%\pref{prop-span-cov}, it follows:
+%
+%\begin{proposition}[Gaussian Vector with $r$ degrees of freedom.]
+%If $\Omega$ has rank $r$, there exists a constant
+%$n\times r$ matrix and a gaussian vector $Y$ with
+%values in \Reals^r$
+%\end{proposition}
+%
+%
+A frequent situation where $\Omega$ is invertible is
+the following.
+\begin{proposition} Let $\vX= L \vepsilon$ where
+$\vX=(X_1,\ldots,X_p)^T$,
+$\epsilon=(\epsilon_1,\ldots,\epsilon_n)^T$ is white gaussian noise
+and $L$ is a non-random $p \times n$ matrix. The vector $\vX$ is
+gaussian with covariance matrix $\Omega=LL^T$. The rank of $\Omega$
+is equal to the rank of $L$. \label{prop-fr-ll}
+\end{proposition}
+
+We use this properties in the following case,which arises in the
+analysis of ARMA and ARIMA processes.
+\begin{corollary}
+Let $\epsilon_i$, $i=1,\ldots,n$ be white gaussian noise. Let $m\leq
+n $ and $X_{n-m+1},\ldots, X_n$ be defined by
+ \be
+ X_i = \sum_{j=1}^i c_{i,j}\epsilon_j
+\;\;\; \mfor i=m+1,\ldots,n \ee with $c_{i,i}\neq 0$.
+The covariance matrix of $\vX=(X_{n-m+1},\ldots, X_n)$
+is invertible.
+ \label{coro-rank-normal}
+\end{corollary}
+
+\subsection{Diagonal Form}
+Let where $U$ is the orthogonal transformation in \eref{eq-diagform-omega} and define $\vX'=U\vX$. The covariance matrix of $\vX'$ is \be\Omega' =
+\bmat{cccccc}
+\lambda_1 & 0 & \hdots\\
+  & \ddots &   &  \\
+\hdots&0 &\lambda_r & 0& \hdots\\
+&&\hdots&0&\hdots\\
+&&&&\ddots\\
+&&&&\hdots&0
+ \emat
+ \ee
+ thus $X_{r+1}',\ldots,X_n'$ have $0$ variance and are
+ thus non-random, and $X_i'$, $X_j'$ are independent
+(as $\cov(X_i',X_j')=0$ for $i\neq j$).
+
+Since $\vX=U^TX'$, it follows that any gaussian random vector
+is a linear combination of exactly $r$ independent normal
+random variables, where $r$ is the rank of its covariance
+matrix. In practice, one obtains such a representation by means of Choleski's factorization. Let
+$\vepsilon$ be gaussian white noise sequence with unit
+variance and let $\vY=L\vepsilon$. Then $\vY$ is a
+gaussian vector with covariance matrix $\Omega$ and
+$0$ expectation (and $\vY+\vmu$ is a gaussian vector
+with expectation $\vmu$, for any non random vector
+$\vmu$). This is used to simulate a random vector with
+any desired covariance matrix.
+
+\begin{exnn}{} One Choleski fatorization of
+$\Omega$ in \eref{eq-omeg-nfr} is $\Omega = L L^T$
+with
+ \ben L =
+ \bmat{ccc}
+   \sqrt{a} & 0 & 0 \\
+   0 & \sqrt{b} &0  \\
+   \sqrt{a}&\sqrt{b}&0
+ \emat
+ \een
+Let $\epsilon=(\epsilon_1,\epsilon_2, \epsilon_3)$ be
+gaussian white noise with unit variance, i.e. such
+that the covariance matrix of $\epsilon$ is equal to
+$\I$. Let $\vY=L\vepsilon + \vmu$, i.e.
+ \bearn
+ Y_1 &=& \mu_1+\sqrt{a} \epsilon_1\\
+ Y_2 &=& \mu_2+\sqrt{b} \epsilon_2\\
+ Y_3 &=& \mu_3+\sqrt{a} \epsilon_1 +\sqrt{b} \epsilon_2\\
+ \eearn
+then $\vY$ has covariance matrix $\Omega$ and expectation $\vmu$.
+This gives a means to simulate a gaussian vector with expectation
+$\vmu$ and covariance matrix $\Omega$.
+
+Note that we find, as seen in \exref{ex-kj-fr-ssr}, that
+$Y_1+Y_2-Y_3$ is a (non random) constant. \end{exnn}
+
+%\subsection{Degrees of Freedom}
+%Consider a framework where we are given a collection
+%$\calX$ of random variables\footnote{Formally, we have
+%a probability space $(\Upsilon, \calF, \P)$ where
+%$\Upsilon$ is the universe, $\calF$ its sigma-field,
+%$\P$ the probability, and $X_c$ is a collection of
+%measurable mappings from $\Upsilon$ to $\Reals$.}
+%$X_c$ for $c\in \calC$. The collection of random
+%variables constitutes a linear space (since we can add
+%random variables and multiply a random variable by a
+%real constant).
+%
+%Consider now a gaussian vector $X=(X_1,\ldots,X_n)$
+%with covariance matrix $\Omega$. One can also consider
+%the sequence of random variables $(X_1,\ldots,X_n)$ as
+%a sequence of $n$ vectors in the space $\calX$, and
+%ask what the rank of the sequence is, i.e. the
+%dimension of the space spanned by it. The following
+%theorem says that it is the same as the number of
+%degrees of freedom seen in \pref{prop-span-cov}.
+%\begin{theorem}
+%The rank of $(X_1,\ldots,X_n)$ in $\calX$ is equal to
+%the rank of $\Omega$. \label{eq-rk-space}
+%\end{theorem}
+%
+%One can also use the inner-product defined by
+% \be
+% <X_{c_1},X_{c_2}> = \E\left(X_{c_1}X_{c_2}\right)
+% \ee
+% Note that, here, we consider the random variables $X_{c_1}, X_{c_2}
+% $ as formal objects, not as the value they take
+% when we do one experiment. This inner product makes
+% $\calX$ a Hilbert space (think of it as the
+% generalization of classical inner product in
+% $\Reals^n$, with the difference that the dimension
+% is be infinite if the index set $\calC$ is infinite).
+% For more details about Hilbert spaces, see for example
+% \cite{VetterliK-95}.
+%
+% This definition of inner product has the interesting
+% property that if $X_{c_1}$ and $X_{c_2}$ have $0$
+% expectation $<X_{c_1},X_{c_2}> =0$ if and only if $X_{c_1}$ and $X_{c_2}$
+%are independent, i.e. orthogonality means
+%independence. Also, still assuming that $X_{c_1}$ has
+%$0$
+% expectation, $\var(X_{c{1}})=\E(X_{c_1}^2)=\norm{X_{c_1}^2}$.
+%In particular, a white noise sequence is an
+%orthonormal system.
+%
+%We use these properties to prove the following
+%theorem, used in the analysis of ARMA and ARIMA
+%processes.
+%\begin{theorem}
+%Let $\epsilon_i$, $i=1,\ldots,n$ be a white noise
+%sequence. Let $m\leq n $ and $X_{n-m+1},\ldots, X_n$
+%be defined by
+% \be
+% X_i = \sum_{j=1}^i c_{i,j}\epsilon_j
+%\;\;\; \mfor i=m+1,\ldots,n \ee with $c_{i,i}\neq 0$.
+%The covariance matrix of $X=(X_{n-m+1},\ldots, X_n)$
+%has full rank.
+% \label{th-rank-normal}
+%\end{theorem}
+
+
+%\subsection{The Euclidian Space of a Gaussian Process}
+%\mylabel{sec-nv-rank} Given a normal process, the linear
+%combinations of it form a Hilbert space. Homoscedasticity
+%means that it is the same as normal geometry.
+%
+%Otherwise, the rank of $\Omega_n$ is the dimension of the
+%space generated by $X_1,...X_n$.
+\section{Foundations of ANOVA}
+\subsection{Homoscedastic Gaussian Vector}
+\begin{definition}
+\mylabel{def-hom} A gaussian vector is called \nt{Homoscedastic}
+with variance $\sigma^2$ if its covariance matrix is $\sigma^2 \I$
+for some $\sigma
+>0$. The expectation $\vmu$ is not necessarily $0$.
+\end{definition}
+Let $\vX=(X_1,X_2,...,X_n)^T$. This definition is
+equivalent to saying that $X_i=\mu_i +\epsilon_i$,
+with $\mu_i$ non-random and $\epsilon_i\sim \mbox{ iid
+} N_{0,\sigma^2}$.
+
+A homoscedastic gaussian vector always has a density (since its
+covariance matrix is invertible), given by
+ \be
+f_{\vX}(\vx)=\frac{1}{(2\pi)^{\frac{n}{2}}\sigma^n}e^{-\frac{1}{2\sigma^2}\|\vx-\vec{\mu}\|^2}
+ \ee
+
+
+Homoscedasticity is preserved by orthogonal transformations:
+\begin{theorem}
+ \mylabel{theo-homsced0} Let $U$ be an orthogonal matrix
+ (i.e. $U^{-1}=U^T$).
+If $\vX$ is homoscedastic gaussian and $\vY=U \vX$, then $\vY$ is
+also homoscedastic gaussian with same variance.
+\end{theorem}
+
+The following theorem underlies the ANOVA theory:
+\begin{theorem}
+\mylabel{theo-homsced}Let $\vX$ be homoscedastic
+gaussian in $\Reals^n$, $\vec{\mu}=\E(\vec{X})$ and
+$M$ some linear sub-space of $\Reals^n$, of dimension
+$k$. Let $\Pi_M$ be the orthogonal projection on $M$.
+ \begin{enumerate}
+  \item
+ $\Pi_M\vec{X}$ and $\vY=\vec{X}-\Pi_M\vec{X}$ are
+independent
+\item $\|\Pi_M\vec{X}-\Pi_M\vec{\mu}\|^2\sim
+\chi^2_k$ \item $\|\vY-\vec{\mu}+\Pi_M\vec{\mu}\|^2
+\sim \chi^2_{n-k}$
+\end{enumerate} where $\chi^2_n$ is the Chi-square distribution
+with $n$ degrees of freeedom.
+\end{theorem}
+
+\subsection{Maximum Likelihood Estimation for Homoscedastic Gaussian Vectors}
+\begin{theorem}[ANOVA]
+Let $\vec{X}$ be homoscedastic gaussian in $\Reals^n$ with
+variance $\sigma^2$ and expectation $\vec{\mu}$. Assume that
+$\vmu$ is restricted to a linear subspace $M$ of $\Reals^n$;
+let $k=\dim M$. We are interested in estimating the true values
+of $\vmu$ and $\sigma^2$.
+\begin{enumerate}
+  \item The MLE of $(\vec{\mu},\sigma^2)$ is
+      $\hat{\mu}=\Pi_M \vec{X}$, $
+  \hat{\sigma}^2=\frac{1}{n}\|\vec{X}-\hat{\mu}\|^2$.
+  \item $\E(\hat{\mu})=\vec{\mu}=\E(\vec{X})$
+  \item $\vec{X}-\hat{\mu}$ and $\hat{\mu}$ are independent
+      gaussian random vectors and
+  $\|\vec{X}-\vec{\mu}\|^2=\|\vec{X}-\hat{\mu}\|^2+\|\vec{\mu}-\hat{\mu}\|^2
+  $.
+  \item $\|\vec{X}-\hat{\mu}\|^2\sim \chi^2_{n-k} \sigma^2$ and
+  $\|\hat{\mu}-\vec{\mu}\|^2\sim \chi^2_{k}\sigma^2$
+  \item (Fisher distribution) $
+  \frac{\frac{\|\hat{\mu}-\vec{\mu}\|^2}{k}}{\frac{\|\vec{X}-\hat{\mu}\|^2}{n-k}}\sim
+  F_{k,n-k}
+  $
+  \end{enumerate}\label{mle-theo-de-base}
+\end{theorem}
+A special case is the well known estimation for iid normal
+random variables, used in \thref{theo-conf-normal}:
+\begin{corollary}
+\mylabel{cor-norm-de-base}Let $(X_i)_{i=1\ldots n}\sim
+N(\mu,\sigma^2)$.
+\begin{enumerate}
+  \item The MLE of $(\mu,\sigma)$ is
+      $\hat{\mu}=\bar{X}\eqdef \frac{1}{n}\sum_{i=1}^n
+      X_i$, $ \hat{\sigma}^2=\frac{1}{n}S_{XX}$, with
+      $S_{XX}\eqdef\sum_{i=1}^n (X_i-\bar{X})^2$.
+  \item $S_{XX}$ and $\bar{X}$ are independent and $ \sum_i
+      (X_i-\mu)^2=S_{XX}+ n(\bar{X}-\mu)^2$.
+  \item $S_{XX} \sim \chi^2_{n-1} \sigma^2$ and $\bar{X}
+      \sim N(\mu, \frac{\sigma^2}{n})$.
+  \item (Student distribution):
+      $\frac{\sqrt{n}(\bar{X}-\mu)}{\sqrt{\frac{
+       S_{XX}}{n-1}}}\sim t_{n-1}$
+    \end{enumerate}
+    \label{coro-mle-student}
+\end{corollary}
+
+\section{Conditional Gaussian Distribution}
+\subsection{Schur Complement}
+Let $M$ be a square matrix, decomposed in blocks as $M= \bmat{c
+c}
+A & B \\
+    C & D
+  \emat$
+  where $A$ and $D$ are square matrices (but
+  $B$ and $C$ need not be square) and $A$ is invertible. The \nt{Schur
+complement} of $A$ in $M$ is defined as
+ \ben
+ S = D- C A^{-1}B
+ \een
+ It has the following properties.\noitemsep
+ \begin{enumerate}
+ \item $\det(M)= \det(A) \det(S)$;
+ \item  If $M$ or $S$ is invertible then both are and
+     $M^{-1}$ has the form $\bmat{c c}
+ \star & \star \\
+ \star & S^{-1}\emat$, where $\star$ stands for unspecified
+ blocks of appropriate dimensions;
+ \item If $M$ is symmetrical [resp. positive definite,
+     positive semi-definite] so is $S$.
+\end{enumerate}
+\subsection{Distribution of $\vX_1$ given $\vX_2 $}
+Let $\vX$ be a random vector in $\Reals^{n_1+n_2}$ and let
+$\vX=\left(\begin{array}{c}\vX_1\\\vX_2\end{array}\right)$,
+with $\vX_i$ in $\Reals^{n_i}$, $i=1,2$. We are interested in
+the conditional distribution of $\vX_2$ given that
+$\vX_1=\vx_1$ (this is typically for prediction purposes). By
+general results of probability theory, this conditional
+distribution is well defined; if $\vX$ is gaussian, it turns
+out that this conditional distribution is also gaussian, as
+explained next.
+
+Let $\vmu_2=\E(\vX_2), \vmu_1=\E(\vX_1)$ and decompose the
+covariance matrix of $\vX$ into blocks as follows. \ben
+\Omega=\left(
+  \begin{array}{cc}
+    \Omega_{1,1} & \Omega_{1,2} \\
+    \Omega_{2,1} & \Omega_{2,2}
+  \end{array}
+\right) \een with $\Omega_{i,j}$ (cross-covariance matrix)
+defined by \ben\Omega_{i,j}=\E((\vX_i - \vmu_i)
+(\vX_j-\vmu_j)^T)\;\; i,j=1,2 \een
+
+Note that $\Omega_{2,1}=\Omega_{1,2}^T$ and $X_2$ and $X_1$ are
+independent if and only if $\Omega_{2,1}=0$.
+
+\begin{theorem}[\cite{davison2003sm}]
+\mylabel{theo-parcor1} Let $\vX$ be a gaussian random vector in
+$\Reals^{n_1+n_2}$. The conditional distribution of $\vX_2$
+given that $\vX_1=\vx_1$ is gaussian.
+%
+If $\Omega_{1,1}$ is invertible, its expectation is $\vmu_2 +
+\Omega_{2,1}\Omega_{1,1}^{-1} (\vx_1-\vmu_1)$ and its
+covariance matrix is the Schur complement of the covariance
+matrix $\Omega_{1,1}$ of $\vX_1$ in the covariance matrix
+$\Omega$ of $(\vX_1, \vX_2)$. In particular, the conditional
+covariance of $\vX_2$ given that $\vX_1=\vx_1$ does not depend
+on $\vx_1$.
+\end{theorem}
+The property that the conditional covariance matrix is
+independent of $\vx_1$ holds true only for gaussian vectors, in
+general. By the properties of covariance matrices, if $\Omega$ is invertible, then $\Omega_{1,1}$ also (this follows from the last sentence in \sref{sec-app-n-propcv}). In this case, by the properties of the Schur complement, the conditional covariance matrix also has full rank.
+
+\subsection{Partial Correlation}
+\thref{theo-parcor1} provides a formula for the
+conditional covariance. Though it is true only for
+gaussian vectors, it is used as the basis for the
+definition of \imp{partial covariance} and
+\imp{partial correlation}, used in time series
+analysis. Informally they quantify the residual
+correlation between $X_1$ and $X_n$ when we know the
+values of $X_2,...,X_{n-1}$.
+
+\begin{definition}[Partial Covariance and Correlation, Gaussian case]
+Let $\vX=(X_1,X_2,...,X_{n-1},X_n)^T$ be a gaussian
+vector such that its covariance matrix is invertible.
+Let
+  \ben
+  \Gamma =\bmat{cc}
+    \gamma_{1,1} &\gamma_{1,n}  \\
+    \gamma_{1,n} & \gamma_{n,n}
+  \emat
+  \een
+be the covariance matrix of the conditional
+distribution of $(X_1, X_n)$ given $(X_2=x_2,
+\ldots,X_{n-1}=x_{n-1})$. By \thref{theo-parcor1},
+$\Gamma$ is independent of $x_2, \ldots,x_{n-1}$. The
+\nt{partial covariance} of $X_1$ and $X_n$ is
+$\gamma_{1,n}$ and the \nt{partial correlation} of
+$X_1$ and $X_n$ is \ben
+ r_{1,n}=\gamma_{1,n}/\sqrt{\gamma_{1,1}\gamma_{n,n}}
+\een
+\label{def-pc-g}
+\end{definition}
+If $X_1,...,X_n$ is a Markov chain, and $n>1$, then
+$X_n$ is independent of $X_1$, given
+$X_2,...,X_{n-1}$. In such a case, the partial
+correlation of $X_1$ and $X_n$ is $0$ (but the
+covariance of $X_1$ and $X_n$ is not $0$). Partial
+correlation can be used to test if a Markov chain
+model is adequate.
+%
+The following theorem gives a simple way to compute
+partial correlation.
+\begin{theorem}[\cite{davison2003sm}]
+\mylabel{theo-parcor2}Let
+$\vX=(X_1,X_2,...,X_{n-1},X_n)^T$ be a gaussian vector
+such that its covariance matrix $\Omega$ is
+invertible. The partial correlation of $X_1$ and $X_n$
+is given by
+$$
+r_{1,n}=\frac{-\tau_{1,n}}{\sqrt{\tau_{1,1}\tau_{n,n}}}
+$$
+where $\tau_{i,j}$ is the $(i,j)$th term of
+$\Omega^{-1}$.
+\end{theorem}
+The classical definition of partial correlation
+consists in extending \thref{theo-parcor2}:
+\begin{definition}[Partial Correlation]
+Let $\vX=(X_1,X_2,...,X_{n-1},X_n)^T$ be a random
+vector such that its covariance matrix $\Omega$ is
+well defined and is invertible. The \nt{partial
+correlation} of $X_1$ and $X_n$ is defined as
+$$
+r_{1,n}=\frac{-\tau_{1,n}}{\sqrt{\tau_{1,1}\tau_{n,n}}}
+$$
+where $\tau_{i,j}$ is the $(i,j)$th term of
+$\Omega^{-1}$.
+\end{definition}
+\label{sec-pacf}
+ \section{Proofs}
+ \begin{petit}
+ %
+ \paragraph{\pref{prop-span-cov}}
+
+ Let $v \in \Reals^n$ be in the kernel of $\Omega$,
+ i.e. $\Omega v =0$ and let $Z=v^T (X-\mu)$. We have
+ \ben
+ \E(Z^2)=\E\left(
+ v^T (X-\mu) (X-\mu)^T v
+  \right)=v^T \Omega v =0
+ \een thus $Z=0$ w.p. 1, i.e. $X-\mu$ is orthogonal to
+ the kernel of $\Omega$.
+
+ Since $\Omega$ is symmetric, the set of vectors that
+ are orthogonal to its kernel is $V$, thus $X-\mu \in
+ V$.
+
+ \paragraph{\pref{prop-fr-ll}}
+$X$ is gaussian with covariance matrix $LL^T$ by
+\eref{eq-cov-ll}. We now show that the rank of $LL^T$
+is equal to the rank of $L^T$, by showing that $LL^T$
+and $L^T$ have same null space. Indeed, if $L^Tx =0$
+then $LL^Tx=0$. Conversely, if $LL^Tx=0$ then
+$x^TLL^Tx=\norm{L^Tx}^2=0$ thus $L^Tx=0$. Finally, the
+rank of a matrix is equal to that of its transpose.
+
+
+ \paragraph{\thref{theo-homsced0}}
+The covariance matrix of $U \vX$ is $U(\sigma^2
+\I)U^T=\sigma^2\I$.
+
+ \paragraph{\thref{theo-homsced}}
+Let $\vX'=\vx -\mu$ and $\vY'=\vX'-\Pi_M \vX'$. By linearity of
+$\Pi_M$, $\Pi_M\vX'$ and $\Pi_M\vX$ [resp. $\vY'$ and $\vY$]
+differ by a constant (non-random) vector, thus the
+cross-covariance $\Gamma$ of $\vX$ and $\vY$ is that of $\vX'$
+and $\vY'$.  Thus
+ \bearn
+ \Gamma &=&
+ \E(\Pi_M\vX' \vY'^T)
+ =\E\left(
+ \Pi_M\vX' (\vX'-\Pi_M \vX')^T
+  \right)=\E\left(
+ \Pi_M\vX' \vX'^T-\Pi_M\vX' \vX'^T\Pi_M^T
+  \right)\\
+  &=&
+  %
+  \Pi_M \E\left(\vX' \vX'^T\right)-\Pi_M \E\left(\vX' \vX'^T\right)\Pi_M^T
+ \eearn
+ Now $\E\left(\vX' \vX'^T\right)=\sigma^2 \I$ thus
+ \ben
+ \Gamma = \sigma^2 \Pi_M - \sigma^2  \Pi_M  \Pi_M^T
+ =0\een
+since $\Pi_M=\Pi_M^T$ and $\Pi_M^2=\Pi_M$. By
+\thref{theo-ind-gau}, $\Pi_M\vX$ and $\vY$ are
+independent. This proves item 1.
+
+ Let $Z=\Pi_M X -\Pi_M \mu$. Put $\Pi_M$ in diagonal form as in
+ \eref{eq-dia-form-proj} and let
+ $\tilde{X}=U^T(\vx-\mu)$ and $\tilde{Z}=U^T Z$, so that
+ \ben
+\tilde{Z} = D \tilde{X}
+ \een thus
+ \bearn
+\tilde{Z}_i&=& \tilde{X}_i \mfor i=1\ldots m\\
+\tilde{Z}_i&=& 0\mfor i=m+1\ldots n
+ \eearn
+Note that
+ \be
+\norm{\tilde{Z}} = \norm{\Pi_M\vec{X}-\Pi_M\vec{\mu}}
+\ee since $U$ is orthogonal. Now $\tilde{X}$ is
+homoscedastic gaussian with 0
+ expectation and variance $\sigma^2$
+ (\thref{theo-homsced0}), thus $\tilde{X}_i \sim
+ \mbox{ iid }
+ N_{0,\sigma^2}$, and finally
+ \ben
+\norm{\Pi_M\vec{X}-\Pi_M\vec{\mu}}^2=\sum_{i=1}^m
+\tilde{X}_i^2
+ \een
+This proves item 2, and similarly, item 3.
+
+
+ \paragraph{\thref{mle-theo-de-base}}
+The log likelihood of an observation
+$\vx=(x_1,\ldots,x_n)^T$ is \bear
+ l_{\vx}(\vec{\mu}, \sigma)&=&-\frac{N}{2}\ln(2 \pi) - N \ln(\sigma)
+ -\frac{1}{2 \sigma^2}\sum_{i=1}^n(x_r-\mu_r)^2 \nonumber \\
+ &=&
+ -\frac{N}{2}\ln(2 \pi) - N \ln(\sigma)
+ -\frac{1}{2 \sigma^2} \|\vx -\vec{\mu}\|^2\mylabel{eq-mle-deb}
+\eear
+ For a given $\sigma$, by \eref{eq-def-proj-o},
+the log-likelihood is maximized for
+$\vec{\mu}=\hat{\mu}=\Pi_{M}(\vx)$, which is
+independent of $\sigma$. Let $\vec{\mu}=\hat{\mu}$ in
+\eref{eq-mle-deb} and maximize with respect to
+$\sigma$, this gives the first item in the theorem.
+The rest follows from \thref{theo-homsced}.
+
+%\thref{eq-rk-space}
+%
+%
+%\paragraph{\thref{th-rank-normal}.} By
+%\thref{eq-rk-space} it is sufficient to show that the
+%vector space spanned by $X_{n-m+1},\ldots, X_n$ has
+%dimension $m$. By elementary linear algebra, this is
+%equivalent to showing that $X_{n-m+1},\ldots, X_n$ is
+%linearly independent in $\calX$. We prove this by
+%contradiction: assume it would not be so, i.e. there
+%exists a linear relation between these random
+%variables. Let $n_1$ be the largest index present in
+%this linear relation. We can write
+% \bearn
+% X_{n_1} &=& \sum_{i=n-m+1}^{n_1-1}\alpha_{i} X_{i}\\
+% &=& \sum_{i=n-m+1}^{n_1-1} \sum_{j=1}^i \alpha_i
+% c_{i,j}\epsilon_j
+% \eearn
+% therefore $X_{n_1}$ is a linear combination of
+% $\epsilon_{1}\ldots\epsilon_{n_1-1}$. Since
+% $\epsilon$ is an orthonormal system, it follows that
+% \be
+% <X_{n_1}, \epsilon_{n_1}> =0 \label{eq-eqlkadsdsdkj}
+% \ee
+%but, by hypothesis \bearn
+% <X_{n_1}, \epsilon_{n_1}>&=&<\sum_{j=1}^i
+% c_{i,j}\epsilon_j,\epsilon_{n_1}>\\
+% &=& c_{n_1,n_1} \neq 0
+%\eearn which contradicts \eref{eq-eqlkadsdsdkj}.
+\end{petit}

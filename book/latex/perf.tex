@@ -1,0 +1,112 @@
+\documentclass[12pt,twoside,onecolumn]{book}
+%\includeonly{Load,Stats}
+%             87
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  leb's styles and stuff          %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% put "oui" in the following line to see labels and other aid for author
+\newcommand{\imprimeTexteSecret}{non}
+%% put "oui" in the following line to see solutions and aid for teacher
+\newcommand{\imprimeTexteCache}{non}
+\usepackage{lebBook}  %% use this by default
+%\usepackage{lebSLidesFromBook} %% comment out previous and
+                 %% use this for online display of book text
+
+%\usepackage[box,minitoc]{thumb}
+
+\usepackage[all]{xy} %%% for commutative diagrams
+
+%\usepackage [latin1]{inputenc}
+
+\usepackage{minitoc}
+\input{lebstuff}
+\newcommand{\mychapter}[2]{\chapter{#1}\mylabel{ch-#2}\input{#2}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  exo files                       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\input{perf.bdx.tex} % this imports the database called  "perf.bdx.tex"
+%                     % and creates one file per exercise in the temporary
+%                     % directory defined in lebstuff.tex
+%                     % this is normally the directory called "temp" in
+%                     % the father of the directory where the main file
+%                     % was found by Latex
+%\input{m1m2.bdx.tex} % for chapter "theory"
+%\input{d31.bdx.tex} % for chapter "theory"
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Text for beginning of parts --  %
+% allows separate printing         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  here we start                   %
+%  put  \chaper  and \part in this %
+%  file, not in the included files %
+% to allow future changes of       %
+%  structure                       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{\sc Performance Evaluation\\of \\Computer and Communication
+Systems}
+\author{Jean-Yves Le Boudec\\EPFL}
+\date{\insfig{scouacQuiMesureOrdiCouleurSigne}{0.5}~
+\\Version $2.3$ of \today
+\\Essentially identical to publisher's version, except for formatting\\With bug fixes\\
+{\small Available at \texttt{https://leboudec.github.io/perfeval/}}} \makeindex
+\begin{document}
+\maketitle
+%\input{changes}
+\frontmatter
+\section*{Acknowledgements}
+\input{ack}
+\dominitoc
+\tableofcontents
+
+\printindex
+
+
+\chapter{Preface}
+\input{preface}
+ \mainmatter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\label{part-metho}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mychapter{Methodology}{metho}
+ \mychapter{Summarizing Performance Data, Confidence Intervals}{conf}
+ \mychapter{Model Fitting}{modfit}
+ \mychapter{Tests}{tests}
+ \mychapter{Forecasting}{forecast}
+
+ \mychapter{Discrete Event Simulation}{simul}
+
+ \mychapter{Palm Calculus, or the Importance of the Viewpoint}{palm}
+ \mychapter{Queuing Theory for Those Who Cannot Wait}{queuing}
+% \mychapter{Fluid Analysis}{fluid}
+
+%
+
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+%\part{Appendix}
+\label{part-appendix}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \mychapter{Tables}{tables}
+ \mychapter{Parametric Estimation, Large Sample Theory}{conf-sup}
+ \mychapter{Gaussian Random Vectors in $\Reals^n$}{normal}
+ \mychapter{Digital Filters}{filters}
+
+
+% chapters left out, but which may be used for lecturing
+%\part{Leftovers}
+ %\mychapter{ANOVA and Factorial Analysis}{anova}
+ %\mychapter{Long Range Dependence}{lrd}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\backmatter
+\bibliography{leb}
+\bibliographystyle{plain}
+
+\end{document}

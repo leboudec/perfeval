@@ -1,0 +1,46 @@
+========================================
+ITSM::(Maximum likelihood estimates)
+========================================
+
+Method: Maximum Likelihood
+
+
+ARMA Model:
+X(t) = .1848 X(t-1) + .0000 X(t-2) + .0000 X(t-3) + .0000 X(t-4)
+       + .0000 X(t-5) + .0000 X(t-6) + .0000 X(t-7) + .0000 X(t-8)
+       + .0000 X(t-9) + .0000 X(t-10) + .0000 X(t-11) + .0000 X(t-12)
+       + .0000 X(t-13) + .0000 X(t-14) + .0000 X(t-15) - .4366 X(t-16)
+       + .08068 X(t-17)
+     + Z(t)
+
+WN Variance = .196973E+15
+
+AR Coefficients
+       .184814       .000000       .000000       .000000
+       .000000       .000000       .000000       .000000
+       .000000       .000000       .000000       .000000
+       .000000       .000000       .000000      -.436564
+       .080683
+
+Standard Error of AR Coefficients
+       .065872       .000000       .000000       .000000
+       .000000       .000000       .000000       .000000
+       .000000       .000000       .000000       .000000
+       .000000       .000000       .000000       .077091
+       .000000
+
+(Residual SS)/N = .196973E+15
+
+AICC = .798222E+04
+BIC  = .798092E+04
+FPE  = .200538E+15
+
+-2Log(Likelihood) = .797611E+04
+
+Accuracy parameter = .000580000
+
+Number of iterations = 0
+
+Number of function evaluations = 9
+
+Optimization stopped with gradient near zero.

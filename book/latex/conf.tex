@@ -1,0 +1,2664 @@
+\begin{minipage}[b]{0.50\textwidth}
+%LAISSER TOMBER VISUAL DISPLAY POUR L'INSTANT
+%
+
+In most measurements or simulations, we obtain large amounts of
+data. Displaying the data correctly is important, and implies
+to use some graphical packages, or maths packages with
+graphical capabilities (Different tools have different
+capabilities, and produce graphics of different aesthetic
+value; but the most important is to use one tool that you know
+well). Tools do not do everything and you need to know what to
+represent. We discuss important and frequent summarizations
+that can be used to display and compare data: the complete
+distribution; summarized quantities such as mean, standard
+deviation, median and tail quantiles; fairness indices.
+\end{minipage}
+%
+\begin{minipage}[b]{0.50\textwidth}
+\hspace{1cm} ~~~~
+\insfig{confSigne}{0.9} ~\\
+%~\\
+%~\\
+%~\\
+\end{minipage}
+We discuss some properties of these summarization and indices;
+they are not all equivalent, and some, though less frequently
+used, are preferable if one has a choice; for example, the
+Lorenz curve gap is more robust than Jain's Fairness index
+(which is essentially the same as the standard deviation
+rescaled by the mean) and should be preferred.
+
+Simulation and measurement usually contain some randomness,
+therefore it is important to capture the uncertainty about
+measured performance. This is done with confidence or
+prediction intervals; we discuss the use and interpretation of
+both. There are many different ways for defining a confidence
+or prediction interval; some are robust and some not. We give
+useful, and simple formulas and show that, if one has a choice,
+intervals based on medians and quantiles should be preferred to
+the more classical mean and standard deviation. We also give
+useful, though little know results such as how to compute a
+confidence interval for a success probability when has seen no
+success.
+
+\minitoc
+
+\section{Summarized Performance Data}
+\mylabel{sec-conf-sum} \subsection{Histogram and Empirical CDF}
+Assume you have obtained a large set of results for the value
+of a performance metric. This can be fully described by the
+distribution of the data, and illustrated by a \nt{histogram}.
+A histogram uses bins for the data values and plots on the
+$y$-axis the proportion of data samples that fall in the bin on
+the $x$ axis, see \fref{fig-conf-c1}.
+
+\begin{figure}[htbp]
+\begin{center}\nfs{sgbd}
+\subfigure[Raw data, old]{\Ifignc{conf-raw-old}{0.23}{0.3}}
+\subfigure[Raw data, new]{\Ifignc{conf-raw-new}{0.23}{0.3}}
+\subfigure[Histogram, old]{\Ifignc{conf-hist-old}{0.23}{0.3}}
+\subfigure[Histogram, new]{\Ifignc{conf-hist-new}{0.23}{0.3}}
+  \end{center}
+  \mycaption{Data for \exref{ex-conf-1}. Measured execution times,
+   in ms, for 100
+transactions with the old and new
+code, with histograms.}\mylabel{fig-conf-c1}
+\end{figure}
+
+
+The \nt{empirical cumulative distribution function} (ECDF) is
+an alternative to histograms which sometimes makes comparisons
+easier. The ECDF of a data set $x_1, ...,x_n$ is the function
+$F$ defined by
+ \be
+ F(x) = \frac{1}{n}\sum_{i=1}^n \ind{x_i \leq x}
+  \ee
+  so that $F(x)$ is the proportion of data samples that do not
+  exceed $x$.
+
+Data sets may be compared by means of their ECDFs. If one is
+always above the other, then one may consider that it is
+superior, even though some data points in the first set may be
+less good (this is called \nt{stochastic majorization}). On
+\fref{fig-conf-c1cdf} we see that the new data
+  set (left)
+  clearly outperforms the old one. Note that stochastic majorization is a
+partial order, as is the comparison of multidimensional metrics
+(\sref{metric}).
+
+Assume the data samples come from
+  a well defined probability distribution; the histogram can
+  then be viewed as an estimate of the PDF of the distribution,
+  and the ECDF as an estimate of the CDF\footnote{\index{CDF}The
+  CDF of the random variable $X$ is the function defined by
+ $F(x)=\P(X \leq x)$.}.
+
+  \begin{figure}[htbp]
+  \Ifig{sgbdCdf}{0.8}{0.3}\nfs{sgbdold.dat, sgbdnew.dat,
+  sgbdCdf.m}
+  \mycaption{Data of \exref{ex-conf-1}. Empirical
+distribution functions for the old code (right
+curve) and the new one (left curve). The new
+outperforms the old, the improvement is
+significant at the tail of the
+distribution.}\mylabel{fig-conf-c1cdf}
+\end{figure}
+
+
+
+\subsection{Mean, Median and Quantiles}
+Instead of considering entire histograms or ECDFs, one often
+would like to summarize, i.e. compress the histogram into one
+or a few numbers that represent both average and variability.
+This is commonly done by either one of the following:
+
+\imp{Median and Quantile}. A median is a value
+that falls in
+    the middle of the distribution, i.e. 50\% of the data is below
+    and 50\% above.
+A $p$\%-quantile leaves $p$\% of the observation below and
+$(100-p)$\% above.
+    The median gives some information about the average, while extreme
+quantiles give information about the dispersion. A commonly
+used plot is the \nt{Box Plot}. It shows the median, the 25\%
+and 75\% quantiles (called ``quartiles") and the ``outliers",
+defined as data points that are a fixed fraction away from the
+quartiles (\fref{fig-conf-c1bp}).
+\begin{petit}
+The \nt{sample median} of a data set is defined
+as follows. Assume there are $n$ data points
+$x_1,..., x_n$. Sort the points in increasing
+order and obtain $x_{(1)}\leq ...\leq x_{(n)}$.
+If $n$ is odd, the median is
+$x_{(\frac{n+1}{2})}$, else
+$\frac{1}{2}(x_{(\frac{n}{2})}+x_{(\frac{n}{2}+1)})$.
+More generally, the \nt{sample $q$- quantile} is
+defined as $\frac{x_{(k')}+x_{(k")}}{2}$ with
+$k'=\lfloor qn+(1-q)\rfloor$ and $k'=\lceil
+qn+(1-q)\rceil$. $\lfloor x \rfloor$ is the
+largest integer $\leq x$ and $\lceil x \rceil$ is
+the smallest integer $\geq x$ \index{1@$\lfloor x
+\rfloor$}\index{1@$\lceil x \rceil$}
+\end{petit}
+
+\imp{Mean and Standard Deviation}. The \nt{mean} $m$ of a data
+set $x_1,..., x_n$ is $m=\frac{1}{n}\sum_{i=1}^n x_i$. It gives
+some information about the center of the distribution. The
+\nt{standard deviation $s$ of a data set} is defined by
+$s^2=\frac{1}{n}\sum_{i=1}^n \left(x_i- m\right)^2$ or
+$s^2=\frac{1}{n-1}\sum_{i=1}^n \left(x_i- m\right)^2$ (either
+conventions are used -- see \sref{sec-conf-cimean} for an
+explanation). It gives information about the variability. The
+use of standard deviation is rooted in the belief that data
+roughly follows a \nt{normal distribution}\label{def-normal},
+also called \nt{gaussian distribution}. It is characterized by
+a histogram with Bell shape (see wikipedia and
+\tref{tab-distrib1} on \pgref{tab-distrib1}); the CDF of the
+general normal distribution is denoted with $N_{\mu,\sigma^2}$,
+where $\mu$ is the mean and $\sigma^2$ the variance. It is very
+frequently encountered because of the central limit theorem
+that says that an average of many things tends to be normal
+(but there are some exceptions, called heavy tail in
+\cref{ch-modfit}). If such a hypothesis is true, and if we had
+$m\approx\mu$ and $\sigma\approx s$, then with 95\%
+probability, the data sample would lie in the interval $m \pm
+1.96 s$. This justifies the use of \nt{mean-variance} plots
+like in \fref{fig-conf-c1bp}, which use as measure of
+variability the interval $m \pm 1.96 s$. This is also called a
+\nt{prediction interval} since it predicts a likely range for a
+future sample (\sref{sec-conf-pi}).
+
+\begin{figure}[htbp]
+\nfs{sgbd}
+\Ifig{conf-boxplots}{0.95}{0.45}
+\mycaption{Box Plots for the data for \exref{ex-conf-1}.
+Left: standard box plot commonly used by statisticians showing
+median (notch) and
+quartiles (top and bottom of boxes);
+``dispersion" is an ad-hoc measure, defined here
+as 1.5 times the inter-quartile distance; the
+notch width shows the confidence interval for the median.
+Right: same, overlaid with quantities commonly used in signal processing:
+mean, confidence interval
+for the mean ($=\mbox{ mean }\pm 1.96 \sigma / \sqrt{n}$, where $\sigma$
+is the standard deviation and $n$ is the number of samples) and
+prediction interval ($=\mbox{ mean }\pm 1.96 \sigma$).}
+\mylabel{fig-conf-c1bp}
+\end{figure}
+
+
+\begin{ex}{Comparison of Two Options}\mylabel{ex-conf-1}
+An operating system vendor claims that the new
+version of the database management code
+significantly improves the performance. We
+measured the execution times of a series of
+commonly used programs with both options. The
+data are displayed in \fref{fig-conf-c1}. The raw
+displays and histograms show that both options
+have the same range, but it seems (graphically)
+that the new system more often provides a smaller
+execution time. The box plots are more
+suggestive; they show that the average and the
+range are about half for the new system.
+\end{ex}
+
+
+In \sref{sec-conf-mom} we discuss the differences
+between these two modes of summarization.
+
+
+
+\subsection{Coefficient of Variation and Lorenz Curve Gap}
+\label{sec-var} Those are frequently used
+measures of variation, rescaled to be invariant
+by change of scale. They apply to a positive data
+set $x_1, ..., x_n$.
+
+\paragraph{Coefficient of Variation. }
+It\index{Coefficient of Variation}\index{CoV} is
+defined by
+  \be
+  \mbox{CoV} = \frac{s}{m}  \label{eq-cov}
+  \ee
+where $m$ is the mean and $s$ the standard
+deviation, i.e. it is the standard deviation
+rescaled by the mean. It is also sometimes called
+\nt{Signal to Noise ratio}. For a data set
+with $n$ values one always has%
+\footnote{Consider the maximization problem:
+maximize $\sum_i (x_i-m)^2$ subject to $x_i \geq
+0$ and $\sum x_i= mn$. Since $x \mapsto \sum_i
+(x_i-m)^2$ is convex, the maximum is at an
+extremal point $x_{i_0}=mn,$ $x_i= 0$, $i\neq
+i_0$.}
+ \be
+ 0 \leq \mbox{CoV} \leq \sqrt{n-1}
+ \label{eq-cv-bounds}
+ \ee
+where the upper bound is obtained when all $x_i$ have the same
+value except one of them. The lower bound is reached when all
+values are equal.
+
+\paragraph{Lorenz Curve Gap.} It is an alternative measure of
+dispersion, obtained when we replace the standard
+deviation by the \nt{Mean Absolute Deviation}
+(\nt{MAD}). The MAD is defined by
+ \ben
+ \mbox{MAD} = \frac{1}{n}\sum_{i=1}^n \abs{x_i-m}
+ \een
+ i.e. we compute the mean distance to the mean, instead of the
+ square root of the mean square distance. Compared to the
+ standard deviation, the MAD is less sensitive to a few very
+ large values. It follows from the Cauchy-Schwarz inequality that it is always less than the
+ standard deviation, i.e.
+ \be
+ 0 \leq \mbox{MAD} \leq s
+ \ee
+with equality only if $x_i$ is constant, i.e.
+$x_i=m$ for all $i$.
+
+If $n$ is large and $x_i$ is iid from a gaussian distribution,
+then
+ \be
+ \mbox{MAD} \approx \sqrt{\frac{2}{\pi}}s \approx 0.8
+ s
+ \ee
+If in contrast, if $x_i$ comes from a heavy
+tailed distribution with a finite mean $m$, then
+$s\to {\infty}$ as $n$ gets large, whereas
+$\mbox{MAD}$ converges to a finite limit.
+
+The \nt{Lorenz Curve Gap}\index{gap} is a
+rescaled version of MAD, defined by
+ \be
+ \mbox{ gap } = \frac{\mbox{MAD}}{2 m}
+ \label{eq-def-gap}
+ \ee
+The reason for the factor $2$ is given in the
+next section. We always have
+  \be 0 \leq \mbox{ gap } \leq 1-\frac{1}{n}
+  \ee
+thus, contrary to $\mbox{CoV}$, $\mbox{ gap }$ is between $0$
+and $1$. If $n$ is large and $x_i$ is iid from a gaussian
+distribution, then $\mbox{ gap } \approx 0.4 \mbox{CoV}$; if it
+comes from an exponential distribution, $\mbox{ gap } \approx
+0.37$ and $\mbox{CoV}\approx 1$.
+
+\begin{petit}
+If $x_i$ is iid and comes from a distribution with PDF $f()$,
+then, for large $n$, $\mbox{CoV}$ and $\mbox{MAD}$ converge to
+their theoretical counterparts:
+ \bearn
+ \mbox{CoV} & \to &  \mbox{CoV}_{\mbox{th}} =
+    \frac{\sqrt{\int_0^{\infty}(x-\mu)^2 f(x) dx}}{\mu}\\
+ \mbox{MAD} & \to & \mbox{ gap }_{\mbox{th}}=
+    \frac{\int_0^{\infty}\abs{x-\mu} f(x) dx}{2 \mu}
+ \eearn
+ with $\mu=\int_0^{\infty}x f(x) dx$.
+
+If the distribution is gaussian $N_{\mu,\sigma^2}$ then
+$\mbox{CoV}_{\mbox{th}}=\frac{\sigma}{\mu}$ and $\mbox{ gap
+}_{\mbox{th}}=\sqrt{1 \over 2\pi}\frac{\sigma}{\mu}$; if it is
+exponential then $\mbox{CoV}_{\mbox{th}}=1$ and $\mbox{ gap
+}_{\mbox{th}}=\frac{1}{e}$.
+\end{petit}
+%
+%\paragraph{Gini's Index}
+%Define \nt{Mean Difference}
+%  \be
+%  \mbox{MD} = \frac{1}{n(n-1)}\sum_{i, j}\abs{x_i-x_j}
+%  \ee
+%\be
+%  \mbox{Gini} = \frac{\mbox{MD}}{2 \mu}
+%  \label{eq-def-gini}
+%  \ee
+\subsection{Fairness Indices}
+Often one interprets variability as fairness, and several
+fairness indices have been proposed. We review here the two
+most prominent ones. We also show that they are in fact
+reformulations of variability measures, i.e. they are
+equivalent to $\mbox{CoV}$ and $\mbox{ gap }$, after proper
+mapping (so that using these indices may appear superfluous).
+Like in the previous section, the data set $x_i$ is assumed
+here to be positive.
+
+\paragraph{Jain's Fairness Index (JFI).}
+\index{Jain's Fairness Index}\index{JFI}It is
+defined as the square of the cosine of the angle
+between the data set $x_i$ and the hypothetical
+equal allocation (\fref{fig-jfi}). It is given by
+ \be
+ \mbox{JFI} =
+ \frac{\lp\sum_{i=1}^n x_i\rp^2}{n \sum_{i=1}^n x_i^2}
+\label{eq-jfi}
+  \ee
+A straightforward computation shows that the
+fairness
+ measure $\mbox{JFI}$ is a decreasing function of the
+ variability measure $\mbox{CoV}$:
+ \be
+\mbox{JFI} = \frac{1}{1 + \mbox{CoV}^2}
+ \ee
+ so that, by \eref{eq-cv-bounds}, we conclude that
+ $\mbox{JFI}$ ranges from $\frac{1}{n}$ (maximum
+ unfairness) to $1$ (all $x_i$ are equal).
+
+ \begin{figure}
+ \insfig{jfi}{0.45}
+ \mycaption{Jain's fairness index is $\cos^2 \theta$. $x_1, ..., x_n$
+ is the data set and $m$ is the sample mean. The figure is for $n=2$.}
+ \label{fig-jfi}
+ \end{figure}
+
+\paragraph{Lorenz Curve}
+The \nt{Lorenz Curve} is defined as follows. A
+point $(p,\ell)$ on the curve, with $p, \ell \in
+[0,1]$, means that the bottom fraction $p$ of the
+distribution contributes to a fraction $\ell$ of
+the total $\sum_{i=1}^n x_i$.
+
+More precisely, we are given a data set $x_i >0$,
+$i=1...n$. We plot for all $i=1...n$ the points
+$(p_i, \ell_i)$ with
+ \be
+ \bracket{
+ p_i =  \frac{i}{n}
+ \\
+ \ell_i  =  \frac{\sum_{j=1}^n x_j\ind{x_j \leq x_i}}{\sum_{j=1}^n x_j}
+ }\ee
+See \fref{fig-lorenz} for examples. We can make
+the Lorenz curve a continuous mapping $\ell=L(p)$
+by linear interpolation and by setting $L(0)= 0$.
+The resulting $L()$ is a continuous mapping from
+$[0,1]$ onto $[0,1]$, monotone non decreasing,
+convex, with $L(0)= 0$ and $L(1)=1$.
+
+The Lorenz curve $\ell=L(p)$ can be interpreted
+as a global measure of fairness (or variability).
+If all $x_i$s are equal (maximum fairness) then
+$L(p)= p$ and $L()$ is the diagonal of the square
+$[0,1]\times [0,1]$ (called the ``line of perfect
+equality"). In the worst case, the Lorenz curve
+follows the bottom and right edges of the square
+(called the ``line of perfect inequality")
+(\fref{fig-gini}). In practice the Lorenz curve
+is computed by sorting $x_i$ in increasing order
+($x_{(1)} \leq x_{(2)}\leq \ldots \leq x_{(n)}$)
+and letting
+ \be
+l_i=\frac{x_{(1)} + ...+ x_{(i)} }{nm}
+\label{eq-calcul-lorenz}\ee where $m$ is the
+sample mean. It follows that $0 \leq l_i \leq
+\frac{i}{n}$, i.e.
+  \ben
+0\leq L(p) \leq p
+  \een
+i.e. and the Lorenz curve is always between the
+lines of perfect equality and perfect inequality.
+
+\begin{figure}\begin{center}
+ \subfigure[Execution times in \fref{fig-conf-c1}, old code]
+ {\Ifignc{lorenzsgbdold}{0.45}{0.45}}
+ \subfigure[Execution times in \fref{fig-conf-c1}, new code]
+ {\Ifignc{lorenzsgbdnew}{0.45}{0.45}}
+ \subfigure[Ethernet Byte Counts ($x_n$ is the byte length of the $n$th packet of
+ an Ethernet trace \cite{leland1994self})]
+ {\Ifignc{lorenzbyte}{0.45}{0.45}}
+ \begin{tabular}{|c||c|c|c|c|c|}
+   \hline
+   % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
+     %& \fref{fig-conf-c1}, old code & \fref{fig-conf-c1},
+%     new code & Ethernet Byte Counts  \\ \hline
+%   \hline
+%   CoV & 0.779 & 0.720 & 1.84 \\
+%   JFI & 0.622 & 0.658 & 0.228 \\
+%   \hline
+    & CoV & JFI & gap & Gini & Gini-approx\\ \hline \hline
+     \fref{fig-conf-c1}, old code &
+     0.779  & 0.622  & 0.321 & 0.434&0.430
+     \\ \hline
+     \fref{fig-conf-c1},
+     new code &
+     0.720   & 0.658 & 0.275 &0.386 & 0.375
+     \\  \hline
+     Ethernet Byte Counts
+     & 1.84
+     &   0.228
+     & 0.594 &
+     0.730&0.715
+     \\
+     \hline
+ \end{tabular}
+
+
+\end{center}
+  \mycaption{Lorenz curves for three data sets, with proportion of users $p$ on $x$ axis and proportion of total sum $\ell$ on $y$ axis. The diagonal is the line of perfect
+  equality. The maximum distance (plain line) is equal to $1\over \sqrt{2}$ times
+  the maximum vertical deviation (dashed line), which is called the Lorenz curve gap.
+  The Gini coefficient is the area between the diagonal and the Lorenz curve,
+  rescaled by its maximum
+  value $\frac{1}{2}$. The table gives the values of Coefficient of
+  Variation, Jain's Fairness Index, Lorenz Curve Gap, Gini coefficient
+  and the Gini coefficient approximation in \eref{eq-gini-approx}.}
+  \label{fig-lorenz}
+\end{figure}
+
+
+
+\paragraph{Lorez Curve Gap, Again} A measure of fairness is the largest euclidian
+distance (the gap) from the Lorenz curve to the
+diagonal, rescaled by its maximum value
+$\left(1\over \sqrt{2}\right)$. It is also equal to the largest
+vertical distance, $\sup_{u \in [0,1]}\lp u- L(u)
+\rp$ (\fref{fig-lorenz}). The gap can easily be
+computed by observing that it is reached at index
+$ i_0 = \max\{i: x_{(i)}\leq m\} $, i.e. at a
+value $p_0=\frac{i_0}{n}$ such that the bottom
+fraction $p_0$ of the data have a a value less
+than the average. Thus
+ \be
+ \mbox{ gap } = \frac{i_0}{n}-\frac{x_{(1)}+...+x_{(i_0)}}{m n}
+ \ee
+
+We have already introduced the gap in
+\eref{eq-def-gap}, so we need to show that the
+two definitions are equivalent. This follows from
+ \bearn
+  \mbox{MAD} &=&  \frac{1}{n}\sum_{i=1}^n \abs{x_i-m} =    \frac{1}{n}\sum_{i=1}^n \abs{x_{(i)}-m}
+ \\
+ &= & \frac{1}{n}\lp \sum_{i=1}^{i_0}(m-x_{(i)})+ \sum_{i_0+1}^n(x_{(i)}-m)\rp\\
+ &=&   \frac{1}{n}\lp i_0 m-\sum_{i=1}^{i_0} x_{(i)}
+ +nm-\sum_{i=1}^{i_0}x_{(i)}-(n-i_0) m\rp
+ \\
+ & = & 2 m \;\mbox{ gap }
+ \eearn which is the same as \eref{eq-def-gap}.
+
+ \begin{petit}
+ The theoretical Lorenz curve is defined for a probability distribution with
+ cumulative distribution function  CDF
+ $F()$ and finite mean $\mu$ by
+  \be L(p) = \frac{1}{\mu}\int_0^p F^{-1}(q) dq
+  \label{eq-def-l-th}\ee where $F^{-1}$ is the (right-continuous)
+  pseudo-inverse
+ \ben
+ F^{-1}(q) = \sup \{x: F(x) \leq p\}=\inf\{x: F(x) > q\}
+ \een
+ If the CDF $F()$ is continuous and increasing,
+ then $F^{-1}$ is the usual function inverse. In this case,
+ the theoretical Lorenz curve gap is then equal to \ben
+\mbox{gap}_{\mbox{th}}=p_0-L(p_0)\een with $p_0=F(\mu)$.
+
+
+The theoretical Lorenz curve is the limit of the Lorenz curve
+for an iid data sample coming from $F()$, when $n$ is large.
+ \end{petit}
+
+\paragraph{The Gini Coefficient}
+\nt{Gini coefficient} This is yet another fairness index, very
+widespread in economy, and, by imitation, in computer and
+communication systems. Its definition is similar to the Lorenz
+curve gap, with the mean average deviation replaced by the
+\nt{Mean Difference}:
+  \be
+  \mbox{MD} = \frac{1}{n(n-1)}\sum_{i, j}\abs{x_i-x_j}
+  \ee
+The Gini coefficient is then defined as
+  \be
+  \mbox{Gini} = \frac{\mbox{MD}}{2 m}
+  \label{eq-def-gini}
+  \ee where $m$ is the empirical mean of the data set. It can
+  be shown that it is equal to $2 \times $ the area between the line of perfect
+equality and the Lorenz curve (the rescaling factor $2$ makes
+it lie between $0$ and $1$). In practice the Gini coefficient
+can be computed by using \eref{eq-calcul-lorenz}, which gives
+ \bear
+\mbox{Gini} &= & \frac{2}{m n^2}\sum_{i=1}^n i
+x_{(i)}-1 - \frac{1}{n}
+ \label{eq-gini-comp}
+ \eear
+%
+ \begin{petit}
+The theoretical Gini coefficient for a probability distribution
+with CDF $F()$ is defined by
+ \ben
+ \mbox{Gini}_{\mbox{th}} = 2\int_0^{1} \lp q - L(q)\rp dq
+ =1- 2\int_0^{1} L(q) dq
+ \een where $L()$ is the theoretical Lorenz curve defined in \eref{eq-def-l-th}.
+ \end{petit}
+
+\begin{figure}
+ \insfig{gini}{0.45}
+ \mycaption{Lorenz curve (plain line). The line of perfect equality is $OD$, of perfect
+ inequality $OBD$. The Lorenz curve gap is the maximum distance to the line of
+ perfect equality, re-scaled by $\sqrt{2}$. The Gini coefficient is the area between the line of perfect
+ equality and the Lorenz curve, re-scaled by 2.}
+ \label{fig-gini}
+ \end{figure}
+
+
+Since the Lorenz curve is convex, it is straightforward to
+bound the Gini coefficient by means of the Lorenz curve gap. On
+\fref{fig-gini}, we see that the area between the Lorenz curve
+and the diagonal is lower bounded by the triangle $OM_0D$ and
+upper bounded by the trapeze $OACD$. It follows from this and
+\eref{eq-gini-comp} that
+ \bearn
+ 0 \leq \mbox{ gap } \leq &\mbox{Gini}&\leq 1-\frac{1}{n}\\
+ &\mbox{Gini}&\leq \mbox{ gap }(2-\mbox{ gap })
+ \eearn where the lower bound $0$ is reached at maximum fairness.
+
+It follows that one can also approximate
+$\mbox{Gini}$ by the arithmetic mean of the lower
+and upper bounds:
+  \be
+   \mbox{Gini} \approx \mbox{ gap } (1.5 -0.5 \mbox{ gap })
+  \label{eq-gini-approx}
+  \ee
+
+
+\paragraph{Summary}
+Since there are so many different variability and
+fairness indices, we give here a summary with
+some recommendations.
+
+First, since the Gini coefficient can be essentially predicted
+from the Lorenz curve gap, we do not use it further in this
+book. However, it may be useful to know the relationship
+between the two since you may find that it is used in some
+performance evaluation results.
+
+Second, Jain's fairness index and the Lorenz curve gap are
+fundamentally different and cannot be mapped to each other. The
+former is essentially the same as the standard deviation or the
+coefficient of variation. If the data comes from a heavy tailed
+distribution, the theoretical coefficient of variation is
+infinite, and $\mbox{CoV}\to \infty$ as the number of data
+points gets large. Comparing different CoVs in such a case does
+not bring much information. In contrast, the Lorenz curve gap
+continues to be defined, as long as the distribution has a
+finite mean. It should be preferred, if one has a choice.
+
+We recall the main inequalities and bounds in
+\tref{tab-fairness-indices} on \pgref{tab-fairness-indices}.
+See also \fref{fig-lorenz} for some examples.
+
+\begin{table}
+  \centering
+  \begin{tabular}{|c||c|c|c|}
+  \hline
+    % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
+      &
+      Jain's Fairness Index&
+       Lorenz Curve Gap&
+       Gini Coefficient
+        \\
+        & (JFI) & (gap) & (Gini)\\
+        \hline \hline
+    Definition &
+     $\frac{1}{1+ \mbox{ CoV }^2} $ &
+        $\frac{\mbox{ MAD }}{2 m}$&
+        $\frac{\mbox{ MD }}{2 m}$
+       \\
+& \eref{eq-cov}, \eref{eq-jfi}
+& \eref{eq-def-gap}
+&\eref{eq-def-gini}
+               \\
+       \hline
+    Bounds&
+       $\frac{1}{n}\leq \mbox{ JFI } \leq 1$ (MF)&
+       (MF) $0\leq \mbox{ gap } \leq 1-\frac{1}{n}$ &
+       (MF) $0\leq \mbox{ Gini } \leq 1-\frac{1}{n}$
+       \\
+       \hline
+    Relations &
+    $ \frac{1}{1+4\mbox{ gap }^2} \leq  \mbox { JFI }
+    $&
+    &
+    $\mbox { gap } \leq \mbox{ Gini } \leq  \mbox { gap }
+    ( 2- \mbox { gap })$
+     \\
+     &
+     Equality only at MF&
+     &
+ $\mbox{Gini} \approx \mbox{ gap } (1.5 -0.5 \mbox{ gap })$
+ \\
+       \hline
+    %$N_{\mu, \sigma^2}$ &
+%    $\frac{1}{1+\sigma^2/\mu^2}$&
+%      $\sqrt{2 \over \pi}\frac{\sigma}{\mu} \approx 0.798 \frac{\sigma}{\mu} $ &
+%       TBD
+%       \\ \hline
+   Exp$(\lambda)$, $\la >0$&
+     $0.5$ &
+      $\frac{1}{e}\approx 0.368$ &
+       $0.5$
+       \\ \hline
+       Unif$(a,b)$
+       &
+       $\frac{1}{1+\frac{(b-a)^2}{3(b+a)^2}}$
+       &
+       $\frac{b-a}{4(a+b)}$
+       &
+       $\frac{b-a}{3(a+b)}$
+       \\
+        $0\leq a <b$&&&\\ \hline
+    Pareto ($p,x_0)$&
+     $ \frac{p(p-2)}{(p-1)^2}
+     $
+      &
+      $\frac{1}{p}\lp 1  - \frac{1}{p} \rp^{p-1}$&
+       $\frac{1}{2 p -1}$
+       \\
+        $x_0 >0, p>1$&for $p>2$& & \\\hline
+ \end{tabular}
+  \mycaption{Relationships between different fairness indices of a data set
+  with $n$ samples and empirical mean $m$ (MF = value when fairness is maximum, i.e
+  all data points are equal).}\label{tab-fairness-indices}
+\end{table}
+\nfs{$gini=\frac{2}{m}\int_{-\infty}^{+\infty}x
+f(x) F(x) dx -1$}
+
+%\subsection{Receiver Operating Characteristics (ROC), Recall and Precision}
+%(type I, II errors; MAP vs MLE; recall vs precision)
+%
+%
+%\subsection{Summary}
+%\bearn
+% \mbox{AD} &=& 2 \lp \mu F(\mu) - \int_0^{\mu} x f(x) dx\rp
+% \\
+% \mbox{gaussian: } AD &=& \sqrt{2 \over \pi} \sigma \approx 0.80
+% \sigma
+% \\
+% \mbox{ gap } &=& \frac{\mbox{AD}}{2  \mu} \mbox{rescaled to be in
+% }[0,1]
+% \\
+% \mbox{maxgap}& = &\lp 1-{1 \over n}\rp
+% \\
+% u_{\mbox{ gap }}&=&F^{-1}(\mu)
+% \\
+% \mbox{gini index} &=& 2 \times \mbox{area between curve and diagonal}
+% \\
+% \mbox{Jain's fairness index}&=& \frac{1}{1 + \mbox{CoV}^2} \mbox{ ranges from } {1 \over
+% n} \mbox{ to } 1
+% \\
+% \mbox{JYLB fairness index} &=& 1- \mbox{ gap } \mbox{ ranges from } {1 \over
+% n} \mbox{ to } 1
+% \eearn
+%
+% Interpolation by a quadratic function on each of the two intervals,
+% with same slope at $f_0$ gives the approximation for Gini index
+% ($f_0=F(\mu)$):
+%
+% \bearn
+% \mbox{gini} &\approx& 2 (A_1 + A_2)
+% \\
+% A_1 & = & \frac{2}{3} f_0 \times \mbox{ gap }
+% \\
+% A_2 & = & \frac{2 \mbox{ gap }}{3}\lp 1-f_0 \rp
+% \\
+%\mbox{gini} &\approx&\frac{4}{3} \mbox{ gap }
+% \eearn
+%If data is gaussian
+%\be
+% \mbox{ gap } = \frac{1}{\sqrt{2 \pi}} \mbox{CoV}
+%\ee%
+%
+%\section{Graphics}
+%Pitfalls, voir Jain +
+%
+%\begin{enumerate}
+%    \item ne pas mettre index en axe des x (avoid unnecessary graphical
+%    elements)
+%    \item watch the scale - put 0
+%    \item misleading elements
+%\end{enumerate}
+%
+%Display RoC
+%
+%Voir le livre recommend\'{e} par Vetterli.
+
+\section{Confidence Intervals}
+\mylabel{sec-conf-cimean}
+\subsection{What is a Confidence Interval~?}
+When we display a number such as the median or
+the mean of a series of performance results, it
+is important to quantify their accuracy (this is
+part of the scientific method, \cref{ch-metho}).
+\nt{Confidence intervals} quantify the
+uncertainty about a summarized data that is due
+to the randomness of the measurements.
+
+\begin{ex}{Comparison of Two Options, continued} \mylabel{ex-conf-c2}%
+We wish to quantify the improvement due to the
+new system. To this end, we measure the reduction
+in run time for the same sequence of tasks as on
+\fref{fig-conf-c1} (both data sets on
+\fref{fig-conf-c1} come from the same transaction
+sequences -- statisticians say that this is a
+\nt{paired experiment}). The differences are
+displayed in \fref{fig-conf-c2}.
+
+The last panel shows confidence intervals for the
+mean (horizontal lines) and for the median
+(notches in Box plot). For example, the mean of
+the reduction in run time is $
+\input{ex2.dat}$.%
+\nfs{sgbd.m}%
+The uncertainty margin is called the confidence interval for
+the mean. It is obtained by the method explained in this
+section. Here, the mean reduction is non negligible, but the
+uncertainty about it is large.
+\end{ex}
+\begin{figure}
+\Ifig{conf-bp2}{0.9}{0.3}%
+\nfs{sgbdnew.dat, sgbdold.dat, sgbdplot.m}%
+\mycaption{Data for \exref{ex-conf-c2}: reduction in
+run time (in ms). Right: Box plot with mean and confidence
+interval for mean.} \mylabel{fig-conf-c2}
+\end{figure}
+
+%\fref{fig-conf-c1} and \fref{fig-conf-c2} Note
+%that the confidence interval is \imp{not the same
+%as a measure of variability}, though it is
+%related, as we discuss in \sref{sec-conf-mom}: on
+%\fref{fig-conf-c1} the confidence interval for
+%the mean is considerably smaller than the
+%variability interval given by $m \pm 1.96 s$.
+%There is a confidence interval for each of the
+%summarized data given earlier: median, quantile,
+%mean and standard deviation.
+
+There is a confidence interval for every
+summarized quantity: median, mean, quartile,
+standard deviation, fairness index, etc. In the
+rest of this section, we explain \emph{how} to
+compute confidence intervals.
+
+\subsection{Confidence Interval for Median and Other Quantiles}
+We start with the median and other quantiles, as
+it is both simplest and most robust; this section
+also serves as an illustration of the general
+method for computing confidence intervals.
+
+%The confidence interval for the median is shown
+%by notches on Box plots (\fref{fig-conf-c1}, (3)
+%on Box plot). We start with the median and then
+%extend it to other quantiles.
+
+The main idea (which underlies all classical statistics
+formulae) is to imagine that the data we have measured was in
+fact generated by a simulator, whose program is unknown to us.
+More precisely, we are given some data $x_1, ..., x_n$; we
+imagine that there is a well defined probability distribution
+with CDF $F()$ from which the data is sampled, i.e. we have
+received one sample from a sequence of independent and
+identically distributed (\nt{iid}) random variables $X_1, ...,
+X_n$, each with common CDF $F()$. The assumption that the
+random variables are iid is capital; if it does not hold, the
+confidence intervals are wrong. We defer to \sref{sec-iid-cose}
+a discussion of when we may or may not make this assumption.
+For now we assume it holds.
+
+The distribution $F()$ is non-random but is
+unknown to us. It has a well defined median $m$,
+defined by : for every $i$, $\P(X_i \leq m)=0.5$.
+We can never know $m$ exactly, but we
+\imp{estimate} it by $\hat{m}(x_1, ...,x_n)$,
+equal to the sample median defined in
+\sref{sec-conf-sum}. Note that the value of the
+estimated median depends on the data, so it is
+random: for different measurements, we obtain
+different estimated medians. The goal of a
+confidence interval is to bound this uncertainty.
+It is defined relative to a \nt{confidence level}
+$\gamma$; typically $\gamma=0.95$ or $0.99$:
+\begin{definition}
+A \imp{confidence interval} at level $\gamma$
+for the fixed but unknown parameter $m$ is an
+interval
+$\left(u(X_1,...,X_n),v(X_1,..,X_n)\right)$ such
+that
+ \be \P\left(u(X_1,...,X_n)< m < v(X_1,...,X_n)\right) \geq \gamma
+ \ee
+\end{definition}
+In other words, the interval is constructed from
+the data, such that with at least $95\%$
+probability (for $\gamma=0.95$) the true value of
+$m$ falls in it. Note that \imp{it is the
+confidence interval that is random, not the
+unknown parameter $m$}.
+
+A confidence interval for the median or any other
+quantile is very simple to compute, as the next
+theorem shows.
+\begin{shadethm}[Confidence Interval for Median and Other Quantiles]
+\label{theo-conf-ci-median} Let $X_1, ...,X_n$ be $n$ iid
+random variables, with a common CDF $F()$. Assume that $F()$
+has a density, and for $0<p<1$ let $m_p$\index{1mp@$m_p$ :
+$p$-quantile} be a $p$-quantile of $F()$, i.e. $F(m_p)=p$.
+
+ Let
+$X_{(1)}\leq X_{(2)}\leq ...\leq X_{(n)}$ be the \nt{order
+statistic}, i.e. the set of values of $X_i$ sorted in
+increasing order. Let $B_{n,p}$ be the CDF of the binomial
+distribution with $n$ repetitions and probability of success
+$p$. A confidence interval for $m_p$ at level $\gamma$ is
+\ben[X_{(j)},X_{(k)}]\een where $j$ and $k$ satisfy \ben
+B_{n,p}(k-1)-B_{n,p}(j-1) \geq \gamma\een See the tables in
+Appendix \ref{sec-ci} on \pgref{sec-ci} for practical values.
+For large $n$, we can use the approximation
+  \bearn
+  j & \approx & \lfloor n p - \eta \sqrt{n p
+  (1-p)} \rfloor\\
+  k & \approx & \lceil n p + \eta \sqrt{n p
+  (1-p)} \rceil +1
+  \eearn
+  where $\eta$ is defined by
+  $N_{0,1}(\eta)=\frac{1+\gamma}{2}$ (e.g.
+  $\eta=1.96$ for $\gamma=0.95$).
+\end{shadethm}
+The \nt{Binomial distribution} \index{$B_{n,p}$} $B_{n,p}$,
+with $n$ repetitions and probability of success $p$, is the
+distribution of $Z=\sum_{i=1}^n Z_i$ where $Z_i$ are iid random
+variables such that$Z_i=0$ or $1$ and $\P(Z_i=1)=p$, i.e. it is
+the distribution of the number of successes in an experiment
+with $n$ trials and individual success probability $p$. (The
+random variables $Z_i$ are called \nt{Bernoulli} random
+variables. $N_{0,1}$ is the CDF of the gaussian distribution
+with mean $0$ and variance $1$.)
+
+For $n=10$, the theorem and the table in
+\sref{sec-ci} say that a $95\%$-confidence
+interval for the median (estimated as
+$\frac{X_{(5)}+X_{(6)}}{2}$) is
+$\left[X_{(2)},X_{(9)}\right]$. In other words,
+we obtain a confidence interval for the median of
+10 results by removing the smallest and the
+largest. Could it be simpler~?
+
+Note that, for small values of $n$, no confidence
+interval is possible at the levels $0.95$ or
+$0.99$. This is due to the probability that
+the true quantile is outside any of the observed
+data still being large.
+
+For large $n$, the binomial distribution can be
+approximated by a gaussian distribution, which
+explains the approximation in the theorem.
+
+
+\begin{petit}
+The assumption that the distribution has a
+density (also called PDF\index{PDF}, probability
+density function) is for simplicity of
+exposition. If $F()$ does not have a density
+(e.g. because the numbers $X_i$ are integers) the
+theorem hold with the modification that the
+confidence interval is $[X_{(j)},X_{(k)})$
+(instead of $[X_{(j)},X_{(k)}]$).
+\end{petit}
+
+
+
+%\begin{table}
+%\footnotesize
+%  \centering
+%  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c| } \hline 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 &
+%8 & 9 & 10 \\ \hline
+% 0.001 & 0.011 & 0.055 & 0.172 & 0.377 & 0.623 & 0.828 & 0.945 & 0.989 & 0.999 & 1.000 \\ \hline
+% \end{tabular}
+%  \mycaption{CDF of Binomial distribution $B_{n=10,p=0.5}$}\label{tab-conf-bin}
+%\end{table}
+
+\subsection{Confidence Interval for the Mean}
+\label{sec-ci-mean} Here too there is a widely used result,
+given in the next theorem. The proof is standard and can be
+found in probability textbooks
+\cite{grimmett2001probability,papoulis1965probability}.
+
+\begin{shadethm}
+\mylabel{theo-conf-ln} Let $X_1, ...,X_n$ be $n$ iid random
+variables, the common distribution of which is assumed to have
+well defined mean $\mu$ and a variance $\sigma^2$. Let
+$\hat{\mu}_n$ and $s_n^2$ by
+ \bear
+ \hat{\mu}_n&= & \frac{1}{n}\sum_{i=1}^n X_i \mylabel{eq-conf-2-mu}\\
+ s_n^2& =&\frac{1}{n}\sum_{i=1}^n \left(X_i-
+ \hat{\mu}_n\right)^2
+ \mylabel{eq-conf-2-sigma}
+ \eear
+The distribution of
+ $\sqrt{n} \frac{\hat{\mu}_n-\mu}{s_n}$
+converges to the normal distribution $N_{0,1}$
+when $n\rightarrow +\infty$. An approximate
+confidence interval for the mean at level
+    $\gamma$ is
+    \be
+    \hat{\mu}_n\pm \eta \frac{s_n}{\sqrt{n}}
+    \label{eq-ci-m}
+    \ee
+    where $\eta$ is the
+$\frac{1+\gamma}{2}$ quantile of the normal
+distribution $N_{0,1}$, i.e
+$N_{0,1}(\eta)=\frac{1+\gamma}{2}$. For example,
+$\eta=1.96$ for $\gamma=0.95$ and $\eta=2.58$ for
+$\gamma=0.99$.
+\end{shadethm}
+
+Note that the amplitudes of the confidence
+interval decreases like $\frac{1}{\sqrt{n}}$.
+
+Also note however that some caution may be
+required when using the theorem, as it makes 3
+assumptions: \noitemsep
+ \begin{enumerate}
+    \item the data comes from an iid sequence
+    \item the common distribution has a finite
+    variance
+    \item the number of samples is large
+ \end{enumerate} each of these assumptions is worth screening, as there are
+ realistic cases where they do not hold. Assumption 1 is the same as for all confidence intervals in this chapter, and
+is discussed in \sref{sec-iid-cose}. Assumption 2 is true
+unless the distribution is heavy tailed, see \sref{sec-ht}.
+Assumption 3 is usually true even for small values of $n$, and
+can be verified using the method in
+\sref{sec-verify-asymptotic}.
+
+%\begin{petit}
+\subsubsection{Normal iid Case} \mylabel{sec-conf-normal}
+The following theorem is a slight variant of
+\thref{theo-conf-ln}. It applies only to the cases where we
+know a priori that the distribution of the measured data
+follows a common gaussian distribution $N_{\mu, \sigma^2}$,
+with $\mu$ and $\sigma$ fixed but unknown. It gives practically
+the same result as \thref{theo-conf-ln} for the confidence
+interval for the mean; in addition it gives a confidence
+interval for the standard deviation. This result is often used
+in practice, perhaps not rightfully, as the gaussian
+assumptions are not always satisfied.
+\begin{theorem}
+\mylabel{theo-conf-normal} Let $X_1, ...,X_n$ be a sequence of
+iid random variables with common distribution $N_{\mu,
+\sigma^2}$. Let
+ \bear
+ \hat{\mu}_n&=& \frac{1}{n}\sum_{i=1}^n X_i\\
+ \index{1sigma@$\hat{\sigma}_n$}\hat{\sigma}_n^2&=&\frac{1}{n-1}\sum_{i=1}^n \left(X_i -
+ \index{1mu@$\hat{\mu}_n$}\hat{\mu}_n\right)^2 \mylabel{eq-conf-sigma2}
+ \eear
+Then\begin{itemize}
+    \item The distribution of $\sqrt{n}\frac{\hat{\mu}_n-\mu}{\hat{\sigma}_n}$
+    is Student's $t_{n-1}$; a confidence interval for the mean at level
+    $\gamma$ is
+    \be
+    \hat{\mu}_n\pm \eta
+    \frac{\hat{\sigma}_n}{\sqrt{n}}\label{eq-ci-mn}
+    \ee
+    where $\eta$ is the
+    $\left( \frac{1+\gamma}{2}\right)$ quantile of the student distribution $t_{n-1}$.
+\item The distribution of
+    $(n-1)\frac{\hat{\sigma^2}_n}{\sigma^2}$ is
+    $\chi^2_{n-1}$.
+
+    A confidence interval at level $\gamma$ for the standard
+    deviation is
+    \be
+    [\hat{\sigma}_n\sqrt{\frac{n-1}{\xi}},\hat{\sigma}_n \sqrt{\frac{n-1}{\zeta}}]
+    \ee
+    where $\zeta$ and $\xi$ are quantiles of $\chi^2_{n-1}$:
+    $\chi^2_{n-1}(\zeta)=\frac{1+\gamma}{2}$ and
+    $\chi^2_{n-1}(\xi)=\frac{1-\gamma}{2}$.
+
+%    A confidence interval at level $\gamma$ for the standard
+%    deviation is
+%    \be
+%    [\hat{\sigma}_n\sqrt{\frac{\zeta}{n-1}},\hat{\sigma}_n \sqrt{\frac{\xi}{n-1}}]
+%    \ee
+%    where $\zeta$ and $\xi$ are quantiles of $\chi^2_{n-1}$:
+%    $\chi^2_{n-1}(\zeta)=\frac{1-\gamma}{2}$ and
+%    $\chi^2_{n-1}(\xi)=\frac{1+\gamma}{2}$.
+    \end{itemize}
+\end{theorem}
+
+The distributions $\chi^2$ and $t_n$  are defined as follows.
+\nt{Chi-Square} ($\chi^2_n$)\index{$\chi^2_n$} is the
+distribution of the sum of the squares of $n$ independent
+random variables with distribution $N_{0,1}$ (its expectation
+is $n$ and its variance $2n$). \nt{Student}
+($t_n$)\index{$t_n$} is the distribution of
+    \ben
+    Z=\frac{X}{\sqrt{Y/n}}
+    \een
+    where $X \sim N_{0,1}$, $Y \sim \chi^2_n$ and $X$ and $Y$ are
+    independent.
+
+Unlike in \thref{theo-conf-ln}, the magic numbers
+$\eta, \zeta, \xi$ depend on the confidence level
+$\gamma$ but also on the sample size $n$. For
+instance, with $n=100$ and confidence level
+$0.95$, we have $\eta=1.98$, $\zeta=73.4$, and
+$\xi=128.4$. This gives the confidence intervals
+for mean and standard deviation: $[\hat{\mu}_n-
+0.198 \hat{\sigma}_n, \hat{\mu}_n+ 0.198
+\hat{\sigma}_n]$ and
+$[0.86\hat{\sigma}_n,1.14\hat{\sigma}_n]$.
+
+\mq{q-conf-kasdj}{Does the confidence interval for the mean in
+\thref{theo-conf-normal} depend on the estimator of the
+variance~? Conversely~?}{Yes; No}
+
+
+We can compare the confidence interval for the
+mean given by this theorem in \eref{eq-ci-mn} and
+by \thref{theo-conf-ln} in \eref{eq-ci-m}. The
+latter is only approximately true, so we may
+expect some small difference, vanishing with $n$.
+Indeed, the two formulas differ by two terms.
+\noitemsep
+\begin{enumerate}
+    \item The estimators of the variance $\hat{\sigma}_n^2= \frac{1}{n-1}\sum_{i=1}^n \left(X_i-
+ \hat{\mu}_n\right)^2$ and $s_n^2=\frac{1}{n}\sum_{i=1}^n \left(X_i-
+ \hat{\mu}_n\right)^2$ differ by the factor
+$\frac{1}{n}$ versus $\frac{1}{n-1}$. The factor
+$\frac{1}{n-1}$ may seem unnatural, but it is
+required for \thref{theo-conf-normal} to hold
+exactly. The factor $\frac{1}{n}$ appears
+naturally from the theory of maximum likelihood
+estimation (\sref{sec-conf-mle}). In practice, it
+is not required to have an extreme accuracy for
+the estimator of $\sigma^2$ (since it is a second
+order parameter); thus using $\frac{1}{n-1}$ or
+$\frac{1}{n}$ makes little difference. Both
+$\hat{\sigma}_n$ and $s_n$ are called \nt{sample
+standard deviation}.
+    \item $\eta$ in \eref{eq-ci-mn} is defined by the student distribution, and by the normal
+     distribution in \eref{eq-ci-m}. For large
+     $n$, the student distribution is close to
+     normal; for example, with $\gamma=0.95$ and
+     $n=100$, we have $\eta=1.98$ in
+     \eref{eq-ci-mn} and $\eta=1.96$ in
+     \eref{eq-ci-m}.
+\end{enumerate} See \fref{fig-conf-c3} for an
+illustration.
+%\end{petit}
+%
+%
+\ifnfs Not sure whether we need this example
+\begin{ex}{Exponential Random Variables}
+ Un CI exact pour n=10 rv exponentielles est $[20/34.17 \bar{x},
+20/9.59 \bar{x}]$=$[0.5853, 2.0855]$. Compare to normal ci:
+sigma=barx donc couverture de ce ci est 1- 23.38%
+ ie l'intervalle serait beaucoup trop petit si on supposait
+ normal.
+
+errf((2.0855 -1)sqrt(n))-errf((1-0.5853) sqrt(n))
+\end{ex}
+\fi
+%
+%
+
+\begin{figure}
+\Ifig{bsci}{0.5}{0.5}%
+\nfs{sgbdold.dat sgbdnew.dat bs.m}%
+\mycaption{Confidence intervals for both compiler
+options of \exref{ex-conf-1} computed with three
+different methods: assuming data would be normal
+(\thref{theo-conf-normal}) (left); the general
+method in and with the bootstrap method (right).
+%Though the normal assumption is not valid, as
+%shown in \sref{sec-conf-verify}, the result
+%obtained with it correct as it does not differ
+%significantly from the asymptotic result
+}
+\mylabel{fig-conf-c3}
+\end{figure}
+\subsection{Confidence Intervals for Fairness Indices and The Bootstrap}
+There is no analytical general method, even when
+$n$ is large (but see \cite{verrill2003cbn} for
+some special cases, if the data is i.i.d normal
+or log-normal). Instead, we use a generic,
+computational method, called the bootstrap. It is
+general and can be used for any estimator, not
+just to fairness indices. It applies to all cases
+where data is iid.
+
+\paragraph{The Bootstrap}
+ \mylabel{sec-conf-bootstrap}
+Consider a sample $\vec{x}=(x_1,...,x_n)$, which we assume to
+be a realization of an iid sequence $X_1, ..., X_n$. We know
+nothing about the common distribution $F()$ of the $X_i$s. We
+are interested in some quantity $t(\vec{x})$ derived from the
+data, for which we want to find a confidence interval (in this
+context $t(\vec{x})$ is called a \nt{statistic}). For example,
+if the statistic of interest is the Lorenz curve gap, then by
+\sref{sec-var}:
+ \ben
+ t(\vec{x}) = \frac{1}{2
+  \sum_{i=1}^n x_i}\sum_{j=1}^n \abs{x_j-\frac{1}{n}\sum_{i=1}^n x_i}
+ \een
+The \nt{bootstrap method} uses the sample
+$\vec{x}=(x_1,...,x_n)$ as an approximation of the true,
+unknown distribution. It is justified by the Glivenko-Cantelli
+theorem which says that the ECDF converges with probability 1
+to the true CDF $F()$ when $n$ gets large.
+
+The method is described formally in
+\aref{algo-bs}.
+\begin{algorithm}\mycaption{The Bootstrap, for computation of
+confidence interval at level $\gamma$ for the statistic
+$t(\vec{x})$. The data set $\vec{x}=(x_1, ...,x_n)$ is assumed
+to be a sample from an iid sequence, with unknown distribution.
+$r_0$ is the algorithm's accuracy parameter.}
+ \begin{algorithmic}[1]
+%
+  \State $R=\lceil 2 \;r_0/(1-\gamma)\rceil-1$ \label{al-bs-l1}\Comment{For example
+  $r_0=25$, $\gamma=0.95$, $R=999$}
+
+    \For{$r=1:R$}
+    \State draw $n$ numbers with replacement from
+the list $(x_1, ...,x_n)$ and call them
+$X^r_{1},...,X^r_{n}$ \label{line-draw-xr}
+    \State let $T^r=t(\vec{X^r})$ \label{al-bs-l3}
+  \EndFor
+  \State $\left(T_{(1)},...,T_{(R)}\right)=\mbox{sort}\left(T^1 ,...,T^R\right)$
+  \State Prediction interval is
+  $[T_{(r_0)}\;;\;T_{(R+1-r_0)}]$ \label{al-bs-l10}
+\end{algorithmic}\label{algo-bs}
+ \end{algorithm}
+The loop creates $R$ \nt{bootstrap replicates} $\vec{X}^r$,
+$r=1,...,R$. Each bootstrap replicate
+$\vec{X}^r=(X^r_1,...,X^r_n)$ is a random vector of size $n$,
+like the original data. All $X^r_i$ are independent copies of
+the same random variable, obtained by drawing from the list
+$(x_1,...,x_n)$ \imp{with replacement}. For example, if all
+$x_k$ are distinct, we have $\P(X^r_i=x_k)=\frac{1}{n}$,
+$k=1,...,n$.
+
+For each $r$, line~\ref{al-bs-l3} computes the
+value of the statistic obtained with the $r$th
+``replayed" experiment. The confidence interval
+in line~\ref{al-bs-l10} is the \nt{percentile
+bootstrap estimate} at level $\gamma$. It is
+based on the order statistic
+$(T_{(r)})_{r=1,...,R}$ of $(T^r)_{r=1,...,R}$.
+
+The value of $R$ in line~\ref{al-bs-l1} needs to be chosen such
+that there are sufficiently many points outside the interval,
+and depends on the confidence level. A good value is
+$R=\frac{50}{1-\gamma}-1$. For example, with $\gamma=0.95$,
+take $R=999$ and the confidence interval in
+line~\ref{al-bs-l10} is $\left[T_{(25)};T_{(975)}\right]$.
+
+\begin{ex}{Confidence Intervals for Fairness Indices} The confidence
+intervals for the left two cases on
+\fref{fig-lorenz} were obtained with the
+Bootstrap, with a confidence level of $0.99$,
+i.e. with $R=4999$ bootstrap replicates (left and
+right: confidence interval; center: value of
+index computed in \fref{fig-lorenz}).
+ \begin{center}
+\begin{tabular}{|c|lcr|lcr|}
+  % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
+  \hline
+   &
+   \multicolumn{3}{c|}{Jain's Fairness Index}
+   &
+   \multicolumn{3}{c|}{Lorenz Curve Gap}
+   \\ \hline \hline
+  Old Code & 0.5385  &  0.6223  &  0.7057 &  0.2631  &  0.3209  &  0.3809  \\
+  New Code & 0.5673 &   0.6584 &   0.7530 &0.2222  &  0.2754  &  0.3311   \\
+%  Byte Count &  &    \\
+ \hline
+\end{tabular}
+\end{center}
+For the third example, the bootstrap cannot be applied
+directly, as the data set is not iid and the bootstrap requires
+i.i.d data. Subsampling does not work as the data set is long
+range dependent. A possible method is to fit a long range
+dependent model, such as fractional arima, then apply the
+bootstrap to the residuals.
+\end{ex}
+
+The bootstrap may be used for any metric, not just for fairness
+indices. \fref{fig-conf-c3} gives a comparison of confidence
+intervals \emph{for the mean} obtained with the bootstrap and
+with the classical methods (here
+$t(\vec{x})=\frac{1}{n}\sum_{i=1}^n x_i$).
+
+In general, the percentile estimate is an approximation that
+tends to be slightly too small. For a theoretical analysis of
+the bootstrap method, and other applications, see
+\cite{davison1997bootstrap}.
+
+
+\subsection{Confidence Interval for Success Probability}
+This is the frequent case where we do $n$ independent
+experiments and are interested in a binary outcome (success or
+failure). Assume we observe $z$ successes (with $0\leq z \leq
+n$). We would like to find a confidence interval for the
+probability $p$ of success, in particular when $p$ is small.
+
+Mathematically, we can describe the situation as follows. We
+have a sequence $X_1, ..., X_n$ of independent Bernoulli random
+variables such that $\P(X_k= 0)=1-p$ and $\P(X_k= 1)=p$, and we
+observe $Z=\sum_{i=1}^n X_i$. The number $n$ of experiments is
+known, but not the success probability $p$, which we want to
+estimate. A natural estimator of $p$ is
+$\frac{1}{n}\sum_{k=1}^n X_i$, i.e. the mean of the outcomes
+(this is the maximum likelihood estimator, see
+\sref{sec-conf-mle}). Therefore, we can apply the method for
+confidence intervals for the mean in \thref{theo-conf-ln};
+however, this method is valid only asymptotically, and does not
+work when $z$ is very small compared to $n$. A frequent case of
+interest is when we observe no success ($z= 0$) out of $n$
+experiments; here, \thref{theo-conf-ln} gives $[0;0]$ as
+confidence interval for $p$, which is not correct. We can use
+instead the following result.
+
+\begin{shadethm} \cite[p. 110]{johnson2005univariate} Assume we observe $z$ successes out of $n$
+independent experiments. A confidence interval at level
+$\gamma$ for the success probability $p$ is $[L(z) ; U(z)]$
+with
+  \be
+  \bracket{
+  L(0)  =  0
+  \\
+  L(z)  =  \phi_{n,z-1}\lp\frac{1+\gamma}{2}\rp, \; z=1,...,n
+  \\
+  U(z)  =  1- L(n-z)
+  }\label{eq-ci-p-u}
+  \ee
+  where $\phi_{n,z}(\alpha)$ is defined for $n=2,3,...$, $z
+  \in \{0,1,...,n\}$ and $\alpha \in (0;1)$ by
+%
+  \be
+  \bracket{
+  \phi_{n,z}(\alpha) = \frac{n_1 f}{n_2 + n_1 f}\\
+  n_1 = 2 (z+ 1),\; n_2 = 2 ( n - z), \; 1 - \alpha  = F_{n_1,n_2}( f)
+ }\label{eq-ci-p-ksjsda}
+  \ee
+  ($F_{n_1, n_2}()$ is the CDF of the Fisher distribution
+  with $n_1, n_2$ degrees of freedom). In particular, the
+  confidence interval for $p$ when we observe $z= 0$ successes
+  is $[0; p_0(n)]$ with
+  \be
+ p_0(n)
+ =
+ 1-\lp \frac{1-\gamma}{2} \rp ^{1 \over n}
+ =
+ \frac{1}{n}\log \lp\frac{2}{1-\gamma}\rp + o \lp
+\frac{1}{n}\rp\mbox{ for large } n
+ \label{eq-ci-p-kk}\ee
+
+Whenever $z\geq 6$ and $n-z \geq 6$, the normal approximation
+ \be
+ \bracket{
+ L(z)   \approx   \frac{z}{n} - \frac{\eta}{n}  \sqrt{z \lp 1 -\frac{z}{n} \rp}
+ \\
+ U(z)   \approx   \frac{z}{n} + \frac{\eta}{n}  \sqrt{z \lp 1 -\frac{z}{n} \rp}
+ }
+ \label{eq-ci-p-dasksadlk}\ee
+ can be used instead, with $N_{0,1}(\eta)=\frac{1
+ +\gamma}{2}$.\label{theo-est-proba}
+\end{shadethm}
+
+The confidence interval in the theorem is not the best one, but
+it is perhaps the simplest. It is based on a symmetric coverage
+interval, i.e. the probability of being above (or below) is
+$<\frac{1-\gamma}{2}$ and it is the smallest interval with this
+property. Other, non symmetric intervals can be derived and are
+slightly smaller \cite{blyth1983binomial}.
+
+Note that the function $\phi_{n,z}()$   is the reverse mapping
+of $p \mapsto B_{n,p}(z)$ where $B_{n,p}()$ is the CDF of the
+binomial distribution (this explains \eref{eq-ci-p-kk}).
+\eref{eq-ci-p-ksjsda} is used in numerical implementations
+\cite{johnson2005univariate}.
+
+For $\gamma = 0.95$, \eref{eq-ci-p-kk} gives $p_0(n) \approx
+  \frac{3.689}{n}$ and this is accurate with less than $10\%$
+  relative error for $n \geq 20$ already.
+
+The confidence interval in \eref{eq-ci-p-dasksadlk} is obtained
+by application of the asymptotic confidence interval for the
+mean; indeed, a direct application of \thref{theo-conf-ln}
+gives $\hat{\mu}_n=\frac{z}{n}$ and $s^2_n=\frac{z (n-z)}{n}$.
+
+\begin{exnn}{Sensor Loss Ratio}
+We measure environmental data with a sensor network. There is
+reliable error detection, i.e. there is a coding system which
+declares whether a measurement is correct or not. In a
+calibration experiment with $10$ independent replications, the
+system declares that all measurements are correct. What can we
+say about the probability $p$ of finding an incorrect
+measurement ?
+
+Apply \eref{eq-ci-p-kk}: we can say, with $95\%$ confidence,
+that $p\leq 30.8\%$.
+
+Later, in field experiments, we find that $32$ out of $145$
+readings are declared incorrect. Assuming the measurements are
+independent, what can we say about $p$ ?
+
+Apply \eref{eq-ci-p-dasksadlk} with $z=32$, $n=145$: with
+$95\%$ confidence we can say that $L \leq p \leq U$ with
+ \ben
+ \bracket{
+ L \approx \frac{z}{n} - \frac{1.96}{n}  \sqrt{z \lp 1 -\frac{z}{n} \rp} = 15.3\%
+ \\
+ U \approx \frac{z}{n} + \frac{1.96}{n}  \sqrt{z \lp 1 -\frac{z}{n} \rp} = 28.8\%
+ }
+ \een
+Instead of the normal approximation in
+\eref{eq-ci-p-dasksadlk}, we could have used the exact formula
+in \eref{eq-ci-p-u}, which would give $L=  15.6\%, U= 29.7\%$.
+\end{exnn}
+
+\thref{theo-est-proba} is frequently used in conjunction with
+Monte Carlo estimation of the $p$-value of a test, see
+\exref{sec-montecarlo-pvalue} on \pgref{sec-montecarlo-pvalue}.
+%
+%
+\section{The Independence Assumption}
+\mylabel{sec-iid-cose}All results in the previous and the next
+section assume the data is a sample of a sequence of
+independent and identically distributed (iid) random variables.
+We discuss here in detail the meaning of this assumption (in
+\sref{sec-normal-assumption} we also discuss the gaussian
+assumption, required by Theorems~\ref{theo-conf-ln} and
+\ref{theo-conf-normal}).
+
+\subsection{What does iid mean~?}
+
+Iid-ness is a property of a stochastic model, not of the data.
+When we say, by an abuse of language, that the collected data
+set is iid, we mean that we can do as if the collected data
+$x_1, ..., x_n$ is a sample (i.e. a simulation output) for a
+sequence of random variables $X_1, ..., X_n$, where $X_1,
+...,X_n$ are independent and all have the same (usually
+unknown) distribution with CDF $F()$.
+
+To generate such as sample, we draw a random
+number from the distribution $F()$, using a
+random number generator (see \sref{sec-arbdis}).
+Independence means that the random numbers
+generated at every step $i$ are discarded and not
+re-used in the future steps $i+1, ...$. Another
+way to think of independence is with conditional
+probabilities: for any set of real numbers $A$
+ \be
+ \P(X_i \in A \;|\; X_1=x_1, ..., X_{i-1}=x_{i-1})=\P(X_i \in A)
+ \ee
+i.e. \imp{if we know the distribution $F(x)$}, observing
+$X_1,...,X_{i-1}$ does not give more information about $X_i$.
+
+Note the importance of the ``if" statement in the last
+sentence: remove it and the sentence is no longer true. To
+understand why, consider a sample $x_1,...,x_n$ for which we
+assume to know that it is generated from a sequence of iid
+random variables $X_1, ...,X_n$ with normal distribution but
+with unknown parameter $(\mu, \sigma^2)$. If we observe for
+example that the average of $x_1, ...,x_{n-1}$ is 100 and all
+values are between 0 and 200, then we can think that it is very
+likely that $x_n$ is also in the interval $[0, 200]$ and that
+it is unlikely that $x_n$ exceeds $1000$. Though the sequence
+is iid, we did gain information about the next element of the
+sequence having observed the past. There is no contradiction:
+if we know that the parameters of the random generator are
+$\mu=100$ and $\sigma^2=10$ then observing $x_1,...,x_{n-1}$
+gives us no information about $x_n$.
+
+
+%
+\subsection{How do I know in Practice if the iid Assumption is
+Valid~?} If your performance data comes from a \nt{designed
+experiment}, i.e. a set of simulation or tests that is entirely
+under your control, then it is up to you to design things in
+such a way that the collected data are iid. This is done as
+follows.
+
+Every experiment has a number of factors, i.e., parameters that
+are likely to influence the outcome. Most of the factors are
+not really interesting, but you have to account for them in
+order to avoid hidden factor errors (see \sref{sec-hf} for
+details). The experiment generates iid data if the values of
+the factors are chosen in an iid way, i.e., according to a
+random procedure that is the same for every measured point, and
+is memoriless. Consider \exref{ex-conf-1}, where the run time
+for a number of transactions was measured. One factor is the
+choice of the transaction. The data is made iid if, for every
+measurement, we choose one transactions \imp{randomly with
+replacement} in a list of transactions.
+
+A special case of designed experiment is
+simulation. Here, the method is to generate
+\imp{replications} without resetting the random
+number generator, as explained in
+\sref{stats-sim}.
+
+Else (i.e. your data does not come from a designed experiment
+but from measurements on a running system) there is little
+chance that the complete sequence of measured data is iid. A
+simple fix is to \imp{randomize the measurements}, in such  a
+way that from one measurement point to the other there is
+little dependence. For example, assume you are measuring the
+response time of an operational web server by data mining the
+log file. The response time to consecutive requests is highly
+correlated at the time scale of the minute (due to protocols
+like TCP); one common solution is to choose requests at random,
+for example by selecting one request in average every two
+minutes.
+
+If there is some doubt, the following methods can be used to
+verify iid-ness:\doitemsep
+\begin{enumerate}
+\item (Autocorrelation Plot): If the data appears to be
+    stationary (no trend, no seasonal component), then we
+    can plot the sample autocorrelation coefficients, which
+    are an estimate of the true autocorrelation
+    coefficients $\rho_k$ (defined on \pgref{def-acf}). If
+    the data is iid, then $\rho_k=0$ for $k \geq 1$, and
+    the sample autocorrelation coefficients fall within the
+    values $\pm 1.96 / \sqrt{n}$ (where $n$ is the sample
+    size) with $95\%$ probability. An autocorrelation plot
+    displays these bounds as well. A visual inspection can
+    determine if this assumption is valid. For example, on
+    \fref{fig-cpu-sub} we see that there some
+    autocorrelation in the first six diagrams but not in
+    the last two. If visual inspection is not possible, a
+    formal test can be used (the Ljung-Box test,
+    \sref{sec-sacf}). If the data is iid, any point
+    transformation of the data (such as the Box Cox
+    transformation for any exponent $s$,
+    \sref{sec-conf-rescale}) should appear to be non
+    correlated as well.
+
+    \item (\nt{Lag-Plot}): We can also plot the value of
+        the data at time $t$ versus at time $t+h$, for
+        different values of $h$ (lag plots). If the data is
+        iid, the lag plots do not show any trend. On
+        \fref{fig-joe-sacaisse} we see that there is a
+        negative trend at lag 1.
+
+    \item (Turning Point Test):  A test provides an
+        automated answer, but is sometimes less sure than a
+        visual inspection. A test usually has a null
+        hypothesis and returns a so called ``$p$-value"
+        (see \cref{ch-tests} for an explanation). If the
+        $p$-value is smaller than $\alpha=1-\gamma$, then
+        the test rejects the null hypothesis at the
+        confidence level $\gamma$. %The turning point test
+%    computes the number of times that the data goes from
+%    increasing to decreasing. This value should be close to
+%    $2/3$ if the data is iid.
+See \sref{sec-turning-point} for details.
+
+
+\end{enumerate}
+
+\begin{figure}
+\Ifig{cpu7}{1}{0.5}%
+\nfs{cpu.dat cpu.m}%
+\mycaption{Execution times for $n=7632$ requests
+(top left) and autocorrelation function (bottom
+left), and for the data sub-sampled with
+probability $p=1/2$ to $1/2^{7}=1/128$. The data
+appears stationary and roughly normal so the
+auto-correlation function can be used to test
+independence. The original data is positively
+correlated, but the sub-sampled data looses
+correlation when the sampling probability is
+ $p=1/64$. The turning point test for the subsampled data with $p=1/64$ has a $p$-value of
+$0.52648$, thus at confidence level $0.95$ we
+accept the null hypothesis, namely, the data is
+iid.
+ The sub-sampled data has 116 points, and the confidence interval obtained from this
+ for the median of the sub-sampled data is $[66.7,   75.2]$ (using
+ \thref{theo-conf-ci-median}). Compare with the confidence interval that
+ would be obtained if we would (wrongly) assume the data to be iid :
+ $[69.0, 69.8]$. The iid assumption underestimates the
+ confidence interval because the data is positively correlated.}\mylabel{fig-cpu-sub}
+\end{figure}
+%
+\subsection{What Happens If The IID Assumption Does Not
+Hold~?} \mylabel{sec-non-iid} If we compute a confidence
+interval (using a method that assumes iid data) whereas the iid
+assumption does not hold, then we introduce some bias. Data
+arising from high resolution measurements are frequently
+positively correlated. In such cases, the confidence interval
+is too small: there is not as much information in the data as
+one would have if they would be iid (since the data tends to
+repeat itself); see \fref{fig-cpu-sub} for an example.
+
+
+It may still be possible to obtain confidence
+intervals when the data does not appear to be
+iid. Two possible methods are:
+
+\begin{description}
+    \item[Sub-sampling] This means select a
+fraction $p$ of the measured data, and verify
+that the iid assumption can be made for the
+selected data. The hope is that correlation
+disappears between data samples that are far
+apart.
+
+A simple way would be to keep every $pn$ data
+sample, where $n$ is the total number of points,
+but this is not recommended as such a strict
+periodic sampling may introduce unwanted
+anomalies (called aliasing). A better method is
+to decide independently for each data point, with
+probability $p$, whether it is sub-sampled or
+not.
+
+For example, on \fref{fig-cpu-sub}, sub-sampling
+works for $p\leq 1/64$; the confidence interval
+for the median is much larger than if we would
+(wrongly) assume the original data to be iid.
+
+Sub-sampling is very simple and efficient. It does not
+always work, though: it does not work if the data set is
+small, nor for some large data sets, which remain
+correlated after repeated sub-sampling (such data sets are
+called long range dependent).
+
+    \item[Modelling] is more complex but applies
+    when sub sampling does not. It consists in
+    fitting a parametric model appropriate to the type of data, and
+    computing confidence intervals for the model
+parameters (for example using
+\sref{sec-conf-mle}). We illustrate the method on
+the next example.
+\end{description}
+
+\begin{figure}[!htbp]
+\begin{center}
+\subfigure[Data]{\Ifignc{joeplot}{0.5}{0.3}}
+\subfigure[Data]{\Ifignc{joeqq}{0.5}{0.3}}
+\subfigure[Autocorrelation]{\Ifignc{joeacf}{0.3}{0.3}}
+\subfigure[Lag Plots]{\Ifignc{joelag}{0.5}{0.5}}%
+\nfs{joe.dat joe.m cais.ssc joepost.m}%
+  \end{center}
+  \mycaption{Daily balance at Joe's wireless access shop over 93 days. The lag
+  plots
+  show $y(t)$ versus $y(t+h)$ where $y(t)$ is the time series in (a). The data
+  appears to have some correlation at lag 1 and is thus clearly not iid.}
+  \mylabel{fig-joe-sacaisse}
+\end{figure}
+
+
+\begin{ex}{Joe's Balance Data}
+Joe's shop sells online access to visitors who download
+electronic content on their smartphones. At the end of day
+$t-1$, Joe's employee counts the amount of cash $c_{t-1}$
+present in the cash register and puts it into the safe. In the
+morning of day $t$, the cash amount $c_{t-1}$ is returned to
+the cash register. The total amount of service sold (according
+to bookkeeping data) during day $t$ is $s_t$. During the day,
+some amount of money $b_t$ is sent to the bank. At the end of
+day $t$, we should have $c_t=c_{t-1}+s_t-b_t$. However, there
+are always small errors in counting the coins, in bookkeeping
+and in returning change. Joe computes the balance
+$Y_t=c_t-c_{t-1}-s_t+b_t$ and would like to know whether there
+is a systematic source of errors (i.e. Joe's employee is losing
+money, maybe because he is not honest, or because some
+customers are not paying for what they take). The data for
+$Y_t$ is shown on \fref{fig-joe-sacaisse}. The sample mean is
+$\mu=-13.95$, which is negative. However, we need a confidence
+interval for $\mu$ before risking any conclusion.
+
+If we would assume that the errors $Y_t$ are iid,
+then a confidence interval would be given by
+\thref{theo-conf-ln} and we find approximately
+$[-43, 15]$. Thus, with the iid model, we cannot
+conclude that there is a fraud.
+
+However, the iid assumption is not valid, as
+\fref{fig-joe-sacaisse} shows (there is a strong correlation at
+lag 1; this is confirmed by the lag plot). We use a modelling
+approach. A similar problem is discussed in
+\cite[Example~3.2.8]{brockwell2002introduction}, with oil
+rather than money leakage; the authors in
+\cite{brockwell2002introduction} conclude that a moving average
+model can be used. We apply the same approach here. First note
+that $Y_t$ appears to be reasonably gaussian (also see
+\sref{sec-normal-assumption}), and has correlation only at lag
+1. We study such processes in \cref{ch-forecast}; a gaussian
+process that has correlation only at lag 1 is the moving
+average process, which satisfies
+ \ben
+ Y_t- \mu = \eps_t + \alpha \eps_{t-1}
+\een
+ where $\eps_t$ is iid $N_{0,\sigma^2}$. This
+is a parametric model, with parameter
+$(\mu,\alpha, \sigma)$. We can fit it using a
+numerical package or the methods in
+\cref{ch-forecast}. A confidence interval for
+$\mu$ can be obtained using \thref{theo-mle2} and
+\thref{theo-mle-filter}.
+ Here, it is plausible that the sample size is large enough.
+For any fixed $\mu$, we compute the profile
+log-likelihood. It is obtained by fitting an
+MA(1) process to $W_t:=Y_t- \mu$. Good
+statistical packages give not only the MLE fit,
+but also the log-likelihood of the fitted model,
+which is exactly the profile log-likelihood
+$pl(\mu)$. The MLE $\hat{\mu}$ is the value of
+$\mu$ that maximizes $pl(\mu)$, and $-2
+(pl(\hat{\mu})-pl(\mu))$ is approximately
+$\chi^2_1$. \fref{fig-joe-sacaisse-mle} shows a
+plot of $pl(\mu)$.
+
+
+It follows that $\hat{\mu} = -13.2$ and an
+approximate $95\%$-confidence interval is
+$[-14.1, -12.2]$. Contrary to the iid model, this
+suggests that there \emph{is} a loss of money, in
+average $13${\euro} per day.
+ \label{ex-joe-sa-caisse}
+\end{ex}
+\begin{figure}[!htbp]
+\Ifig{joell}{0.5}{0.3}%
+\nfs{joe.m joe.dat cais.ssc joepost.m}%
+  \mycaption{Profile Log Likelihood for the Moving Average model of Joe's balance data. The horizontal
+  line is at a value $\eta/2=1.92$ below the maximum, with $\chi^2_1(\eta)=0.95$; it gives an approximate
+  confidence interval for the mean of the data on the $x$ axis. }
+  \mylabel{fig-joe-sacaisse-mle}
+\end{figure}
+%
+%
+\mq{q-conf-kjnliun}{Give an example of identically distributed
+but dependent random variables.}{Here is a simple one: assume
+$X_1, X_3, X_5, ...$ are iid with CDF $F()$ and let $X_2=X_1$,
+$X_4=X_3$ etc. The distribution of $X_i$ is $F()$ but the
+distribution of $X_2$ conditional to $X_1=x_1$ is a dirac at
+$x_1$, thus depends on $x_1$. The random choices taken for
+$X_1$ influence (here deterministically) the value of $X_2$.}
+
+\section{Prediction Interval}
+\mylabel{sec-conf-pi}
+
+The confidence intervals studied before quantify the accuracy
+of a mean or median; this is useful for diagnostic purposes,
+for example we can assert from the confidence intervals on
+\fref{fig-conf-c2} that the new option does reduce the run
+time, because the confidence intervals for the mean (or the
+median) are in the positive numbers.
+
+Sometimes we are interested in a different viewpoint and would
+like to characterize the \imp{variability} of the data: for
+example we would like to summarize which run time can be
+expected for an arbitrary future (non observed) transaction.
+Clearly, this run time is random. A \nt{prediction interval} at
+level $\gamma$ is an interval that we can compute by observing
+a realization of $X_1,...,X_n$ and such that, with probability
+$\gamma$, a future transaction will have a run time in this
+interval. Intuitively, if the common CDF of all $X_i$s would be
+known, then a prediction interval would simply be an
+inter-quantile interval, for example $[m_{\alpha/2},
+m_{1-{\alpha/2}}]$, with $\alpha=1-\gamma$. For example, if the
+distribution is normal with known parameters, a prediction
+interval at level $0.95$ would be $\mu \pm 1.96 \sigma$.
+However, there is some additional uncertainty, due to the fact
+that we do not know the distribution, or its parameters a
+priori, and we need to estimate it. The prediction interval
+capture both uncertainties. Formally, the definition is as
+follows.
+
+\begin{definition}
+Let $X_1,...,X_n, X_{n+1}$ be a sequence of random variables. A
+prediction interval at level $\gamma$ is an interval of the
+form $[u(X_1,...,X_n),v(X_1,...,X_n)]$ such that
+ \be
+ \P\left(u(X_1,...,X_n) \leq     X_{n+1} \leq
+ v(X_1,...,X_n)\right)\geq \gamma
+ \ee
+\end{definition}
+
+Note that the definition does not assume that $X_i$ is iid,
+however we focus in this chapter on the iid case.
+% (but see
+%\sref{sec-conf-niid} for a discussion of the more general
+%case).
+The trick is now to find functions $u$ and $v$ that are
+pivots, i.e. their distribution is known even if the common
+distribution of the $X_i$s is not (or is not entirely known).
+
+There is one general result, which applies in practice to
+sample sizes that are not too small ($n \geq 39$), which we
+give next.
+\subsection{Prediction for an IID Sample based on Order Statistic}
+
+\begin{shadethm}[General IID Case]
+\mylabel{theo-conf-pi} Let $X_1,...,X_n,X_{n+1}$ be an iid
+sequence and assume that the common distribution has a density.
+Let $X^n_{(1)},...,X^n_{(n)}$ be the order statistic of
+$X_1,...,X_n$. For $1\leq j \leq k \leq n$:
+ \be
+ \P\left(X^n_{(j)} \leq X_{n+1}\leq X^n_{(k)}\right)=\frac{k-j}{n+1}
+ \ee
+thus for $\alpha \geq \frac{2}{n+1}$, $[X^n_{(\lfloor
+(n+1)\frac{\alpha}{2}\rfloor)},X^n_{(\lceil
+(n+1)\left(1-\frac{\alpha}{2}\right)\rceil)}]$
+ is a prediction interval at level at least
+ $\gamma=1-\alpha$.
+\end{shadethm}
+
+For example, with $n=999$, a prediction interval at level
+$0.95$ ($\alpha=0.05$) is $[X_{(25)},X_{(975)}]$. This theorem
+is similar to the bootstrap result in
+\sref{sec-conf-bootstrap}, but is exact and much simpler.
+
+\mq{q-conf-asasklkasluz}{We have obtained $n$ simulation
+results and use the prediction interval $[m,M]$ where $m$ is
+the smallest result and $M$ the largest. For which values of
+$n$ is this a prediction interval at level at least
+$95\%$~?}{The interval is $[X_{(1)},X_{(n)}]$ thus the level is
+$\frac{n-1}{n+1}$. It is $\geq 0.95$ for $n\geq 39$. We need at
+least 39 samples to provide a 95\% prediction interval.}
+
+For very small $n$, this result gives poor prediction intervals
+with values of $\gamma$ that maybe far from 100\%. For
+example, with $n=10$, the best prediction we can do is
+$[x_{\min}, x_{\max}]$, at level $\gamma=81\%$. If we can
+assume that the data is normal, we have a stronger result,
+shown next.
+
+\subsection{Prediction for a Normal IID Sample}
+\begin{shadethm}[Normal IID Case]
+\mylabel{theo-conf-pin} Let $X_1,...,X_n,X_{n+1}$ be an iid
+sequence with common distribution $N_{\mu,\sigma^2}$. Let
+$\hat{\mu}_n$ and $\hat{\sigma}_n^2$ be as in
+\thref{theo-conf-normal}. The distribution of
+$\sqrt{\frac{n}{n+1}}\frac{X_{n+1}-\hat{\mu}_n}{\hat{\sigma}_n}$
+    is Student's $t_{n-1}$; a prediction interval at
+level $1-\alpha$ is
+ \be\hat{\mu}_n\pm \eta' \sqrt{1+\frac{1}{n}}\hat{\sigma}_n
+ \ee
+ where $\eta'$ is the $\left(1-\frac{\alpha}{2}\right)$
+quantile of the student distribution $t_{n-1}$.
+
+For large $n$, an approximate prediction interval is
+ \be
+ \hat{\mu}_n\pm \eta \hat{\sigma}_n \label{eq-pred-n}
+ \ee
+ where $\eta$ is the $\left(1-\frac{\alpha}{2}\right)$
+quantile of the normal distribution $N_{0,1}$.
+\end{shadethm}
+For example, for $n=100$ and $\alpha=0.05$ we obtain the
+prediction interval (we drop the index $n$): $[\hat{\mu}- 1.99
+\hat{\sigma}, \hat{\mu}+ 1.99 \hat{\sigma}]$. Compare to the
+confidence interval for the mean given by
+\thref{theo-conf-normal} where the width of the interval is
+$\approx 10= \sqrt{n}$ times smaller. For a large $n$, the
+prediction interval is approximately equal to $\hat{\mu}_n\pm
+\eta \hat{\sigma}_n$, which is the interval we would have if we
+ignore the uncertainty due to the fact that the parameters
+$\mu$ and $\sigma$ are estimated from the data. For $n$ as
+small as $26$, the difference between the two is $7\%$ and can
+be neglected in most cases.
+
+The normal case is also convenient in that it requires the
+knowledge of only two statistics, the mean $\hat{\mu}_n$ and
+the mean of squares (from which $\hat{\sigma}_n$ is derived).
+
+\imp{Comment} Compare the prediction interval in
+\eref{eq-pred-n} to the confidence interval for the mean in
+\eref{eq-ci-mn}: there is a difference of $\frac{1}{\sqrt{n}}$;
+the confusion between both is frequently done: when comparing
+confidence interval, check if the standard deviation is indeed
+divided by $\sqrt{n}$~!
+
+
+\begin{ex}{File Transfer Times}
+\mylabel{ex-conf-ft1a} \fref{fig-conf-ft1a} shows the file
+transfer times obtained in 100 independent simulation runs,
+displayed in natural and log scales. The last panel shows
+$95\%$-prediction intervals. The left interval is obtained with
+the method of order statistic (\thref{theo-conf-pi}); the
+middle one by (wrongly) assuming that the distribution is
+normal and applying \thref{theo-conf-pi} -- it differs largely.
+
+The right interval is obtained with a log transformation.
+First, a prediction interval $[u(Y_1,...,Y_n),v(Y_1,...Y_n)]$
+is computed for the transformed data $Y_i=\ln(X_i)$; the
+prediction interval is mapped back to the original scale to
+obtain the prediction interval
+$[\exp(u(\ln(X_1,...,\ln(X_n))),\exp(v(\ln(X_1,...,\ln(X_n)))]$.
+We leave it to the alert reader to verify that this reverse
+mapping is indeed valid. The left and right intervals are in
+good agreement, but the middle one is obviously wrong.
+
+The prediction intervals also show the central values (with
+small circles). For the first one, it is the median. For the
+second one, the mean. For the last one,
+$\exp\left(\frac{\sum_{i=1}^nY_i}{n}\right)$, i.e. the back
+transformed of the mean of the transformed data (here, the
+geometric mean).
+\begin{figure}
+\center
+ \subfigure[(Data)]{\Ifignc{pif1}{0.25}{0.3}}
+ \subfigure[(Log of data)]{\Ifignc{pif3}{0.25}{0.3}}
+ \subfigure[(Prediction Intervals)]{\Ifignc{pif5}{0.4}{0.3}}%%
+\nfs{fileTransferLogNormal.dat fileTransferIntervals.m}%%
+\nfs{fileTransferLogNormal.dat fileTransferIntervals.m nn.m}%
+  \mycaption{File transfer times for 100 independent simulation runs,
+  with prediction
+  intervals computed with
+  the order statistic (1), assuming the data is normal (2) and assuming the
+  log of data is normal (3).}
+  \mylabel{fig-conf-ft1a}
+\end{figure}
+\end{ex}
+\mq{q-conf-akskljsaklj}{The prediction intervals in
+\fref{fig-conf-ft1a} are not all symmetric around the central
+values. Explain why.}{First interval: the distribution of the
+data is obviously not symmetric, so the median has no reason to
+be in the middle of the extreme quantiles. Second interval: by
+nature, it is strictly symmetric. Third interval: it is the
+exponential of a symmetric interval; exponential is not an
+affine transformation, so we should not expect the transformed
+interval to be symmetric.}
+
+%\begin{ex}{File Transfer Times} (Continuation of \exref{ex-conf-ft1a}).
+%\fref{fig-conf-ft1b} shows the qq-plots of the bootstrap
+%replicates used for estimating the mean of the data and of the
+%log of the data. For the original data, the bootstrap
+%replicates do not appear to be normal, thus the asymptotic
+%result in \thref{theo-conf-ln} does not apply. It is the
+%opposite for the log of the data.
+%
+%\mq{q-conf-akskljsaklj}{Compare this finding to the confidence
+%intervals found in \fref{fig-conf-ft1a}.}{The figure shows the
+%confidence intervals with the normal assumption and the
+%bootstrap percentile estimates. With $n=100$, the normal
+%assumption (\thref{theo-conf-normal}) and the asymptotic regime
+%(\thref{theo-conf-ln}) give practically the same result. Thus
+%we expect the confidence intervals obtained with either the
+%normal assumption or the asymptotic regime to be wrong for the
+%data, and correct for the log of the data, consistent with
+%\fref{fig-conf-ft1a}.}
+%\begin{figure}
+%\Ifig{ftbsqq}{0.6}{0.3}%
+%\nfs{fileTransferLogNormal.dat nn.m}%
+%  \mycaption{QQplots of bootstrap replicates of the estimator of the mean for the file transfer data
+%  in \fref{fig-conf-ft1a}. The bootstrap replicates of the data are not normally distributed,
+%  but those of the log of the data are.}
+%  \mylabel{fig-conf-ft1b}
+%\end{figure}
+%\end{ex}
+%
+%
+%
+%\Begin{Ex}{File Transfer Times}\Mylabel{Ex-Conf-Ft1} (Continuation Of \Exref{Ex-Conf-Ft1A}).
+%\Fref{Fig-Conf-Ft1} Shows The Qq-Plots Of The File Transfer
+%Times
+% And Their Logs. It
+% Shows That The Data Is Not Normal But The Log Of The Data
+%Is.
+%
+%
+%\Begin{Figure}
+%\Center
+% \Subfigure[(Qq-Plot)]{\Ifignc{Pif2}{0.3}{0.3}}
+% \Subfigure[(Qq-Plot Of Log Of Data)]{\Ifignc{Pif4}{0.3}{0.3}}
+%
+%  \Mycaption{File Transfer Times For 100 Independent Simulation Runs, With Prediction
+%  Intervals Computed With The Three Methods Discussed In \Exref{Ex-Conf-Ft1}: (1) Based On
+%  Order Statistics (2) Based On Mean And Standard Deviation (3) Based On Mean And Standard Deviation After
+%  Re-Scaling.}
+%  \Mylabel{Fig-Conf-Ft1}
+%\End{Figure}
+%\End{Ex}
+%
+%
+
+There is no ``large $n$" result for a prediction interval, like
+there is in \thref{theo-conf-ln}: a prediction interval depends
+on the original distribution of the $X_i$s, unlike confidence
+intervals for the mean, which depend only on first and second
+moments thanks to the central limit theorem.
+\thref{theo-conf-pin} justifies the common practice of using
+the standard deviation as a measure of dispersion; however it
+provides useful prediction intervals only if the data appears
+to be iid \emph{and} normal. In the next section discuss how to
+verify normality.
+
+\subsection{The Normal Assumption}
+\label{sec-normal-assumption}
+
+
+\subsubsection{QQplots} \mylabel{sec-qqplot} This is a simple method for verifying the
+normal assumption, based on visual inspection.
+% of
+%qq-plots (defined in the next section). More formal, automated
+%methods use tests, as described in \cref{ch-tests}.
+A \nt{probability plot}, also called \nt{qq-plot}, compares two
+samples $X_i$, $Y_i$, $i=1,...,n$ in order to determine whether
+they come from the same distribution. Call $X_{(i)}$ the
+\nt{order statistic}, obtained by sorting $X_i$ in increasing
+order. Thus $X_{(1)}\leq X_{(2)}\leq ...$. The qq-plot displays
+the points $(X_{(i)}, Y_{(i)})$. If the points are
+approximately along a straight line, then the distributions of
+$X_i$ and $Y_i$ can be assumed to be the same, modulo a change
+of scale and location.
+
+Most often, we use qqplots to check the distribution of $Y_i$
+against a probability distribution $F$. To do so, we plot
+$(x_i, Y_{(i)})$, where $x_i$ is an estimation of the expected
+value of $\E(Y_{(i)})$, assuming the marginal of $Y_i$ is $F$.
+The exact value of $\E(Y_{(i)})$ is hard to obtain, but a
+simple approximation (assuming that $F$ is strictly increasing)
+is \cite{davison2003sm}:
+ \ben x_i := F^{-1}\left(\frac{i}{n+1}\right)
+ \een
+A \nt{normal qqplots}, is a qqplot such that $F=N_{0,1}$, and
+is often used to visually test for normality
+(\fref{fig-conf-qq}). More formal tests are the Jarque Bera
+test (\sref{sec-skku}) and the goodness of fit tests in
+\sref{sec-lrs-asymptotic}.
+%
+%
+%
+\begin{figure}
+\center
+ \subfigure[(QQ-plot)]{\Ifignc{pif2}{0.3}{0.3}}
+ \subfigure[(QQ-plot of log of data)]{\Ifignc{pif4}{0.3}{0.3}}
+ \subfigure[(normal sample)]{\Ifignc{normal}{0.3}{0.3}}%
+\nfs{fileTransferLogNormal.dat fileTransferIntervals.m}%
+  \mycaption{Normal qqplots of file transfer times in \fref{fig-conf-ft1a}
+  and of an artificially generated sample from the normal distribution
+  with the same number of points.
+ The former plot shows large deviation from normality, the second does not.}
+  \mylabel{fig-conf-qq}
+\end{figure}
+
+
+
+\subsubsection{Rescaling, Harmonic, Geometric and Other Means}
+\mylabel{sec-conf-rescale} \fref{fig-conf-ft1a} illustrates
+that the use of standard deviation as a basis for a prediction
+interval may be better if we re-scale the data, using a point
+tranformation. The \nt{Box-Cox transformation} is commonly used
+for that. It has one shape parameter $s$ and is given by
+\begin{equation}\mylabel{stats-eqbc}
+  b_s(x)=
+  \left\{
+  \begin{array}{ll}
+    \frac{x^s-1}{s} & ,\; s \neq 0  \\
+    \ln x & ,\; s = 0
+  \end{array}
+  \right.
+\end{equation}
+Commonly used parameters are $s=0$ (log tranformation), $s=-1$
+(inverse), $s=0.5$ and $s=2$. The reason for this specific form
+is to be continuous in $s$.
+
+It is easy to see (as in \exref{ex-conf-ft1a})  that a
+\imp{prediction interval} for the original data can be obtained
+by reverse-transforming a prediction interval for the
+transformed data. In contrast, this does not hold for
+\imp{confidence intervals}. Indeed, by reverse-transforming a
+confidence interval for the mean of the transformed data, we
+obtain a confidence interval for another type of mean
+(harmonic, etc.). More precisely, assume we transform a data
+set $x_1,...,x_n$ by an invertible (thus strictly monotonic)
+mapping $b()$ into $y_1,...y_n$, i.e. $y_i=b(x_i)$ and
+$x_i=b^{-1}(y_i)$ for $i=1,...,n$. We called \nt{transformed
+sample mean} the quantity $b^{-1}(\frac{1}{n}\sum_{i=1}^n
+y_i)$, i.e. the back-transform of the mean of the transformed
+data. Similarly, the \nt{transformed distribution mean} of the
+distribution of a random variable $X$ is $b^{-1}(\E(b(X))$.
+When $b()$ is a Box-Cox transformation with index $s=-1, 0$ or
+$2$ we obtain the classical following definitions, valid for a
+positive data set $x_i, i=1...,n$ or a random variable $X$:
+
+\vspace{0.5cm}
+\begin{tabular}{r|c|c|c}
+  % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
+    & \emph{Transformation} & \emph{Transformed Sample Mean} & \emph{Transformed Distribution
+    Mean}
+    \\ \hline
+  \nt{Harmonic} &
+  $b(x)=1/x$ &
+  $\frac{1}{\frac{1}{n}\sum_{i=1}^n \frac{1}{x_i}}$ &
+    $\frac{1}{\E(\frac{1}{X})}$
+    \\
+   \nt{Geometric}&
+   $b(x)=\ln(x)$&
+    $ (\prod_{i=1}^n  x_i)^{\frac{1}{n}}$ &
+    $e^{\E(\ln{X})}$
+      \\
+  \nt{Quadratic}  &
+  $b(x)=x^2$&
+  $\sqrt{\frac{1}{n}\sum_{i=1}^n x_i^2}$ &
+   $\sqrt{\E(X^2)}$\\
+\end{tabular}
+\vspace{0.5cm}
+
+\begin{shadethm}
+A confidence interval for a transformed mean is obtained by the
+inverse transformation of a confidence interval for the mean of
+the transformed data.\label{theo-harmos}
+\end{shadethm}
+For example, a confidence interval for the geometric mean is
+the exponential of a confidence interval for the mean of the
+logarithms of the data.
+
+\section{Which Summarization To Use~?}
+\mylabel{sec-conf-mom}
+
+In the previous sections we have seen various summarization
+methods. In this section we discuss the use of these different
+methods.
+
+The methods differ in their objectives: \imp{confidence
+interval} for central value versus \imp{prediction intervals}.
+The former quantify the accuracy of the estimated central
+value, the latter reflects how variable the data is. Both
+aspects are related (the more variable the data is, the less
+accurate the estimated central value is) but they are not the
+same.
+
+The methods differ in the techniques used, and
+overlap to a large extend. They fall in two
+categories: methods based on the order statistic
+(confidence interval for median or or other
+quantiles, \thref{theo-conf-ci-median};
+prediction interval computed with order
+statistic,  \thref{theo-conf-pi}) or based on
+mean and standard deviation
+(Theorems~\ref{theo-conf-normal},
+\ref{theo-conf-ln}, \ref{theo-conf-pin}). The two
+types of methods differ in their \imp{robustness
+versus compactness}.
+
+\subsection{Robustness}
+
+\subsubsection{Wrong Distributional Hypotheses}
+\label{sec-verify-asymptotic}
+The confidence interval for the mean given by
+\thref{theo-conf-ln} requires that the central
+limit theorem applies  i.e. (1) the common
+distribution has a finite variance and (2) the
+sample size $n$ is large enough. While these two
+assumptions very often hold, it is important to
+detect cases where they do not.
+
+Ideally, we would like to test whether the
+distribution of $T=\sum_{i=1}^{n} X_i$ is normal
+or not, but we cannot do this directly, since we
+have only one value of $T$. The bootstrap method
+can be used to solve this problem, as explained
+in the next example.
+
+
+\begin{figure}\center
+ \subfigure[]{\Ifignc{bsPareto1.25-100}{0.8}{0.25}}
+ \subfigure[]{\Ifignc{bsPareto1.25-10000}{0.85}{0.25}}
+\mycaption{(a) Left: Artificially generated
+sample of 100 values from a Pareto distribution
+with exponent $p=1.25$. Center: confidence
+intervals for the mean computed from
+\thref{theo-conf-ln} (left) and the bootstrap
+percentile estimate (center), and confidence
+interval for the median (right). Right: qqplot of
+999 bootstrap replicates of the mean. The qqplot
+shows deviation from normality, thus the
+confidence interval given by \thref{theo-conf-ln}
+is not correct. Note that in this case the
+bootstrap percentile interval is not very good
+either, since it fails to capture the true value
+of the mean ($=5$). In contrast, the confidence
+interval for the median does capture the true
+value ($=1.74$). (b) Same with 10000 samples. The
+true mean is now within the confidence interval,
+but there is still no convergence to normality.}
+\mylabel{fig-conf-bs1}
+\end{figure}
+
+\begin{ex}{Pareto Distribution} \mylabel{ex-conf-bs-pareto} This is a toy example where we generate
+artificial data, iid, from a Pareto
+distribution on $[1,+\infty)$. It is defined by
+its cdf equal to $F(c):=\P(X >
+c)=\frac{1}{c^{p}}$ with $p=1.25$; its mean is
+$=5$, its variance is infinite (i.e. it is heavy
+tailed) and its median is $1.74$.
+
+Assume we would not know that it comes from a
+heavy tailed distribution and would like to use
+the asymptotic result in \thref{theo-conf-ln} to
+compute a confidence interval for the mean.
+
+We use the bootstrap method to verify convergence
+to the normal distribution, as follows. We are
+given a data sample $x_1, ...,x_n$ from the
+Pareto distribution. We generate $R$ replay
+experiments: for each $r$ between $1$ and $R$, we
+draw $n$ samples $X^r_i$ $i=1,...,n$ with
+replacement from the list $(x_1, ..., x_n)$ and
+let $T^r=\frac{i=1}{n}X^r_i$. $T^r$ is the $r$th
+bootstrap replicate of $T$; we do a qqplot of the
+$T^r, r=1,...,R$. If the distribution of $T$ is
+normal, the qqplot should look normal as well.
+
+We see that the qqplots do not appear normal,
+which is an indication that the central limit
+theorem might not hold. Indeed, the confidence
+interval for the mean is not very good.
+\end{ex}
+
+
+
+The previous example shows a case where the
+confidence interval for the mean is not good,
+because a distributional assumption was made,
+which is not correct. In contrast, the confidence
+interval for the median \imp{is} correct
+(\fref{fig-conf-bs1}), as it does not require any
+distributional assumption (other than the iid
+hypothesis).
+%
+%
+\subsubsection{Outliers}
+%
+\begin{figure}
+\center
+ \subfigure[(Data without outlier)]{\Ifignc{pif7}{0.3}{0.2}}
+ \subfigure[(QQ-plot of (a))]{\Ifignc{pif8}{0.3}{0.2}}\\
+ \subfigure[(Log of data without outlier)]{\Ifignc{pif9}{0.3}{0.2}}
+ \subfigure[(QQ-plot of (c))]{\Ifignc{pif10}{0.3}{0.2}}\\
+ \subfigure[(Confidence Intervals)]{\Ifignc{pif14}{0.4}{0.3}}
+ \subfigure[(Prediction Intervals)]{\Ifignc{pif13}{0.4}{0.3}}
+  \mycaption{File transfer times for 100 independent simulation runs with outlier removed. Confidence
+  intervals are without (left) and with (right) outlier, and with method (1) median (2) mean and (3) geometric mean.
+  Prediction intervals are without (left) and with (right)
+  outlier,
+   computed with the three alternative methods discussed in \exref{ex-conf-ft1}: (1) order statistics
+   (2) based on mean and standard deviation (3) based on mean and standard deviation after
+  re-scaling.}
+  \mylabel{fig-conf-ft2}
+\end{figure}
+%
+Methods based on the order statistic are more
+robust to outliers. An \nt{outlier} is a value
+that significantly differs from the average. The
+median and the prediction interval based on order
+statistic are not affected by a few outliers,
+contrary to the mean and the prediction interval
+based on mean and standard deviation, as
+illustrated by the following example.
+%
+\begin{ex}{File Transfer with One Outlier}\mylabel{ex-conf-ft1}
+In fact in the data of \exref{ex-conf-ft1} there is one very
+large value, 5 times larger than the next largest value. One
+might be tempted to remove it, on the basis that such a large
+value might be due to measurement error. A qqplot of the data
+without this ``outlier" is shown on \fref{fig-conf-ft2},
+compare to the corresponding qq-plot with the outlier in
+\fref{fig-conf-qq}~(a,b). The prediction intervals based on
+order statistics are not affected, but the one based on mean
+and standard deviation is completely different.
+
+\tref{tab-ci-fi} shows the values of Jain's fairness index and
+the Lorenz curve gap is very sensitive to the presence of one
+outlier, which is consistent with the previous observation
+since Jain's fairness index is defined by the ratio of standard
+deviation to mean (coefficient of variation). The Lorenz curve
+gap is less sensitive.
+
+The outlier is less of an outlier on the re-scaled data (with
+the log transformation). The qqplot of the rescaled data is not
+affected very much, neither is the prediction interval based on
+mean and standard deviation of the rescaled data. Similarly,
+the confidence intervals for median and geometric mean are not
+affected, whereas that for the mean is. We do not show fairness
+indices for the re-scaled data since re-scaling changes the
+meaning of these indices.
+\end{ex}
+
+Care should be taken to screen the data
+collection procedure for \imp{true outliers},
+namely values that are wrong because of
+measurement errors or problems. In the previous
+example, we should not remove the outlier. In
+practice it may be difficult to differentiate
+between true and spurious outliers. The example
+illustrates the following facts:
+\begin{itemize}
+    \item Outliers may affect the prediction and confidence
+        intervals based on mean and standard deviation, as
+        well as the values of fairness indices. Jain's
+        fairness index is more sensitive than the Lorenz
+        curve gap.
+    \item This may go away if the data is properly
+        rescaled. An outlier in some scale may not be an
+        outlier in some other scale.
+    \item In contrast, confidence intervals for the median
+        and prediction intervals based on order statistics
+        are more robust to outliers. They are not affected
+        by re-scaling.
+\end{itemize}
+%
+\begin{table}
+  \centering
+  \begin{tabular}{|c|c|r|c|l|}
+    % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
+ \hline
+      & Index & Lower Bound, CI & Index & Upper Bound, CI \\ \hline
+      \hline
+    Without Outlier & JFI & 0.1012  &  0.1477  &  0.3079 \\ \cline{2-5}
+      & gap & 0.4681  &  0.5930   & 0.6903 \\ \hline
+    With  Outlier & JFI & 0.0293  &  0.0462  &  0.3419 \\ \cline{2-5}
+      & gap &  0.4691  &  0.6858  &  0.8116 \\ \hline
+  \end{tabular}
+  \mycaption{Fairness indices with and without outlier.}\label{tab-ci-fi}
+\end{table}
+%
+%
+\subsection{Compactness}
+Assume we wish to obtain both a central value with confidence
+interval and a prediction interval for a given data set. If we
+use methods based on order statistics, we will obtain a
+confidence interval for the median, and, say, a prediction
+interval at level $95\%$. Variability and accuracy are given by
+different sample quantiles, and cannot be deduced from one
+another.  Furthermore, if we later are interested in $99\%$
+prediction intervals rather than 95\%, we need to recompute new
+estimates of the quantiles. The same argument speaks in favour
+of quantifying the variability by means of the Lorenz curve
+gap.
+
+In contrast, if we use methods based on mean and standard
+deviation, we obtain both confidence intervals and prediction
+intervals at any level with just 2 parameters (the sample mean
+and the sample standard deviation). In particular, the sample
+standard deviation gives indication on both accuracy of the
+estimator and variability of the data. However, as we saw
+earlier, these estimators are meaningful only in a scale where
+the data is roughly normal, if there is any.
+
+Also, mean and standard deviation are less
+complex to compute than estimators based on order
+statistics, which require sorting the data. In
+particular, mean and standard deviation can be
+computed incrementally online, by keeping only 2
+counters (sum of values and sum of squares). This
+reason is less valid today than some years ago,
+since there are sorting algorithms with
+complexity $ n \ln(n)$.
+
+\section{Other Aspects of Confidence/Prediction Intervals}
+\subsection{Intersection of Confidence/Prediction Intervals} In
+some cases we have several confidence or prediction intervals
+for the same quantity of interest. For example, we can have a
+prediction interval $I$ based on mean and standard deviation or
+$I'$ based on order statistics. A natural deduction is to
+consider that the intersection $I \cap I'$ is a better
+confidence interval. This is almost true:
+
+\begin{shadethm}
+If the random intervals $I$, $I'$ are some
+confidence intervals at level $\gamma=1-\alpha$,
+$\gamma'=1-\alpha'$ then the intersection $I \cap
+I'$ is a confidence interval at level at least
+$1-\alpha-\alpha'$. The same holds for prediction
+intervals.\label{theo-inter-ci}
+\end{shadethm}
+
+\begin{ex}{File Transfer Times}(Continuation of
+\exref{ex-conf-ft1}). We can compute two prediction intervals
+at level 0.975, using the order statistic method and the mean
+and standard deviation after rescaling (the prediction obtained
+without rescaling is not valid since the data is not normal).
+We obtain $[0.0394,336.9]$ and $[0.0464,392.7]$. We can
+conclude that a prediction interval at level $0.95$ is
+$[0.0464,  336.9]$, which is better than the two.
+
+Compare this interval to the prediction intervals at level
+$95\%$ for each of the two methods; they are $[0.0624, 205.6]$
+and $[0.0828, 219.9]$. Both are better.
+\end{ex}
+
+Thus, for example if we combine two confidence intervals at
+level $97.5\%$ we obtain a confidence interval at level $95\%$.
+As the example shows, this may be less good than an original
+confidence interval at level $95\%$.
+
+\subsection{The Meaning of Confidence}
+When we say that an interval $I$ is a confidence interval at
+level 0.95 for some parameter $\theta$, we mean the following.
+If we could repeat the experiment many times, in about 95\% of
+the cases, the interval $I$ would indeed contain the true value
+$\theta$.
+
+\mq{stats-q711}
+ {Assume $1000$ students independently perform a simulation of an M/M/1 queue with
+  load factor $\rho=0.9$ and find a $95\%$ confidence interval for the result. The true result,
+  unknown to these (unsophisticated) students is $9$.
+  The students are unsophisticated but conscientious, and all did correct simulations.
+  How many of the 1000 students do you
+  expect to find a wrong confidence interval, namely one that does \emph{not} contain the true value ?
+ }
+ {Approximately 50 students should find a wrong interval.
+ }
+
+
+%\input{conf-sup}
+
+
+\section{Proofs}
+\begin{petit}
+\paragraph{\thref{theo-conf-ci-median}}
+Let $Z=\sum_{k=1}^n\ind{X_k \leq m_p}$ be the
+number of samples that lie below or at $m_p$. The
+CDF of $Z$ is $B_{n,p}$ since the events $\{X_k
+\leq m_p\}$ are independent and $\P\lp X_k \leq
+m_p\rp = p$ by definition of the quantile $m_p$.
+Further:
+ \bearn
+ j \leq Z & \Leftrightarrow & X_{(j)} \leq m_p \\
+ k \geq Z+1 & \Leftrightarrow & X_{(k)} > m_p
+ \eearn
+ thus we have the event equalities
+ \ben
+ \left\{X_{(j)} \leq m_p < X_{(k)}\right\} =
+ \left\{ j \leq Z \leq k-1\right\}
+ = \left\{ j-1 < Z \leq k-1\right\}
+ \een and
+ \ben
+ \P \lp X_{(j)} \leq m_p < X_{(k)}\rp =
+ B_{n,p}(k-1)-B_{n,p}(j-1)
+ \een
+ It follows that $[X_{(j)}, X_{(k)})$ is a
+ confidence interval for $m_p$ at level $\gamma$
+ as soon as $B_{n,p}(k-1)-B_{n,p}(j-1) \geq
+ \gamma$.
+
+The distribution of the $X_i$s has a density,
+thus
+ $(X_{(j)},X_{(k)})$ as well and
+ $\P\left(X_{(j)}< m_p \leq X_{(k)}\right)=\P\left(X_{(j)}< m_p
+ <X_{(k)}\right)$, thus $[X_{(j)}, X_{(k)}]$ is also a confidence interval at the same level.
+
+For large $n$, we approximate the binomial CDF by
+$N_{\mu,\sigma^2}$ with $\mu=n p$ and $\sigma^2=n
+p (1-p)$, as follows:
+ \ben
+ \P\lp j-1 < Z \leq k-1  \rp = \P\lp j \leq  Z \leq k-1  \rp
+ \approx N_{\mu, \sigma^2}(k-1)-N_{\mu, \sigma^2}(j)
+ \een
+ and we pick $j$ and $k$ such that
+ \bearn
+ N_{\mu, \sigma^2}(k-1) &\geq& 0.5 +
+ \frac{\gamma}{2}\\
+ N_{\mu, \sigma^2}(j) &\leq& 0.5 -
+ \frac{\gamma}{2}
+ \eearn
+ which guarantees that $N_{\mu, \sigma^2}(k-1)-N_{\mu,
+ \sigma^2}(j) \geq \gamma$. It follows that we
+ need to have
+ \bearn
+ k-1 &\geq& \eta \sigma + \mu
+ \\
+ j &\leq& - \eta \sigma + \mu
+ \eearn We take the smallest $k$ and the largest $j$ which satisfy these constraints,
+ which gives the formulas in the theorem.
+
+\paragraph{\thref{theo-conf-pi}}
+Transform $X_i$ into $U_i=F(X_i)$ which is iid uniform. For
+uniform RVs, use the fact that $\E(U_{(j)})=\frac{j}{n+1}$.
+Then
+ \bearn
+\lefteqn{\P\left(U^n_{(j)} \leq U_{n+1}\leq U^n_{(k)}|
+ U^n_{(1)}=u_{(1)},...,U^n_{(n)}=u_{(n)}\right)}\\
+ &=&\P\left(u_{(j)} \leq U_{n+1}\leq u_{(k)}\right)\\
+ &=&u_{(k)}-u_{(j)}
+ \eearn
+The former is since $U_{n+1}$ is independent of $(U_1,
+...,U_n)$ and the latter since $U_{n+1}$ has a uniform
+distribution on $[0,1]$. Thus
+ \ben
+\P\left(U^n_{(j)} \leq U_{n+1}\leq
+U^n_{(k)}\right)=\E\left(U^n_{(k)}-U^n_{(j)}\right)=\frac{k-j}{n+1}
+ \een
+%
+\paragraph{\thref{theo-conf-pin}}
+%
+First note that $X_{n+1}$ is independent of $\hat{\mu}_n,
+\hat{\sigma}_n$. Thus $X_{n+1}-\hat{\mu}_n$ is normal with mean
+$0$ and variance
+ \ben \var(X_{n+1})+ \var(\hat{\mu}_n)=\sigma^2 + \frac{1}{n}\sigma^2
+ \een
+Further, $(n-1)\hat{\sigma}^2_n/\sigma^2$ has a $\chi^2_{n-1}$
+distribution and is independent of $X_{n+1}-\hat{\mu}_n$. By
+definition of Student's $t$, the theorem follows.
+%
+\paragraph{\thref{theo-harmos}}
+Let $m'$ be the distribution mean of $b(X)$. By definition of a
+confidence interval, we have $\P(u(Y_1,...,Y_n)
+<m'<v(Y_1,...,Y_n)) \geq \gamma$ where the confidence interval
+is $[u,v]$. If $b()$ is increasing (like the Box-Cox
+transformation with $s \geq 0$)  then so is $b^{-1}()$ and this
+is equivalent to $\P\left(b^{-1}(u(Y_1,...,Y_n))
+<b^{-1}(m')<b^{-1}(v(Y_1,...,Y_n))\right) \geq \gamma$. Now
+$b^{-1}(m')$ is the transformed mean, which shows the statement
+in this case. If $b()$ is decreasing (like the Box-Cox
+transformation with $s<0$) then the result is similar with
+inversion of $u$ and $v$.
+%
+
+
+
+\paragraph{\thref{theo-inter-ci}}
+ We do the proof for a confidence interval for some quantity
+ $\theta$, the proof is the same for a prediction interval. By
+ definition $\P( \theta \nin I )\leq \alpha$ and $\P( \theta \nin I' )\leq
+ \alpha'$. Thus
+  \ben
+  \P( \theta \nin I \cap I' )= \P\left(
+  (\theta \nin I ) \mor (\theta \nin I' )\right) \leq \P\left(
+  \theta \nin I \right) + \P\left(\theta \nin I' )\right)\leq
+  \alpha+\alpha'
+  \een
+
+\end{petit}
+%
+
+\section{Review}
+
+\subsection{Summary}
+\mylabel{sec-conf-summary}
+
+\begin{enumerate}
+
+\item A \imp{confidence} interval is used to quantify the
+    \imp{accuracy} of a parameter estimated from the data.
+
+\item For computing the central value of a data set, you
+    can use either mean or median. Unless you have special
+    reasons (see below) for not doing so, the median is a
+    preferred choice as it is more robust. You should
+    compute not only the median but also a confidence
+    interval for it, using \tref{tab-q-05} on
+    \pgref{tab-q-05}.
+
+%\item For a \imp{very small data set} (10 to 20 points) it is not
+%meaningful to compute confidence intervals for the mean unless you
+%have a priori knowledge that the data comes from a normal
+%distribution.
+
+\item A \imp{prediction} interval reflects the
+    \imp{variability} of the data. For small data sets ($n
+    <  38$) it is not meaningful. For larger data sets, it
+    can be obtained by \thref{theo-conf-pi}. The Lorenz
+    curve gap also gives a scale free representation of the
+    variability of the data.
+
+\item Fairness indices are essentially the same as indices
+    of variability. Jain' Fairness index is based on
+    standard deviation, and is less robust than the Lorenz
+    Curve gap, which should be preferred.
+
+\item A confidence interval for the mean characterizes both
+    the \imp{variability} of the data and the
+    \imp{accuracy} of the measured average. In contrast, a
+    confidence interval for the median does not reflect
+    well the variability of the data, therefore if we use
+    the median we need both a confidence interval for the
+    median and some measure of variability (the quantiles,
+    as on a Box Plot). Mean and standard deviation give an
+    accurate idea of the \imp{variability} of the data, but
+    only if the data is roughly normal. If it is not, it
+    should be re-scaled using for example a Box-Cox
+    transformation. Normality can be verified with a
+    qq-plot.
+
+\item The standard deviation gives an accurate idea of the
+    \imp{accuracy} of the mean if the data is normal, but
+    also if the data set is large. The latter can be
+    verified with a bootstrap method.
+
+\item The geometric [resp. harmonic] mean is meaningful if
+    the data is roughly normal in log [resp. $1/x$] scale.
+    A confidence interval for the geometric [resp.
+    harmonic] mean is obtained as the exponential [resp.
+    inverse] of the mean in log [resp. $1/x$] scale.
+
+\item All estimators in this chapter are valid only if the
+    data points are independent (non correlated). This
+    assumption must be verified, either by designing the
+    experiments in a randomized way, (as is the case with
+    independent simulation runs), or by formal correlation
+    analysis.
+\item If you have a choice, use median and
+quantiles rather than mean and standard
+deviation, as they are robust to distributional
+hypotheses and to outliers. Use prediction
+intervals based on order statistic rather than
+the classical mean and standard deviation.
+\end{enumerate}
+%
+%Assume that we have obtained the outputs $x_1,...,x_n$ from $n$
+%independent replications. We want a confidence interval for the
+%median and for the mean.
+%\paragraph{Confidence Interval for the Median} A confidence
+%interval for the median is $[x_{(j)},x_{(k)}]$, where $x_{(j)}$
+%is the $j$th value in ascending order. The values of $j$ and
+%$k$ are taken from \tref{tab-q-05} on \pgref{tab-q-05}.
+%
+%\paragraph{Computing Confidence Interval for the Mean}
+%\begin{enumerate}
+%  \item Test whether $x_1, ...,x_n$ roughly fits a normal
+%      distribution (visual test on qqplot).
+%    \item If yes, apply the student $t$-statistic to obtain
+%        a confidence interval for the mean. The confidence
+%        interval is \be \bar{x}\pm \eta
+%        \frac{s}{\sqrt{n}}\mylabel{eq-confint-1}\ee with $s
+%        =
+%        \sqrt{\frac{1}{n-1}\sum_{i=1}^n\left(x_i-\bar{x}\right)^2}$
+%        and $t_{n-1}(\eta) = {1+\alpha \over 2}$.
+% Here, $t_{n-1}$ is the student CDF with $n-1$ degrees of
+% freedom and $\alpha$ is the confidence level (a typical
+% value is $\alpha=0.95$).
+%
+%We are frequently in this case because each output $x_i$ is
+%often itself an average of many entities, and tends to be
+%normally distributed.
+%
+% \item Else (i.e. the sample $(x_1,...x_n)$ does not appear
+%     to be normal),
+%by the law of large numbers, $\bar{x}$ might still be
+%normal, if $n$ is large.  The confidence interval is \ben
+%\bar{x}\pm \eta \frac{s}{\sqrt{n}}\een with $N_{0,1}(\eta)
+%= {1+\alpha \over 2}$. If $n\geq 24$, the value of $\eta$
+%is within 5\% of that obtained by \eref{eq-confint-1}.
+%
+%
+%Test whether $n$ is large enough by the bootstrap method
+%(\sref{sec-conf-bootstrap}). Do a qq-plot of the $R$
+%bootstrap estimates $T^r$; if they appear to be normal, $n$
+%is large enough.
+%
+%\item Else (i.e. the sample $(x_1,...x_n)$ does not appear
+%    to be normal and $n$ is not large enough), use the
+%    bootstrap percentile estimate
+%    (\sref{sec-conf-bootstrap}).
+%\end{enumerate}
+
+\subsection{Review Questions}
+
+\mq{q-conf-aslasliq}
+ {Compare (1) the confidence interval for the median of a sample of $n$ data values, at level $95\%$
+ and (2) a prediction interval at level at least $95\%$, for
+ $n=9,39,99$.}
+ {From the tables in \cref{ch-tables} and \thref{theo-conf-pi} we obtain:
+ (confidence interval for median, prediction interval):
+ $n=9$: $[x_{(2)},x_{(9)}]$, impossible;
+ $n=39$: $[x_{(13)},x_{(27)}]$, $[x_{(1)},x_{(39)}]$;
+ $n=99$: $[x_{(39)},x_{(61)}]$, $[x_{(2)},x_{(97)}]$.
+ The confidence interval is always smaller than the prediction interval.
+ }
+
+
+ \mq{stats-q701}
+ {Call $L=\min\{X_1, X_2\}$ and $U=\max\{X_1, X_2\}$. We do an experiment and find $L=7.4$, $U=8.0$.
+ Say which of the following statements is correct: ($\theta$ is
+ the median of the distribution).
+ (1) the probability of the event  $\{L\leq \theta \leq U\}$ is $0.5$
+ (2) the probability of the event  $\{7.4\leq \theta \leq 8.0\}$ is $0.5$
+ }
+ {In the classical (non-Bayesian) framework, (1) is correct and (2) is wrong.
+ There is nothing random in the event $\{7.4\leq \theta \leq
+ 8.0\}$, since $\theta$ is a fixed (though unknown) parameter. The probability of this event is
+ either $0$ or $1$, here it happens to be $1$. Be careful with the ambiguity of a statement such
+ as ``the probability that $\theta$ lies between $L$ and $U$ is $0.5$". In case of doubt,
+ come back to the roots: the probability of an event can be interpreted as the ideal proportion
+ of simulations that would produce the event.}
+
+
+
+ \mq{stats-q729}{How do we expect a $90\%$ confidence interval to compare to a $95\%$ one~? Check this on the tables
+ in  \sref{sec-ci}.}
+ {It should be smaller. If we take more risk we can accept a smaller interval.
+We can check that the values of $j$ [resp. $k$] in the tables
+confidence intervals at level $\gamma=0.95$ are larger [resp.
+smaller] than at confidence level $\gamma=0.99$.}
+
+
+\mq{q-conf-asksdkldklskldsfuwe}
+ {A data set has 70 points. Give the formulae
+ for confidence intervals at level 0.95 for the median and the mean}
+ {Median: from the table in \sref{sec-ci}
+ $[x_{(27)},x_{(44)}]$. Mean: from \thref{theo-conf-ln}:
+ $\hat{\mu} \pm 0.2343 S$ where $\hat{\mu}$ is the sample mean and
+ $S$ the sample standard deviation. The latter is assuming the normal approximation holds, and should be verified by either
+ a qqplot or the bootstrap.}
+
+\mq{q-conf-asksdkldklskldsfuwe2}
+ {A data set has 70 points. Give formulae
+ for a prediction intervals at level 95\%}
+ {From \thref{theo-conf-pi}: $[\min_i x_i, \max_i x_i]$.}
+
+\mq{q-conf-sdkslkkl}
+ {A data set $x_1, ...x_n$ is such that $y_i=\ln x_i$ looks normal. We obtain a confidence interval $[\ell, u]$ for the mean of $y_i$.
+ Can we obtain a confidence interval for the mean of $x_i$ by a transformation of  $[\ell, u]$~?}
+ {No, we know that $[e^{\ell}, e^{u}]$ is a confidence interval for the geometric mean, not the mean of $x_i$. In fact
+ $x_i$ comes from a log-normal distribution, whose mean is $e^{\mu +
+ \frac{\sigma^2}{2}}$ where $\mu$ is the mean of the distribution
+ of $y_i$, and $\sigma^2$ its variance.}
+
+\mq{q-conf-lkds}
+ {Assume a set of measurements is corrupted by an error term that is normal, but positively correlated. If we would compute
+ a confidence interval for the mean using the iid hypothesis, would the confidence interval be too small or too large~?}
+ {Too small: we underestimate the error. This phenomenon is known in physics under
+ the term \nt{personal equation}: if the errors are linked to the experimenter, they are positively
+ correlated.}
+
+
+\mq{q-conf-jksjk}
+ {We estimate the mean of an iid data set by two different methods and obtain 2 confidence
+ intervals at level $95\%$: $I_1=[2.01, 3.87]$, $I_2=[2.45, 2.47]$. Since the second interval is smaller, we
+ discard the first and keep only the second. Is this a correct $95\%$ confidence interval~?}
+ {No, by doing so we keep the interval $I=I_1 \cap I_2$, which is a $90\%$ confidence interval, not a $95\%$ confidence interval.}

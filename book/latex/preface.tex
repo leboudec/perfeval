@@ -1,0 +1,226 @@
+\begin{minipage}[b]{0.6\textwidth}
+\paragraph{Performance Evaluation} is often the critical part of
+evaluating the results of a research project. Many of us are
+familiar with simulations, but it is often difficult to address
+questions like: Should I eliminate the beginning of the
+simulation in order for the system to become stabilized~? I
+simulate a random way point model but the average speed in my
+simulation is not as expected. What happened~? The reviewers of
+my study complained that I did not provide confidence
+intervals. How do I go about this~? I would like to characterize the
+fairness of my protocol. Should I use Jain's Fairness Index or
+the Lorenz Curve Gap~? I would like to fit a distribution to
+the flow sizes that I measured but all my measurements are
+truncated to a maximum value; how do I account for the
+truncation~?
+\end{minipage}
+%
+\begin{minipage}[b]{0.4\textwidth}
+\hfill\insfignc{scouacDoziert}{0.75}\\
+\end{minipage}\\
+
+This book groups a set of lecture notes for a course given at
+EPFL. It contains all the material needed by an engineer who
+wishes to evaluate the performance of a computer or
+communication system. More precisely, with this book and some
+accompanying practicals, you will be able to answer the above and
+other questions, evaluate the performance of computer and
+communication systems and master the theoretical foundations
+of performance evaluation and of the corresponding software
+packages.
+
+In the past, many textbooks on performance evaluation have given
+the impression that this is a complex field, with lots of baroque
+queuing theory excursions, which can be exercised only by
+performance evaluation experts. This is not necessarily the case. In
+contrast, performance evaluation can and should be performed by
+any computer engineering specialist who designs a system. When a
+plumber installs pipes in our house, one expects her to properly
+size their diameters; the same holds for computer engineers.
+
+This book is not intended for the performance evaluation specialist. It
+is addressed to \emph{every computer engineer or scientist} who is
+active in the development or operation of software or hardware
+systems. The required background is an elementary course in
+probability and one in calculus.
+
+\paragraph{The objective of this book} is therefore to make performance
+evaluation usable by all computer engineers and scientists. The
+foundations of performance evaluation reside in statistics and
+queuing theory, therefore, \emph{some} mathematics is involved
+and the text cannot be overly simplified. However, it turns out
+that much of the complications are not in the general theories,
+but in the exact solution of specific models. For example, some
+textbooks on statistics (but none of the ones cited in the
+reference list) develop various solution techniques for
+specific models, the vast majority of which are encapsulated in
+commercially or freely available software packages like Matlab,
+S-PLUS, Excel, Scilab or R.
+
+To avoid this pitfall, we focused first on the \emph{what}
+before the \emph{how}. Indeed, the most difficult question in a
+performance analysis is often ``what to do"; once you know what
+to do, it is less difficult to find a way with your usual
+software tools or by shopping the web. For example, what do we
+do when we fit a model to data using least square
+fitting~(\cref{ch-modfit})~? What is a confidence interval~?
+What is a prediction interval (\cref{ch-conf})~? What is the
+congestion collapse pattern (\cref{ch-metho})~? What is the
+null hypothesis in a test and what does the result of a test
+\emph{really} mean (\cref{ch-tests})~? What is an information
+criterion~(\cref{ch-forecast})~? If no failure appears out of
+$n$ experiments, what confidence interval can I give for the
+failure probability (\cref{ch-conf})~?
+%For example, good textbooks on simulation explain
+%how to compute confidence intervals for the mean of a
+%distribution, but hardly any will explain what type of confidence
+%interval one should compute (for the mean or for a sample).
+
+Second, for the \emph{how}, we looked for solution methods that as
+universal as possible, i.e. that apply to many situations, whether simple or
+complex. There are several reasons for this. Firstly, one
+should use only methods and tools that one understands, and a
+good engineer should first invest her time learning tools and
+methods that she will use more often. Secondly, brute force and
+a computer can do a lot more than one often seems to believe. This
+philosophy is in sharp contrast to some publications on
+performance evaluation. For example, computing confidence or
+prediction intervals can be made simple and systematic if we
+use the median and not the mean; if we have to employ the mean,
+the use of likelihood ratio statistic is quite universal and
+requires little intellectual sophistication regarding the model.
+Thus, we focus on generic methods such as: the use of filters for
+forecasting (\cref{ch-forecast}), bootstrap and Monte-Carlo simulations
+for evaluating averages or prediction intervals
+(\cref{ch-simul}), the likelihood ratio statistic for tests
+(\cref{ch-conf}, \cref{ch-tests}), importance sampling
+(\cref{ch-simul}), least square and $\ell^1$-norm minimization
+methods (\cref{ch-modfit}).
+
+When presenting solutions, we tried \emph{not} to hide their
+limitations and the cases where they do not work. Indeed, some
+frustrations experienced by young researchers can sometimes be
+attributed to false expectations about the power of some
+methods.
+
+We give a coverage of queuing theory that attempts to strike a
+balance between depth and relevance. During a performance
+analysis, one is often confronted with the dilemma: should we
+use an approximate model for which exact solutions exist, or
+approximate solutions for a more exact model~?
+%In accordance with the
+%general philosophy of this book, I took the
+%second option as much as possible, instead of
+%dwelling on the meanders of explicit, exact
+%closed forms that often apply only at the expense
+%of unrealistic, restrictive assumptions.
+We propose four topics (deterministic analysis, operational
+laws, single queues, queuing networks) which provide a good
+balance. We illustrate in a case study how the four topics can
+be utilized to provide different insights on a queuing question.
+For queuing networks, we give a unified treatment, which is
+perhaps the first of its kind at this level of synthesis. We
+show that complex topics such as queues with concurrency (MSCCC
+queues) or networks with bandwidth sharing (Whittle networks)
+all fit in the same framework of product form queuing networks.
+Results of this kind have been traditionally presented as
+separate; unifying them simplifies the student's job and
+provides new insights.
+
+We develop the topic of Palm calculus, also called ``the
+importance of the viewpoint", which is so central to queuing
+theory, as a topic of its own. Indeed, this topic has so many
+applications to simulation and to system analysis in general,
+that it is a very good time investment. Here too, we focus on
+general purpose methods and results, in particular the
+large-time heuristic for mapping various viewpoints
+(\cref{ch-palm}).
+
+\paragraph{\cref{ch-metho} gives a methodology} and serves
+as introduction to the rest of the book.
+Performance patterns are also described, i.e.
+facts that repeatedly appear in various
+situations, and knowledge of which considerably
+helps the performance evaluation.
+
+\cref{ch-conf} demonstrates how to summarize
+experimental or simulation results, as well as how to
+quantify their accuracy. It also serves as an
+introduction to a scientific use of the
+statistical method, i.e. pose a model and verify
+its assumptions. In \cref{ch-modfit} we present
+general methods for fitting an explanatory model
+to data and the concept of heavy tail.
+\cref{ch-tests} describes the techniques of
+tests, and \cref{ch-forecast} those of forecasting.
+These four chapters give a coverage of modern
+statistics useful to our field.
+
+%\imp{Part~\ref{part-tech}} focuses on evaluation techniques.
+\cref{ch-simul} discusses discrete event simulation and several
+important, though simple issues such as the need for transient
+removal, for confidence intervals, and classical simulation
+techniques. We also discuss importance sampling, which is very
+useful for computing estimates of rare events; we give a
+simple, though quite general and broadly applicable method.
+
+\cref{ch-palm} describes Palm calculus, which relates the
+varying viewpoints resulting from measurements done by
+different operators. Here, we discuss freezing simulations, a
+phenomenon which can be a problem for even simple simulations
+if one is not aware of it. We also present how to perform a
+perfect simulation of stochastic recurrences. \cref{ch-queuing}
+discusses patterns specific to queuing, classical solution
+methods for queuing networks, and, perhaps more important,
+operational analysis for rapid evaluation.
+%This is generally considered too
+%complicated for applied textbooks, but, here too,
+%I found that it is possible to convey the main
+%ideas and results in a simple, accessible way.
+
+%
+%\cref{ch-fluid} provides, in a very accessible
+%way, a general method for simplifying the
+%analysis of a complex system, using fluid
+%equations (micro-to-macro analysis), a powerful
+%method often used in other contexts (such as
+%chemistry and biology).
+
+The appendix gives background information that cannot yet be easily
+found elsewhere, such as a Fourier-free quick crash
+course on digital filters (used in \cref{ch-forecast}) and
+confidence intervals for quantiles.
+%
+%Sections marked with a $\star$ can be omitted or skimmed,
+%depending on the reader's inclination. {\footnotesize Text in
+%small font size can be skipped at first reading.}
+
+Performance evaluation is primarily an art, and
+involves using sophisticated tools such as
+mathematical packages, measurement tools and
+simulation tools. See the web site of the EPFL
+lecture on Performance Evaluation for some
+examples of \imp{practicals}, implemented in
+matlab and designed around this book.
+
+The text is intended for self-study. Proofs are not given when
+there are easily accessible references (these are indicated in
+the text); otherwise they can be found in appendixes at the end of the chapters.
+
+%
+%
+%It contains many \imp{inline questions};  I invite the alert
+%readers to try and answer the questions as they read.
+% \mq{q-preface-1}
+% {Where is the answer to an inline question~?}
+% {In a footnote on the same page}
+%Every chapter contains a \emph{review section}, which
+%summarizes the main points. The \emph{exercise section} can be
+%used as assignments in a lecture. The solutions are available
+%on request; if time permits, a solution manual will eventually
+%be available.
+
+The \emph{Index} collects all terms and
+expressions that are highlighted in the text like
+{\it \blue \textsf{this}} and also serves as a
+notation list.

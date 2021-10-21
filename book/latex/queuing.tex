@@ -1,0 +1,2061 @@
+\nfs{CHECK - LIST
+
+au 9 f\'{e}vrier 2010
+
+------------------------
+
+\begin{itemize}
+
+ % \item refaire image du skilift sans
+%  avec 800 clients plutot que 100
+
+  \item pseudo code de MVA version 2
+
+  \item figure de scouac qui fait la queue au
+  skilift
+
+  \item stability conditions: what this tells us
+
+  \item matlab: v\'{e}rifier le filtre F1 + F2 dans
+  l'exemple suppression of open chains
+
+ % \item engset cas PS comme exo
+%
+%  \item erlang C formula in finite population
+%  comme exo
+%
+%  \item Doubler le throughput (station de
+%  changement de batterie).
+
+  \item Surge model et insensitivity
+
+  \item fluid limit pour stabilit\'{e}; faire
+  sub-section stability if time permits
+
+  \item plus de detail pour r\'{e}seau pas stable
+  bramson
+
+  \item PS queue dans un r\'{e}seau et th\'{e}or\`{e}me
+  d'arriv\'{e}e implique $E(R(S=x)$ est proportionnel
+  \`{a} $x$.
+
+  %\item notation list
+
+  %\item proofs
+
+\end{itemize}
+} \Ifig{queuingSigne}{0.99}{0.5}
+
+%\begin{minipage}[b]{0.50\textwidth}
+Queuing phenomena are very frequent in computer
+and communication systems, and explain a large
+number of performance patterns. There is a large
+body of available results in queuing theory; in
+this chapter, we focus on results and concepts
+that are very broadly applicable, some of them
+are little known. We present four topics, which
+constitute a good coverage of all the techniques
+required in practice.
+
+First, we start with simple, \imp{deterministic} results; they
+provide results on transient phenomenons, and also some worst
+case bounds. These are often overlooked, but they do provide a
+first, sometimes sufficient, insight. Second we present
+\imp{operational laws} for queuing systems; in some sense they
+are the ``physical laws" of queuing: Little's formula, the
+DASSA property, network and forced flows law. Here we make
+frequent use of Palm calculus (\cref{ch-palm}). These results
+also provide tools and bounds for fast analysis.
+%\end{minipage}
+%
+%\begin{minipage}[b]{0.50\textwidth}
+%PUT A PICTURE HERE~\\
+%%~\\
+%~\\
+%~\\
+%\end{minipage}
+Third, we give a series of simple, though
+important results for \imp{single queues} with
+one or several servers and for the processor
+sharing queue; these can be taken as models for
+systems without feedback. Fourth, we discuss
+\imp{network of queues}, which can be used to
+model systems with feedback, and also complex
+interactions. Here we made the topic as simple as
+possible, but the result is not too simple, as
+there is some description complexity.
+
+We give a unified treatment of queuing networks;
+we discussed items such as the MSCCC station, a
+powerful model for concurrency in hardware or
+software, or Whittle networks, which are used to
+model bandwidth sharing in the Internet. This
+latter type of network is traditionally presented
+as a type of its own, a non product form queuing
+network. We show that it must not be so: all of
+these are instances of the general theory of
+multi-class product form queuing networks.
+Presenting these results in this way simplifies
+the student's job, as there is a single framework
+to learn, instead of several disparate results.
+It is also more powerful as it provides new ways
+to combine existing building blocks.
+
+Last, we illustrate on a example how the four different topics
+can be articulated and provide different insights on the same
+performance question.
+
+\minitoc
+%
+\section{Deterministic Analysis}
+\subsection{Description of a Queuing System with
+Cumulative Functions} \mylabel{sec-q-cf} A
+deterministic analysis is often very simple, and
+provides first insights of a queuing system.
+Perhaps the simplest, and most efficient tool in
+this toolbox is the use of cumulative functions
+for arrival and departure counts, which we
+explain now. For a deeper treatment, see
+\cite{lt01,Changbook}.
+%
+
+Consider a system which is viewed as a black box.
+We make no specific assumptions about its
+operation; it may be a network node, an
+information system, etc.  The cumulative
+functions are:
+\begin{itemize}
+  \item $A(t)$ (\nt{input function}): amount of work that arrives into the system in the time interval $[0,t]$
+  \item $D(t)$ (\nt{output function}): amount of work done in the time interval $[0,t]$
+\end{itemize}
+
+Assume that there is some time $t_0\leq 0$ at
+which
+    $A(t_0)=D(t_0)=0$.
+    We interpret $t_0$ as an instant
+  at which the system is empty. The main observations are:
+
+\begin{sh}\begin{itemize}
+  \item $Q(t):=A(t)-D(t)$ is the backlog (unfinished work) at time $t$.
+  \item Define $d(t)=\min\lc u\geq 0: \; A(t)\leq
+  D(t+u)\rc$ (horizontal deviation on
+  \fref{fig-eqqxls}). If there is no loss of work (no incoming
+  item is rejected) and if the system is first
+  in, first out (\nt{FIFO}), then $d(t)$ is the response time for a hypothetical atom of work that
+would arrive at time $t$.
+\end{itemize}\end{sh}
+\begin{figure}[!htbp]
+  \insfig{eqq6}{0.6}
+  \mycaption{Use of cumulative functions to describe a queuing system.}
+  \mylabel{fig-eqqxls}
+\end{figure}
+The next example shows how this can be used for
+worst case analysis.
+\begin{ex}{Playout Buffer} \mylabel{ex-q-pb}Consider a packet switched
+network that carries bits of information from a source with a
+constant bit rate $r$ (Figure \ref{fig-eqq}) as is the case for
+example, with circuit emulation. We have a first system $\calS$, the
+network, with input function $A(t)=rt$. The network imposes some
+variable delay, because of queuing points, therefore the output
+$A'()$ does not have a constant rate $r$. What can be done to
+re-create a constant bit stream ?
+\begin{figure}[!htbp]
+\insfig{playout2}{0.9}
+        \mycaption{A Simple Playout Buffer Example}
+        \mylabel{fig-eqq}
+\end{figure}
+A standard mechanism is to smooth the delay
+variation in a playout buffer. It operates as
+follows. When the first bit of data arrives, at
+time $d(0)$, it is stored in the buffer until
+some initial delay has elapsed. Then the buffer
+is served at a constant rate $r$ whenever it is
+not empty. This gives us a second system
+$\calS'$, with input $A'()$ and output $D()$.
+What initial delay should we take ? We give an
+intuitive, graphical solution. For a formal
+development, see \cite[Section 1.1.1]{lt01}.
+
+The second part of \fref{fig-eqq} shows that if the variable
+part of the network delay (called \nt{delay jitter}) is bounded
+by some number $\Delta$, then the output $A'(t)$ is bounded by
+the two lines (D1) and (D2). Let the output $D(t)$ of the
+playout buffer be the function represented by (D2), namely
+$D(t)=r \lp  t -d(0)\rp - \Delta$. This means that we read data from the
+playout buffer at a constant rate $r$, starting at time $d(0)+
+\Delta$. The fact that $A'(t)$ lies above (D2) means that there
+is never underflow. Thus the playout buffer should delay the
+first bit of data by an amount equal to $\Delta$, a bound on
+delay jitter.
+
+\mq{q-q-1}{What is the required playout buffer size~?}{A bound on
+buffer size is the vertical distance between $(D1)$ and $(D2)$;
+from \fref{fig-eqq}, we see that it is equal to $2 r \Delta$.}
+\end{ex}
+
+\subsection{Reich's Formula}
+\mylabel{sec-ssq}This is a formula for describing
+the backlog in a single server queue. Consider a
+lossless, FIFO, system, with a constant service
+rate $c$, and with unlimited buffer size.
+\begin{shadethm}[\nt{Reich}]
+The backlog at time $t$ in the system defined
+above is
+$$
+Q(t)=\max_{s \leq t}\left(A(t)-A(s)-c
+(t-s)\right)
+$$
+\end{shadethm}
+Note that, in the above, the value of $s$ that reaches the maximum is the beginning of the busy period.
+\begin{ex}{Scaling of
+Internet Delay} We are interested in knowing
+whether queuing delays are going to disappear
+when the Internet grows to broadband. The
+following analysis is due to Norros
+\cite{norros1994storage} and Kelly
+\cite{kelly2000models}.
+
+Assume traffic on an internet link grows according to three scale parameters: volume ($v$),
+speedup ($s$) and number of users ($u$). This is captured by the relation:
+\begin{equation}\mylabel{eq-q-1}
+  A(t)=v\sum_{i=1}^{u}A_i(st)
+\end{equation}
+We are interested in the delay; assuming the link is a constant rate server with rate $c$, this
+is the backlog divided by $c$. We also assume that the capacity of the link is scaled with the
+increase in volume: $c=c_0 vsu$. The question is now: how does the delay depend on $v,s, u$~?
+
+The maximum delay, $D(v,s,u)$ is derived from Reich's formula:
+$$D(v,s,u)=\max_{t\geq 0}\left(\frac{A(t)}{c}-t\right)
+$$
+The dependence on $v$ and $s$ is simple to
+analyze. It comes
+$$
+D(v,s,1)=\max_{t\geq 0}\left(\frac{vA_1(st)}{c}-t\right)=\max_{t\geq 0}\left(\frac{A_1(t)}{c_0 s
+}-\frac{t}{s}\right)=\frac{1}{s}D(1,1,1)
+$$and similarly for $u \neq 1$ we have $D(v,s,u)=\frac{1}{s}D(1,1,u)$.
+Thus the delay is independent of volume scaling, and is inversely proportional to the speedup
+factor $s$. The dependence on $u$ requires more assumptions. To go further, we assume a
+stochastic model, such that the queue length process $Q(t)$ is stationary ergodic. We can use
+Reich's formula:
+$$
+Q(0)=\max_{t\geq 0}\left(A(-t)-ct\right)
+$$
+where $A(-t)$ is now the amount of work that has arrived in the
+interval $[-t,0]$. We assume that \eref{eq-q-1} continues to
+hold. Further, we model $A_i(-t)$ by a \nt{fractional brownian
+traffic} \cite{norros1994storage}. This is a simplified model
+which captures long range dependence, i.e. the often observed
+property that the auto-correlation function does not decay
+exponentially. This means that
+$$
+A_i(-t)=\lambda t + \sqrt{\lambda a}B_H^i(t)
+$$
+where $B_H^i$ is fractional brownian motion,
+$\lambda$ the traffic intensity, and $a$ a
+variance parameter. Fractional brownian motion is
+a gaussian process, with mean $\lambda t$ and
+variance $\lambda a t^{2H}$. $B_H(t)$ is
+self-similar in the sense that the process
+$B_H(kt)$ has the same distribution as $k^H
+B_H(t)$.
+
+Assume that the $A_i$s are independent. It follows from the properties of fractional brownian
+motion that $A(-t)$ is also fractional brownian traffic. Its mean is $u \lambda$ and its
+variance is $u \lambda a t^{2H}$, thus it has intensity $u\lambda$ and same variance parameter
+$a$.
+
+By Reich's formula
+$$D(1,1,u)=\max_{t\geq 0}\left(\frac{A(t)}{c_o u}-t\right)=
+\max_{t\geq 0}
+ \left[\left(\frac{\lambda}{c_0}-1\right)t + \sqrt{\lambda a}B_H(t)\frac{1}{c_0\sqrt{u }}\right]
+$$
+Do the change of variable $t = k \tau$. It comes
+$$D(1,1,u)\sim \max_{\tau \geq 0}
+  \left[\left(\frac{\lambda}{c_0}-1\right)k\tau + \sqrt{\lambda a}k^HB_H(\tau)\frac{1}{c_0\sqrt{u}}\right]
+$$
+where $\sim$ means same distribution. Take $k$ such that $k=\frac{k^H}{\sqrt{u}}$, i.e.
+$k=u^{-\frac{1}{2(1-H)}}$. Then we have
+$$
+D(1,1,u)\sim u^{-\frac{1}{2(1-H)}}D(1,1,1)
+$$
+In summary, the delay scales according to
+$$
+D(v,s,u)=\frac{1}{su^b}D(1,1,1)
+$$
+with $b=\frac{1}{2-2H}$. In practice, we expect the Hurst
+parameter usually lies in the range $[0.67, 0.83]$ thus $1.5
+\leq b \leq 3$. In summary, delay decreases with speedup, and
+more rapidly with number of users.
+
+\end{ex}
+
+\section{Operational Laws For Queuing Systems}
+
+\mylabel{sec-oplaws} These are robust results, i.e. which are
+true with very few assumptions on the queuing system. other
+than stability. Many of them directly derive from
+\cref{ch-palm}, such as the celebrated Little's law.  The laws
+apply to a stationary system; for a single queue, they are true
+if the utilization is less than $1$. This type of analysis was
+pioneered in \cite{denning1978operational}; an original,
+stand-alone treatment can be found in \cite{el1998sample}.
+
+
+%In this section we
+%give the most common ones. %There are many others;
+%they can be derived from \cref{ch-palm}, in
+%particular using the large time heuristic method
+%explained in \sref{sec-event-time}.
+
+\subsection{Departures and Arrivals See Same Averages (DASSA)}
+\index{DASSA}
+
+\begin{shadethm}(DASSA)
+Consider a system where individual customers come
+in and out. Assume that the arrival process $A_n$
+and the departure process $D_n$ are stationary
+point processes, and that they have no point in
+common (thus there are no simultaneous arrivals
+or departures).
+
+Let $N(t)\in \Nats$ be the number of customers
+present in the system at time $t$. Assume that
+$N(t)$, $A_n$ and $D_n$ are jointly stationary
+(see \sref{sec-palm}).
+
+Then the probability distribution of $N(t)$
+sampled just before an arrival is equal to the
+probability distribution of $N(t)$ sampled just
+after a departure.
+\label{theo-dassa}\end{shadethm} The proof is
+given in \sref{sec-q-proofs}; it is a direct
+application of the Rate Conservation law in
+\thref{theo-rcl}.
+
+
+\begin{ex}{Inter-departure time in M/GI/1 Queue}
+We want to compute the distribution of
+inter-departure time in the stable M/GI/1 queue
+defined in \sref{sec-q-sq} (i.e. the single
+server queue, with Poisson arrival and general
+service time distribution), and would like to
+know in which case it is the same as the
+inter-arrival distribution.
+
+First note that the time between two departures
+is equal to one service time if the first
+departing customer leaves the system non-empty,
+and, otherwise, the same plus the time until the
+next arrival. The time until next arrival is
+independent of the state of the system and is
+exponentially distributed, with parameter the
+arrival rate $\la$. Thus the \nt{Laplace
+Stieltjes transform}\footnote{The
+Laplace-Stieltjes transform of a non-negative
+random variable $X$ is defined by
+$\calL_X(s)=\esp{e^{-sX}} $. If $X$ and $Y$ are
+independent, $\calL_{X+Y}(s)=\calL_X(s)
+\calL_Y(s)$; $X$ is exponentially distributed
+with parameter $\la$ if and only if
+$\calL_X(s)=\frac{\la}{\la+s} $.} of the
+inter-departure time is
+  \ben
+  \calL_D(s) = (1-p) \calL_S(s) + p \calL_S(s)\frac{\la}{\la+s}
+  \een where $\calL_S$ is the Laplace Stieltjes transform of the
+  service time and $p$ is the probability that a departing customer leaves the system empty.
+
+By DASSA, $p$ is also the probability that an
+arriving customer sees an empty system. By PASTA
+(\exref{ex-mg1-pasta}), it is equal to the
+probability that the queue is empty at an
+arbitrary point in time, which is also equal to
+$1-\rho$, with $\rho = \la \bar{S}$ and
+$\bar{S}=$ mean service time. Thus
+  \ben
+  \calL_D(s) = \calL_S(s) \lp \rho + \frac{(1-\rho)\la}{\la +s}\rp
+  \een
+which entirely defines the probability
+distribution of inter-departure times.
+
+The inter-departure times have the same distribution as the
+inter-arrival times if and only if $\calL_D(s)=\la/(\la+s)$.
+Solving for $\calL_S$ gives $\calL_S(s)=\frac{{\la  /
+\rho}}{{\la  / \rho}+s}$, i.e. the service time must be
+exponentially distributed and the M/GI/1 queue must be an M/M/1
+queue.
+    \label{ex-adssa}
+ \end{ex}
+
+\subsection{Little's Law and Applications}
+
+\begin{shadethm}[Operational Law]
+\mylabel{theo-oplaw} Consider a stationary system
+that is visited by a flow of customers (for a
+formal
+ definition, see \thref{theo-little}).
+\begin{itemize}
+  \item \textbf{[Throughput]} The throughput, defined as the expected
+  number of arrivals per second, is also equal to the inverse
+  of the expected time between arrivals.
+  \item \textbf{[Little]} $$\lambda \bar{R}=\bar{N}$$ where $\lambda$
+  is the
+  expected number of customers arriving per second, $\bar{R}$ is the
+  expected response time seen by an arbitrary customer and
+  $\bar{N}$ is the expected number of customers observed in the
+  system at an arbitrary time
+  \item \textbf{[Utilization Law]} If the system is a single server
+  queue with arrival rate $\la$ and expected service time $\bar{S}$:
+  $$\P(\mbox{server busy})=\rho:=\lambda \bar{S}$$
+  If it is an $s$-server queue:
+  $$\E(\mbox{number of busy
+  servers})=s \rho$$ with $\rho:=\frac{\lambda \bar{S}}{s}$.
+\end{itemize}
+\end{shadethm} %\begin{preuve} The first item is \eref{eq-intensity}; the second item is
+%\thref{theo-little}. The third item is obtained
+%by applying Little's law to the set of servers.
+%\end{preuve}
+
+ \mq{q-qkkldasl-lk}
+ {Consider a single server queues that serves only one customer at a time. What is
+ the average number of customers not in service (i.e. in the waiting room~?)}
+ {$\bar{N}_w=\bar{N}-\rho$, this follows from items 2 and 3 in \thref{theo-oplaw}.}
+
+\paragraph{The Interactive User Model}
+The interactive user model is illustrated
+in\fref{fig-iusm}. $n$ users send jobs to a
+service center. The \nt{think time} is defined as
+the time between jobs sent by one user. Call
+$\bar{R}$ the expected response time for an
+arbitrary job at the service center, $\bar{Z}$
+the expected think time and $\lambda$ the
+throughout of the system. A direct application of
+ Little's law to the entire system gives:
+\begin{shadethm}[Interactive User]
+$$\lambda(\bar{Z}+ \bar{R})=n
+$$
+\end{shadethm}
+\begin{figure}[!htbp]
+  \insfig{iusm}{0.4}
+  \mycaption{The Interactive User Model}
+  \mylabel{fig-iusm}
+\end{figure}
+
+\begin{ex}{Service Desk} A car rental company in a large airport has 10
+service attendants. Every attendant prepares
+transactions on its PC and, once completed, send
+them to the database server. The software monitor
+finds the following averages: one transaction
+every 5 seconds, response time = 2 s. Thus the
+average think time is $48\,s$.
+\end{ex}
+\subsection{Networks and Forced Flows}
+\mylabel{sec-netff} \nfs{draw a figure of network} We often
+find systems that can be modeled as a directed graph, called a
+network. We consider models of the form illustrated on
+\fref{fig-netmodel}.  If the total number of customers is
+constant, the network is called ``closed", otherwise ``open".
+In \sref{sec-qn}, we will study such networks in more detail.
+\begin{figure}[!htbp]
+  \insfig{networkLaw}{0.5}
+  \mycaption{Network Model}
+  \mylabel{fig-netmodel}
+\end{figure}
+
+\begin{shadethm}[Network Laws]
+\mylabel{theo-oplaw2} Consider a stationary
+network model where $\la$ is the total arrival
+rate.
+\begin{itemize}
+  \item \textbf{[Forced Flows]}
+  $\lambda_k=\lambda V_k$, where $\lambda_k$ is the expected number of customers arriving per
+  second at node $k$ and $V_k$ is the expected number of
+  visits to node $k$ by an arbitrary customer during its stay in the
+  network.
+  \item \textbf{[Total Response Time]} Let $\bar{R}$ [resp. $\bar{R}_k$] be the expected total response time $\bar{R}$
+   seen by an arbitrary customer [resp. by an arbitrary visit to node $k$].
+   $$
+   \bar{R}=\sum_k \bar{R}_k V_k
+   $$
+\end{itemize}\label{theo-q-ff}
+\end{shadethm}
+%
+\begin{ex}{}Transactions on a database server access
+the CPU, disk A and disk B
+(\fref{fig-bottleneckAna}). The statistics are:
+$V_{\mbox{CPU}}=102, V_{\mbox{A}}=30,
+V_{\mbox{B}}=68$ and
+$\bar{R}_{\mbox{CPU}}=0.192\, s,
+\;\bar{R}_{\mbox{A}}=0.101\, s,\;
+\bar{R}_{\mbox{B}}=0.016\, s $
+
+The average response time for a transaction is
+$23.7\,s$.
+\end{ex}
+\subsection{Bottleneck Analysis}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mylabel{sec-botana} Common sense and the
+guidelines in \cref{ch-metho} tell us to analyze
+bottlenecks first. Beyond this, simple
+performance bounds in stationary regime can be
+found by using the so-called bottleneck analysis.
+It is based on the following two observations:
+\begin{enumerate}
+  \item waiting time is $\geq 0$
+  \item a server utilization
+is bounded by $1$
+\end{enumerate}
+%
+ \begin{figure}[!htbp]\begin{center}
+  \insfig{bottleneckAna2}{0.5}
+ \end{center}
+  \mycaption{Network example used to illustrate bottleneck analysis.
+  %$n$ attendants serve customers.
+  Each
+transaction uses CPU, disk A or disk B. Av.
+numbers of visits per transaction:
+$V_{\mbox{CPU}}=102, V_{\mbox{A}}=30,
+V_{\mbox{B}}=17$; av. service time per
+transaction: $\bar{S}_{\mbox{CPU}}=0.004\, s,
+\;\bar{S}_{\mbox{A}}=0.011\, s,\;
+\bar{S}_{\mbox{B}}=0.013\, s$; think time $Z=1\,
+s$.}
+  \mylabel{fig-bottleneckAna}
+\end{figure}
+%
+We illustrate the method on \fref{fig-bottleneckAna}. The
+network is a combination of \fref{fig-iusm} and
+\fref{fig-netmodel}. Transactions are issued by a pool of $n$
+customers which are either idle (in think time) or using the
+network. In addition, assume that every network node is a
+single server queue, and let $\bar{S}_k$ be the average service
+time per visit at node $k$. Thus $\bar{R}_k-\bar{S}_k$ is the
+average waiting time per visit at node $k$. The throughput
+$\lambda$ is given by the interactive user model:
+\begin{equation}\mylabel{eq-bot-lam0}
+\lambda= \frac{n}{\bar{Z}+\sum_k V_k\bar{R}_k}
+\end{equation}
+and by forced flows, the utilization of the
+server at node $k$ is $\rho_k=\lambda V_k
+\bar{S}_k$. Applying the two principles above
+gives the constraints on $\lambda$:
+\begin{equation}\mylabel{eq-bot-lam}
+  \bracket{
+ \lambda \leq \frac{n}{\bar{Z}+\sum_k V_k\bar{S}_k}\\
+ \lambda \leq \frac{1}{\max_k V_k \bar{S}_k}
+  }
+\end{equation}
+Similarly, using \eref{eq-bot-lam0} and
+\eref{eq-bot-lam}, we find the following
+constraints on the response time $\bar{R}=\sum_k
+V_k \bar{R}_k$:
+\begin{equation}\mylabel{eq-bot-res}
+  \bracket{
+ \bar{R}\geq \sum_k V_k\bar{S}_k\\
+ \bar{R} \geq n \left(\max_k V_k \bar{S}_k\right) -\bar{Z}
+  }
+\end{equation}
+\fref{fig-bot-lamres} illustrates the bounds. See
+also \fref{fig-q-qnet-botana}.
+%
+%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[!htbp]
+  \insfig{lamres2}{0.7}
+  \mycaption{Throughput bound (B0) obtained by bottleneck analysis for the system in
+  \fref{fig-bottleneckAna}, as a function of the number of users $n$. B1, B2: typical throughput
+  values for a system without [resp. with] congestion
+  collapse. }
+  \mylabel{fig-bot-lamres}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%
+%
+%\mq{q-akaskaso}{Draw the response time bounds for
+%this example.}{tbd}
+
+A node $k$ that maximizes $V_k \bar{S}_k$ is
+called, in this model, a \nt{bottleneck}. To see
+why a bottleneck determines the performance,
+consider improving the system by decreasing the
+value of $V_k \bar{S}_k$ (by reducing the number
+of times the resource is used, or by replacing
+the resource by a faster one). If $k$ is not a
+bottleneck, this does not affect asymptote on
+\fref{fig-bot-lamres}, and only marginally
+increases the slope of the bound at the origin,
+unlike if $k$ is a bottleneck. On
+\fref{fig-bot-lamres}, we see that the bottleneck
+is the CPU.
+
+Among the two bounds in \eref{eq-bot-lam}, the former is
+accurate at low load (when there is no queuing), and the latter
+is expected to be true at high load (when the bottleneck is
+saturated). This is what makes bottleneck analysis appealing,
+as the two bounds cover both ends of the spectrum. Note however
+that, at high loads, congestion collapse might occur, and then
+performance would be worst than
+predicted by the bound.%
+%
+%\mq{q-sakllska0p-1}{Which of the bounds is
+%accurate for low load~? For high load~?}{For low
+%load, the former bound in \eref{eq-bot-lam} is
+%accurate because queuing times are small. For
+%high loads, we do not know. If the system suffers
+%from congestion collapse, the bounds may be very
+%optimistic. In contrast, for an ideal system, the
+%throughput is driven by its bottleneck and the
+%latter bound may be accurate.}
+%
+%For more details on the use of operational laws,
+%see \cite{el1998sample} and
+%\cite{denning1978operational}
+
+
+\mq{q-akaskio}{What happens to the example of
+\fref{fig-bottleneckAna} if the CPU processing
+time is reduced from $0.004$ to $0.003$~? to
+$0.002$~?}{The disk A becomes the bottleneck.
+Decreasing the CPU processing time to $0.002$
+does not improve the bound significantly.}
+
+
+\section{Classical Results for a Single Queue}
+\label{sec-q-sq} The single queue has received
+much attention, and there are analytical results
+available for a large class of systems with
+random arrivals and service. We give here a
+minimal, but useful set of result. For more
+details on some topics, the classical reference
+is \cite{kleinrock-75-a,kleinrock-75-b}; a more
+compact and up to date textbook is
+\cite{nain-basic}. We start with some notation
+and a generic result.
+
+\subsection{Kendall's Notation}
+The classical notation\index{Kendall's notation}
+for a queue, in its simplest form, is of the type
+$A/S/s/K$ where:
+\begin{itemize}
+  \item $A$ (character string) describes the type of arrival process: G stands for the most general
+arrival process, $A=$GI means that the arrival
+process is a
+  point process with iid interarrival times, M is for a Poisson arrival process.
+  \item $S$ (character string) describes
+the type of service process: G for the most
+general service process, $S=$GI means that the
+service times
+  are iid and independent of the arrival process, $S=$M is the special case of GI with
+  exponential service times, $S=$D with constant service times.
+  \item $B$ and $K$ are integers representing the number of servers and the capacity (maximum number of
+  customers allowed in the system, queued + in service). When $K=\infty$, it may be omitted.
+  \item Let $A_n$ be the arrival time and $S_n$ the service time of the
+$n$th customer, labeled in order of arrival. We
+assume that the sequence $(A_n, S_n)$ is
+stationary with respect to the index $n$ and that
+it can be interpreted as a stationary marked
+point process (i.e. the expectation of
+$A_{n+1}-A_n$ is finite, see
+\thref{thm:inversecontr}).
+ \item The service discipline is by default FIFO, otherwise it is mentioned explicitly.
+\end{itemize}%
+
+\subsection{The Single Server Queue}\label{sec-clasq}
+\subsubsection{Stability} We consider the most general queue
+with one single server and with infinite
+capacity. Note that we do not assume Poisson
+arrivals, and we allow service times to depend on
+the state of the system. We assume that the
+system is work conserving. More precisely, let
+$W(t)$ be the backlog process, i.e. the sum of
+the service times of all customers that are
+present in the system at time $t$. When a
+customer arrives, $W(t)$ increases by the
+(future) service time of this customer. The work
+conserving assumption means that $W(t)$ decreases
+at rate $1$ over any time interval such that
+$W(t)>0$.
+
+An important issue in the analysis of the single
+server queue is stability. In mathematical terms,
+it means whether the backlog $W(t)$ is
+stationary. When the system is unstable, a
+typical behaviour is that the backlog grows to
+infinity.
+
+The following is the general stability condition
+for the single server queue. Let $\bar{S}$ be the
+expectation of the service time, $\la$ the
+intensity of the arrival process (expected number
+of arrivals per second) and $\rho= \la \bar{S}$
+the utilization factor.
+
+\begin{shadethm}(Loynes \cite[Thm
+2.1.1]{baccelli2003elements})
+
+If $\rho<1$ the backlog process has a unique
+stationary regime. In the stationary regime, the
+queue empties infinitely often.
+
+Furthermore, for any initial condition, the
+waiting time of the $n$th customer converges in
+distribution as $n\to \infty$ to the waiting time
+for an arbitrary customer computed in the
+stationary regime.
+
+If $\rho>1$ the backlog process has no stationary
+regime.\label{theo-loynes}
+\end{shadethm}
+A heuristic explanation for the necessary
+condition is that, if the system is stable, all
+customers eventually enter service, thus the mean
+number of beginnings of service per second is
+$\lambda$. From Little's law applied to the
+server (see \sref{sec-oplaws}), we have $\rho=$
+the probability that the server is busy, which is
+$\leq 1$.
+%
+For $\rho=1$ there may or may not be stability,
+depending on the specific queue.
+%
+Be careful that this intuitive stability result
+holds only for a single queue. For networks of
+interconnected queues, there is no such general
+result, as discussed in \sref{sec-qn}.
+%
+The theorem is for a queue with infinite
+capacity. For a finite capacity queue, there is,
+in general, stability for any value of $\rho$
+(but for $\rho>1$ there must be losses).
+
+\mq{q-qqlkjkjsa-2}{Consider a queuing system of
+the form G/G/1 where the service time $S_n$ of
+customer $n$ is equal to the inter-arrival time
+$A_{n+1}-A_n$. What are the values of $\rho$ and
+of the expected number of customers $\bar{N}$ ~?
+}{$\lambda=\frac{1}{\bar{S}}$ thus $\rho=1$.
+There is always exactly one customer in the
+queue. Thus $\bar{N}=1$.}
+
+\mq{q-qqlkjkjsa-3}{Give an example of stable and
+of an unstable single server queue with
+$\rho=1$.}{The example in \qref{q-qqlkjkjsa-2} is
+stable with $\rho=1$. The M/M/1 queue with
+$\rho=1$ is unstable.}
+
+\paragraph{M/GI/1 Queue} The arrival process is Poisson with
+parameter $\la$ and the service times and
+independent of each other and of the arrival
+process, with a general distribution. For $\rho
+<1$ the queue is stable and for $\rho\geq 1$ is
+is unstable. Using the rate conservation law as
+in \exref{ex-mg1-rcl}, we obtain the Laplace
+Stieltjes transform of the waiting time
+(\nt{Pollaczek-Khinchine formula for
+transforms}):
+ \be
+ \calL_W(s) = \frac{s(1-\rho)}{s -\la +\la \calL_S(s)}
+ \label{eq-q-lts-mg1}
+ \ee
+ where $\calL_S$ is the Laplace
+Stieltjes transform of the service time. Note
+that, by PASTA, the waiting time has the same
+distribution as the workload sampled at an
+arbitrary point in time.
+
+\mq{q-q-asdlkjlk}{Give the Laplace Stieltjes
+transform $\calL_R$ of the response time.}{The
+response time is the sum of the service time and
+the waiting time, and they are independent. Thus
+$\calL_R(s)=\calL_S(s) \calL_W(s)$.}
+
+The distribution of the number of customers $N(t)$, at an
+arbitrary point in time, is obtained by first computing the
+distribution of the number of customers seen at a departure
+times, and then using DASSA (\cite[Section
+5.6]{kleinrock-75-a}). The distribution is known via its
+\nt{$z$-transform}\footnote{The $z$-transform,
+\index{z-transform}$G_N(z)$ of an integer random variable $N$
+is defined by $G_N(z)=\esp{z^N}$.}:
+ \be
+ G_{N(t)}(z) = \lp1-\rho\rp \lp 1- z \rp\frac{\calL_S(\la -\la z)}{\calL_S(\la -\la
+ z)-z}
+ \ee
+(this formula is also called a
+\nt{Pollaczek-Khinchine formula for transforms}).
+The mean values of number of customers in system
+or in waiting room and the mean response times
+and waiting times are easily derived and are
+given below:
+ \be\bracket{
+ \bar{N}=\frac{\rho^2\kappa}{1-\rho}+\rho
+ \mbox{ with }
+ \kappa= \frac{1}{2}\left(1+\frac{\sigma^2_S}{\bar{S}^2}\right) =
+ \frac{1}{2}\left(1+\mbox{CoV}^2_S\right)\\
+ \bar{N}_w=\frac{\rho^2 \kappa}{1-\rho}\\
+ \bar{R}=\frac{\bar{S} (1 -\rho(1-\kappa))}{1-\rho}\\
+ \bar{W}=\frac{\rho \bar{S}\kappa}{1-\rho}
+ }
+ \label{eq-q-mg1}
+ \ee
+Note the importance of the coefficient of
+variation (CoV) of the service time.
+%
+%\paragraph{M/D/1 Queue} This is a special case of
+%the M/GI/1 queue where the service times are
+%constant.
+%$$\bracket{
+% \bar{N}=\frac{\rho^2}{2(1-\rho)}+\rho\\
+% \bar{N}_w=\frac{\rho^2}{2(1-\rho)}\\
+% \bar{R}=\frac{\bar{S}(2-\rho)}{2(1-\rho)}\\
+% \bar{W}=\frac{\rho \bar{S}}{2(1-\rho)}\\
+% \sigma_N=\frac{1}{1-\rho}\sqrt{\rho-1.5 \rho^2 +\frac{5}{6}\rho^3 -\frac{1}{12}\rho^4}\\
+% \sigma_{R}=\frac{\bar{S}}{1-\rho}\sqrt{\frac{1}{3}\rho-\frac{1}{12}\rho^2}
+% }$$
+%
+\mq{q-akkl-ll}{Which of the quantities $\bar{N},
+ \bar{N}_w, \bar{R}, \bar{W}$ are Palm expectations~?}{$\bar{R}, \bar{W}$}
+
+\paragraph{M/M/1 Queue} This is a special case of
+the M/GI/1 queue where the service times are
+exponentially distributed. Here it is possible to
+obtain all stationary probabilities in explicit
+(and simple) form, by directly solving the
+equilibrium equations of the Markov process. One
+finds that the distribution of the number of
+customers at an arbitrary point in time is, when
+$\rho <1$:
+ \be \P(N(t)=k)=(1-\rho)\rho^k
+ \ee
+ and the distribution of the service time of an
+ arbitrary customer is given by
+ \be
+ \P^0(R_0\leq x)=1-e^{-(1- \rho)\frac{x}{\bar{S}}}
+ \ee
+ Furthermore,
+ \eref{eq-q-mg1} applies with $\kappa
+=1$.% and give
+% $$\bracket{
+% \bar{N}=\frac{\rho}{1-\rho}\\
+% \bar{N}_w=\frac{\rho^2}{1-\rho}\\
+% \bar{R}=\frac{\bar{S}}{1-\rho}\\
+% \bar{W}=\frac{\rho \bar{S}}{1-\rho}\\
+% %\sigma_N=\frac{\sqrt{\rho}}{1-\rho}\\
+%% \sigma_{R}=\frac{\bar{S}}{1-\rho}\\
+%% \P(N=k)=(1-\rho)\rho^k\\
+%% \P^0(R\leq x)=1-e^{-(1- \rho)\frac{x}{\bar{S}}}
+% }$$
+
+\paragraph{M/M/1/K Queue}
+This is a modification of the M/M/1 queue where
+the total number of customers is limited to $K$.
+If a customer arrives when the queue is fulled,
+it is dropped. The M/GI/1 formulas cannot be
+applied, but, instead, one can directly solve the
+equilibrium equations of the Markov process.
+
+The system has a stationary regime for \emph{any}
+value of $\rho$. The distribution of the number
+of customers at an arbitrary point in time is
+ \bearn \P(N=k)&=&\eta \rho^k \ind{0 \leq k \leq K}\\
+ \mbox{with }\eta&=& \frac{1-\rho}{1-\rho^{K+1}} \mif \rho \neq
+ 1, \; \eta=\frac{1}{K+1} \mif \rho=1
+ \eearn
+ By PASTA, the probability that the system is full
+ is equal to the loss probability and is
+ \ben
+  \P^0(\mbox{ arriving customer is discarded
+  })=\P(N(t)=K)=\frac{(1-\rho)\rho^K}{1-\rho^{K+1}}
+  \een
+
+\paragraph{GI/GI/1 Queue}
+This is the general single server queue where inter-arrival and
+service times are independent of each other and are i.i.d. In
+general, no closed form solution exists, but numerical
+procedures are available.
+
+One approach is based on the following
+equation, which is a stochastic recurrence:
+$$
+W_n=\left(W_{n-1}+S_{n-1}-A_n+A_{n-1}\right)^+
+$$
+where the notation $(x)^+$ means $\max(x,0)$ and
+$W_n=W(A_n^-)$ is the workload in the system just
+before the $n$th arrival, i.e. the waiting time
+for the $n$th customer (here $A_n$ is the arrival
+time and $S_n$ the service time of the $n$th
+customer). Let $C_n=A_n-A_{n-1}+S_n$. Note that
+$C_n$ is i.i.d. and independent of $W_{n-1}$ thus
+ \be
+ W_n \stackrel{\mathrm{distrib}}{=}
+ (W_{n-1}-C_{n})^+
+\label{eq-lindley-n}
+  \ee
+If $\rho<1$ the system has a stationary regime,
+and the stationary distribution of waiting time
+$W$ must satisfy
+  \be
+ W  \stackrel{\mathrm{distrib}}{=}
+ (W-C)^+
+\label{eq-lindley}
+  \ee
+  where $C$ is a random variable with
+  same distribution as $A_n-A_{n-1}+S_n$.
+This equation is called \nt{Lindley's equation}.
+It is classical to use CDFs, which gives the
+following equivalent form of \eref{eq-lindley}:
+  \be
+  F_W(x) = \bracket{0 \mif x <0\\
+  \int_{-\infty}^x F_W(x-y) f_C(y) dy}
+\label{eq-lindley-2}
+    \ee where $F_W$ is the CDF of waiting times
+    and $f_C$ is the PDF of $A_n-A_{n-1}+S_n$.
+\eref{eq-lindley} is an equation of the
+Wiener-Hopf type and can be solved, at least in
+many cases, using the theory of analytical
+functions; see \cite[Section
+8.2]{kleinrock-75-a}.
+
+A second approach consists in solving
+\eref{eq-lindley-n} directly by discretization.
+Pick a time step $\delta$ and let, for $n \in
+\Nats$ and $k \in \Ints$
+ \bear
+ w_k^n&=&\P\lp W^n \in \lb k\delta, (k+1)\delta\rp\rp\label{eq-q-approx-1}\\
+ s_k&=&\P\lp S_n \in \lb k\delta, (k+1)\delta\rp\rp\label{eq-q-approx-2}\\
+ a_k&=&\P\lp -A_n+A_{n-1} \in \lb k\delta,
+ (k+1)\delta\rp\rp \label{eq-q-approx-3}
+ \eear
+Note that $w_k=s_k=0$ for $k<0$ and
+ $a_k=0$ for $k>0$ and that the arrays $s$ and $a$ are independent of $n$.
+ \eref{eq-lindley-n} can be
+ approximated by
+ \be\bracket{
+ w_k^n = (w^{n-1} \ast s \ast a)_k \mif k>0\\
+ w_0^n = \sum_{i\leq 0}(w^{n-1} \ast s \ast a)_i
+ \\
+ w_k^n=0 \mif k<0}
+ \label{eq-lindley-3}
+ \ee
+where $*$ is the discrete convolution. The error
+we are making is due to discretization and should
+decrease with $\delta$. In fact,
+\eref{eq-lindley-3} is exact for the modified
+system where we replaced the service times
+inter-arrival times by approximations that are
+multiples of $\delta$; such an approximation is
+by default for the service time,
+\eref{eq-q-approx-2}, and by excess for the
+inter-arrival time, \eref{eq-q-approx-3}; thus
+the approximating system has a $\rho$ value less
+than the original system. If the original system
+is stable, so is the approximating one, and by
+Loynes' theorem, the iteration converges to the
+stationary distribution of waiting time. The
+method thus consists in numerically evaluating
+\eref{eq-lindley-3} until the norm of the
+difference $w^n-w^{n-1}$ becomes small; the
+convolution can be computed using the fast
+Fourier transform. See
+\cite{grossglauser1999relevance} for an example
+where this method is used.
+
+A third type of methods uses mixtures of exponentials to
+approximate the distributions of inter-arrival and service
+times as in \sref{sec-q-ph}. Then the stationary distributions
+can be computed explicitly; see
+\cite{le1988steady,neuts1981stationary}.
+
+
+\subsubsection{What This Tells Us} Though most
+practical systems are unlikely to exactly fit the
+assumptions of any of the models in this section,
+the analytical formulas do explain patterns that
+are observed in practice.
+%
+\begin{figure}[htbp]
+  \insfig{mg11a}{0.9}
+  \mycaption{Average response time versus requests per second for a database
+server modeled as M/GI/1 queue. The time needed
+to process a request is $0.1$ second and its
+standard deviation is estimated to $0.03$. The
+maximum load that can be served if an average
+response time of $0.5$ second is considered
+acceptable is $8.8$ requests per second. If the
+traffic volume increases by 10\%, the response
+time becomes 1.75, thus is multiplied by a factor
+of $3.5$.}
+  \mylabel{fig-q-nlrt}
+\end{figure}
+%
+The models in this section are for systems
+without feedback, since the arrival process is
+not influenced by the state of the queuing
+system. Important features of such systems are:
+%
+ \begin{itemize}
+ \item \textbf{Non Linearity of Response Time}:
+ At low values of the utilization factor $\rho$,
+ the response time tends to increase slowly, and
+ linearly with $\rho$. In contrast, as $\rho$
+ approaches $1$, the response time grows to
+ $\infty$ (\fref{fig-q-nlrt}). Thus the impact of
+ a small traffic increase is dramatically
+ different, depending on the initial value of the
+ utilization factor.
+ \mq{q-llos-llsa2}{What happens for the system in
+\fref{fig-q-nlrt} if the traffic volume increases by
+20\%~?}{The system becomes unstable $\rho
+>1$; in practice it will lose requests, or enter congestion
+collapse.}
+%
+ \item \textbf{Variability Considered Harmful}: The
+     Pollacezk-Khinchine formula for the mean in
+\eref{eq-q-mg1} shows that response time and queue sizes
+increase with the variability of the service time. See also
+\fref{fig-ccv-mg1}.
+ \end{itemize}
+\begin{figure}[htbp]
+  \insfig{mg11}{0.9}
+  \mycaption{Mean response time for M/GI/1 queue, relative to service time,
+   for different values of coefficient of variation $\mbox{CoV}_S=\frac{\sigma_S}{\bar{S}}$:
+  from top to bottom: $\mbox{CoV}_S=1.4$, $\mbox{CoV}_S=1$ (M/M/1 queue) and $\mbox{CoV}_S=0$
+  (M/D/1 queue).}
+  \mylabel{fig-ccv-mg1}
+\end{figure}
+
+%\subsection{Single Queue with Multiple Servers}
+
+
+\subsection{The Processor Sharing Queue, M/GI/1/PS}
+\label{sec-q-ps} This is a special case of the
+single server queue, with the \nt{Processor
+Sharing} (\nt{PS}) service discipline instead of
+FIFO. Here we assume that the server divides
+itself equally into all present customers; this
+is an idealization when $\delta \to 0$ of the
+\nt{round robin} service discipline, where the
+server allocates times slices of duration
+$\delta$ in turn to each present customer. If
+there are $N$ customers in the queue, the
+residual service time for each of them decreases
+at a rate $1/N$. This is also called
+\nt{egalitarian processor sharing}. Loynes's
+theorem applies and the system is stable when
+$\rho <1$.
+
+The workload process $W(t)$ is the same as for FIFO queues, but
+the distribution of waiting times and of customers is not the
+same. We give results for the simple case where arrival are
+Poisson and service times are i.i.d. and independent of the
+arrival process. They are both simple and striking. We assume
+$\rho <1$. First, the stationary probability is
+\cite{sakata1969analysis}:
+ \be
+ \P\lp N(t) = k \rp = (1-\rho)\rho^k
+ \label{eq-q-ps-q1}
+ \ee
+ which shows in particular that it depends on the
+ service time distribution only through its mean
+ (this \emph{insensitivity} property is common to
+ many queues in
+the theory of networks presented in
+\sref{sec-qn}).
+ It follows that
+  \be
+  \bracket{
+    \bar{N}= \frac{\rho}{1-\rho}
+    \\
+    \bar{R}=\frac{\bar{S}}{1-\rho}
+  }\label{eq-mg1-ps1}
+  \ee
+
+Second, the average response time $R_0$ of an
+arbitrary customer, conditional to its service
+time $S_0$ satisfies \cite{kleinrock-75-b}
+ \be
+ \E^0\lp R_0 \right. \left|S_0=x\rp=\frac{x}{1-\rho}
+ \label{eq-mg1-ps2}
+ \ee
+i.e. it is as if an arbitrary customers sees a server for
+herself alone, but with a rate reduced by the factor
+$1/(1-\rho)$. \eref{eq-mg1-ps1} and \eref{eq-mg1-ps2} can be
+simply deduced from results in \sref{sec-qn} if the
+distribution of service times can be decomposed as a mixture of
+exponentials; see \cite{van1991them}. \eref{eq-q-ps-q1} is a
+special case of results for product-form queuing networks, see
+\sref{sec-qn}.
+
+\subsubsection{What this tells us}
+Compare the M/M/1 and M/M/1/PS queues, where it
+is implicit that the M/M/1 queue is FIFO. The
+stationary distribution of numbers of customers
+are identical, therefore (by Little's law) the
+mean response times are identical, too. However,
+the conditional mean response time, given the
+service time, are very different. For M/M/1/PS,
+it is given by \eref{eq-mg1-ps2}. For the M/M/1
+queue, the response time is the sum of waiting
+time plus service time, and the waiting time is
+independent of the service time. The mean waiting
+time is given in \eref{eq-q-mg1} with $\kappa=1$,
+therefore, for the FIFO queue:
+ \be
+ \E^0\lp R_0 \right. \left|S_0=x\rp=x +\frac{\rho \bar{S}}{1-\rho}
+ \label{eq-fifo-crt}
+\ee \fref{fig-psfifo} plots the conditional
+response time for both FIFO and PS queues, and
+several values of~$x$.
+
+PS and FIFO have the same capacity and the same
+mean response time. However, the PS queue
+penalizes customers with a large service time,
+and the penalty is proportional to the service
+time. This is often considered as a
+\emph{fairness} property of the PS service
+discipline.
+\begin{figure}[htbp]
+   \Ifig{psfifo}{0.99}{0.5}
+  \mycaption{Expected response time given that the service time of this
+customer is $x$ versus utilization $\rho$, for
+M/M/1 queues with FIFO (dashed) and PS (plain)
+service disciplines, for various values of $x$.
+Mean service time $\bar{S}$ is $1$ time unit}
+  \mylabel{fig-psfifo}
+\end{figure}
+\mq{q-q-ps}{For which value of the service time
+$x$ are the expected response times for M/M/1 and
+M/M/1/PS equal ?}{When the service time $x$ is
+equal to the mean service time $\bar{S}$.}
+
+
+\subsection{Single Queue with $B$ Servers}
+\mylabel{sec-mms-er}The multiple server queue is defined by the
+fact that at most $B$ customers can be served in parallel.
+Thus, the workload process decreases at a rate equal to
+$\min(N(t),1)$ where $N(t)$ is the number of customers present
+in the queue. The utilization $\rho$ is now defined by
+$\rho=\frac{\lambda \bar{S}}{B}$. The stability condition is
+less easy than for single server queues. When $\rho <1$ there
+is a stationary regime but it many not be unique
+\cite[2.3]{baccelli2003elements}. When $\rho>1$ there is no
+stationary regime.
+\subsubsection{M/M/B
+Queue} For more specific system, one can say more. A frequently
+used system is the M/M/B queue, i.e. the system with Poisson
+arrivals, $B$ servers, exponential service times and FIFO
+discipline. The system can be studied directly by solving for
+the stationary probability. Here when $\rho<1 $ there is a
+unique stationary regime, which is also reached asymptotically
+when we start from arbitrary initial conditions; for $\rho\geq
+1$ there is no stationary regime.
+
+When $\rho <1$ the stationary probability is
+given by
+ \bear
+ \P(N(t)=k)&=&\bracket{\eta \frac{(B\rho)^k}{k!} \mif 0\leq k\leq B\\
+                  \eta \frac{B^B\rho^k}{B!} \mif  k> B
+                    }
+                    \label{eq-q-fifo-q1}
+  \\
+  \mwith  \eta^{-1} &= &\sum_{i=0}^{B-1}\frac{(B\rho)^i}{i!}+ \frac{(B \rho)^B}{B! (1-\rho)}
+ \nonumber
+ \eear
+ and the stationary CDF of the waiting time for
+ an arbitrary customer is
+  \bearn
+ \P^0(W_0\leq x)&=&1-pe^{-B(1- \rho)\frac{x}{\bar{S}}}
+ \\
+ \mwith p&=&\frac{1-u}{1-\rho u}
+\mand u=\frac{\sum_{i=0}^{B-1}\frac{(B
+\rho)^i}{i!}}{\sum_{i=0}^B\frac{(B \rho)^i}{i!}}
+  \eearn
+The probability of finding all servers busy at an
+arbitrary point in time or at a customer arrival
+is (\nt{Erlang-C} formula):
+ \be
+\P(\mbox{all servers busy})= \P(N(t)\geq B)= p
+ \ee
+Average quantities can easily be derived:
+ $$\bracket{
+  \bar{N}=\frac{p\rho}{1-\rho}+B \rho\\
+ \bar{N}_w=\frac{p\rho}{1-\rho}\\
+ \bar{R}=\frac{p\bar{S}}{B(1-\rho)}+\bar{S}\\
+ \bar{W}=\frac{p\bar{S}}{B(1-\rho)}\\
+ }$$
+ \paragraph{M/GI/B/B Queue}
+ This is the system with Poisson arrivals, $B$
+servers, arbitrary (but independent) service
+times and no waiting room. An arriving customer
+that finds all $B$ servers busy is dropped.
+
+The system is stable for any value of $\rho$ and
+the stationary probability of the number of
+customers is given by \bearn
+  \P(N(t)=k)&=&\eta \ind{0 \leq k \leq B}\frac{(B\rho)^k}{k!}
+ \mwith \eta^{-1}  = \sum_{k=0}^B \frac{(B\rho)^k}{k!}
+\eearn The probability that an arriving customer
+is dropped is (\nt{Erlang Loss Formula}, or
+\nt{Erlang-B Formula}):
+ \be
+  \P^0(\mbox{arriving customer is dropped})= \P(N(t)=B)=
+  \eta \frac{(B\rho)^B}{B!}
+ \ee
+
+ \subsubsection{What this tells us}
+The simple M/M/B model can be used to understand the benefit of
+load sharing. Consider the systems illustrated in
+\fref{fig-slo}.
+
+Assume processing times and job inter-arrival
+times can be modeled as independent iid
+exponential sequences. Thus the first [resp.
+second] case is modeled as one M/M/2 queue [resp.
+a collection of two parallel M/M/1 queues].
+Assume load is balanced evenly between the two
+processors. Both systems have the same
+utilization $\rho$. The mean response for the
+first system is obtained from \sref{sec-mms-er};
+we obtain $\frac{\bar{S}}{1-\rho^2}$. For the
+second system it is simply
+$\frac{\bar{S}}{1-\rho}$ (\fref{fig-slo}).
+
+We see that for very small loads, the systems are
+similar, as expected. In contrast, for large
+loads, the response time for the first system is
+much better, with a ratio equal to $1+\rho$. For
+example, for $\rho=0.5$, the second system has a
+response time $1.5$ times larger.
+
+However, the capacity is the same for both
+systems: the benefit of load sharing may be
+important in terms of response time, but does not
+change the capacity of the system.
+
+\begin{figure}[!htbp]
+  \ifig{mgss}{0.5}\ifig{slo2}{0.5}
+  \mycaption{Mean response time over service time for systems 1 (bottom) and 2 (top),
+  versus utilization factor $\rho$.}
+  \mylabel{fig-slo}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{qnets}
+
+\section{Case Study}
+\mylabel{sec-q-ex} \insfig{ski}{0.8}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+In this section we show how the four topics in
+the previous section can be combined to address a
+queuing issue. Recently, one could read on the
+walls of the city where I live the following
+advertisements for a ski resort: ``capacity
+doubled, waiting time halved". Does this
+statement hold~? I was intrigued by this sweeping
+statement, and realized that it can be found
+repeatedly in many different situations: doubling
+the processor speed or doubling the number of
+cores in a computer, doubling the web front end
+in a server farm, etc. In the rest of this
+section we focus on the ski resort example.
+
+First we apply the principles in \cref{ch-metho}
+and define the goals and factors.
+\begin{itemize}
+  \item Goal: evaluate impact of doubling the capacity of a
+  skilift on the response
+  time.
+  \item Factors: $c$ = capacity of skilift in people per
+  second.
+  \item Metrics: response time. A more detailed reflection
+  leads to considering the waiting time, as this is the one
+  that affects customer's perception. %We are interested in
+%  average and peak values.
+  \item Load: we consider two load models : (1) heavy burst of
+  arrival (after a train or a bus arrives at the skilift) (2) peak hour stationary regime
+\end{itemize}
+
+\subsection{Deterministic Analysis}
+We can model the skilift as the queuing system
+illustrated in \fref{fig-double1}. The first
+queue models the gate; it is a single server
+queue. Its service time is the time between two
+passages through the gate, when there is no idle
+period and is equal to $1/c$. The second queue
+represents the transportation time. It is an
+infinite server queue, with no waiting time.
+Since our performance metric is the waiting time,
+we may ignore the second queue in the rest of the
+analysis.
+\begin{figure}[!htbp]
+  \insfig{skiliftModel}{0.5}
+  \mycaption{Queuing Model of Skilift}
+  \mylabel{fig-double1}
+\end{figure}
+
+\begin{figure}[!htbp]
+  \insfig{ski1n}{0.7}
+  \mycaption{Transient Analysis: A burst of skiers arrives at time $0$. Impact of doubling the capacity of the skilift.}
+  \mylabel{fig-ski1}
+\end{figure}
+
+Assume the arrival of skiers is one single burst
+(all arrive at the same time). Also assume that
+all skiers spend the same time to go through the
+gate, which is roughly true in this scenario. The
+model in \sref{sec-q-cf} applies, with $A(t)=$
+the number of skiers arriving in $[0,t]$ and
+$D(t)=$ the number of skiers that entered the
+skilift in $[0,t]$. Thus the delay $d(t)$ is the
+waiting time, excluding the time spent on the
+skilift. We also have $\beta(t)=ct$, with $c=$
+the capacity of the skilift, in skiers per
+second. We have $A(t)=B$ for $t \geq 0$.
+\fref{fig-ski1} shows that doubling the capacity
+does divide the worst case waiting time by two.
+
+
+Is the average waiting time also divided by 2~?
+To answer this question we take the viewpoint of
+an arbitrary customer. We see that the waiting
+time seen by a customer arriving as number $y$
+($0\leq y \leq B$) is linear in $y$, thus the
+average waiting time is equal to the worst case
+response time divided by a $2$. Here too,
+doubling the capacity divides the average waiting
+time by 2.
+%
+%In reality, even if the arrival of skiers is
+%bursty, it may not be as simultaneous as we just
+%described. We can account for this by taking
+%$A(t)=kct$ for $0\leq t \leq t_0$ and
+%$A(t)=A(t_0)$ for $t\geq t_0$, with $k\geq 1$. We
+%see now that the response time is reduced by a
+%factor larger than $2$.
+%
+%
+%
+%\mq{q-qsdllso-lo}{Is the average waiting time also divided by
+%2~?}{Yes, the waiting time seen by an average customer
+%arriving as number $y$ ($0\leq y \leq B$) is linear in $y$,
+%thus is equal to the worst case response time divided by a
+%$2$.}
+%
+\mq{q-q-ski-1}{ In reality, even if the arrival
+of skiers is bursty, it may not be as
+simultaneous as we just described. We can account
+for this by taking $A(t)=kct$ for $0\leq t \leq
+t_0$ and $A(t)=A(t_0)$ for $t\geq t_0$, with
+$k\geq 1$. What is now the conclusion~?}
+{The
+response time is reduced by a factor higher than
+$2$.}
+
+\subsection{Single Queue Analysis}
+Assume now we are observing the system in the
+middle of the peak hour. We can model the gate as
+a single queue, with one or perhaps several
+servers. It is difficult to give a more accurate
+statement about the arrival process without
+performing actual measurements. Whatever the
+details, doubling the capacity halves the
+utilization factor $\rho$. A major pattern of
+single queue systems is the non linearity of
+response time, as in \fref{fig-q-nlrt}.% The
+%queuing time is the value on the curve minus the
+%offset at 0, and the utilization $\rho$
+%($x$-value of \fref{fig-q-nlrt}) is
+%$\frac{\lambda}{c}$ where $\la$ is the customer
+%arrival rate.
+
+The effect on response time depends on where
+we stood on the curve. If the system was close to
+saturation, as was probably the case, the effect
+is a large reduction of the average waiting time,
+probably much larger than 2. With this model,
+doubling the capacity decreases the waiting time
+by more than two.
+
+
+\subsection{Operational Analysis}
+\begin{figure}[!htbp]
+\begin{center}
+  \ifig{skiliftModel2}{0.6}
+  \Ifig{skiWvs1overc-K=800}{0.6}{0.4}
+
+  %\ifig{skiliftBound2}{0.5}
+\end{center}
+  \mycaption{First Panel: A Model that accounts for dependency of arrival
+rate and waiting time. Second panel:~
+  Waiting time in minutes for this model
+  versus $\frac{1}{c}$, where $c$ is
+skilift capacity (in people per minute). The solid line is the
+approximation by bottleneck analysis. The crosses are obtained
+by analytical solution of the queuing network model in
+\fref{fig-double3}, with the following parameters: population
+size $K=800$ skiers; number of servers at gate $B\in\lc 1,2,
+...7,8 \rc$; service time at gate $\bar{S}\in\lc 2.5, 5, 10,
+20\rc$ seconds; time between visits to the gate $\bar{Z}=10$
+minutes.}
+  \mylabel{fig-double2}
+\end{figure}
+It is probably unrealistic to assume that a reduction in
+waiting time has no effect on the arrival rate. A better,
+though simplified, model is illustrated in \fref{fig-double2}.
+It is a variant of the interactive user model in
+\fref{fig-iusm}. Here we assume that the mean number $\bar{N}$
+of skiers in the system is independent of $c$.
+
+We apply bottleneck analysis. Let $\la$ be the
+throughput of the skilift, $\bar{S}$ the time
+spent serving one customer at the lift and
+$\bar{Z}$ the time spent going up on the lift or
+down on the slope and $\bar{W}$ the average
+waiting time at the lift. We have \ben\bracket{
+ \la (\bar{W}+\bar{S}+\bar{Z}) = \bar{N}\\
+ \la \leq c
+ }
+\een and $\bar{S}$ is assumed to be negligible
+compared to $\bar{Z}$, thus
+$$
+\bar{W} \stackrel{\approx}{\geq}
+\max\left(\frac{\bar{N}}{c}-\bar{Z},0\right)
+$$
+\fref{fig-double2} shows the approximate bound as
+a function of $\frac{1}{c}$ for the sake of
+comparison with \fref{fig-q-nlrt}. Points
+obtained by mean value analysis are also plotted
+and we see that the bound is in fact a very good
+approximation.
+
+This strongly suggests that the function $f$ that
+maps $\frac{1}{c}$ to the average response time
+is convex; the graph of a convex function is
+below its chords, thus
+ \ben f(\frac{1}{2c}) < \frac{1}{2} f(\frac{1}{c}) \een and
+   doubling
+ the capacity \imp{does reduce the waiting time
+by more than 2}.
+
+We also see that a key value is
+$c^*=\frac{\bar{N}}{\bar{Z}}$. Note that
+$\frac{1}{Z}$ is the rate at which one customer
+would arrive at the gate if there would be no queuing,
+thus $c^*$ is the rate of customers if the gate
+would not delay them. If $c$ is much larger than
+$c^*$, the waiting time is small, so doubling the
+capacity has little effect anyhow. For $c$ much
+smaller than $c^*$, the waiting time increases at
+an almost constant rate. Thus we should target
+$c$ of the order of $c^*$, in other words, we
+should match the capacity of the gate to the
+``natural" rate $c^*$.
+%
+%For a highly congested system ($2c$ much smaller
+%than $c^*$) the offset at $0$ becomes negligible
+%and the response time is almost linear in $1/c$,
+%thus doubling the capacity does reduce the
+%waiting time by $2$, roughly speaking -- but the
+%system is still congested after doubling the
+%capacity.
+
+ \mq{q-asklaslksd889a}
+ {Assume the system is highly congested before
+ doubling the capacity. What is the reduction in
+ waiting time after doubling capacity ?
+ }
+ {For a highly congested system ($2c$ much smaller
+than $c^*$) the offset at $0$ becomes negligible
+and the response time is almost linear in $1/c$.
+Thus doubling the capacity does reduce the
+waiting time by $2$, roughly speaking -- but the
+system is still congested after doubling the
+capacity.
+ }
+% \mq{q-asklaslksd889a}{For which
+%values of $c$ should the bound be accurate~?}{For small $c$
+%and for large $c$.} \nfs{Study
+% periodic cabins and impact of a) double size of cabin b)
+% double frequency
+% $T=T_{montee}+T_{attente next cabin}+T_{queuing}$}
+\subsection{Queuing Network Analysis}
+\label{sec-q-qnet-qnaskxidzesdfsa}
+\begin{figure}[!htbp]
+\begin{center}
+  \ifig{skiliftModel3}{0.6}
+  %\ifig{skiliftQN}{0.5}
+\end{center}
+  \mycaption{A Queuing Network model of
+  \fref{fig-double2}.}
+  \mylabel{fig-double3}
+\end{figure}
+We can model the network in \fref{fig-double2} as
+a single class, closed product form queuing
+network as in \fref{fig-double3}. There is no
+specific assumption on the time spent on the
+slopes (``think time"); in contrast we need to
+assume that the service time at the gate is
+exponentially distributed. Let $\bar{S}$ be the
+mean service time at the gate and $B$ the number
+of servers, so that $c=B/\bar{S}$. The mean
+service time at the IS station is $\bar{Z}$.
+
+The total number of customers is fixed and equal
+to $K$. Let $\la(K)$ and $\bar{W}(K)$ be the
+throughput and the average waiting time at the
+gate. By Little's law
+ \ben
+ \la(K) \lp \bar{W}(K) + \bar{S} + \bar{Z} \rp = K
+ \een
+ thus
+ \be
+ \bar{W}(K) = \frac{K}{\la(K)}-\bar{S} - \bar{Z}
+ \ee
+We compute $\la(K)$ by mean value analysis, which
+avoids computing the normalizing constants and
+the resulting overflow problems. Let $P(n|K)$ be
+the stationary probability that there are $n$
+customers present (in service or waiting) at the
+FIFO station, when the total number of customers
+is $K$. The mean value analysis equations are
+(\sref{sec-mva-2}):
+ \bear
+ P(n|K) & = &  P(n-1|K-1)\frac{\la(K)}{\mu^*(n)}
+ \mif n\geq 1 \label{eq-qnet-dklfsjfdkl1}
+ \\
+ P(0|K) & = & P(0|K-1)\frac{\la(K)}{\la^{[1]}(K)}
+ \label{eq-qnet-dklfsjfdkl2}
+ \\
+\sum_{n=0}^K P(n|K)&=&1
+\label{eq-qnet-dklfsjfdkl3}
+ \eear
+ where $\mu^*(n)$ is the equivalent service
+rate of the FIFO station and $\la^{[1]}(K)$ the
+throughput of the complement of this station. By
+\tref{table-q-qnet-eqsrvrat}:
+ \ben
+ \mu^*(n) =  \frac{\min(n,B)}{\bar{S}}
+  \een
+The complement network is obtained by short
+circuiting the FIFO station; it consists of the
+IS station alone. Thus
+ \ben
+ \la^{[1]}(K) = \frac{K}{\bar{Z}}
+ \een
+The mean value algorithm is given in
+\aref{algo-q-mva-cs}. \fref{fig-double2} and
+\fref{fig-double-sasdjdkfj3} shows a few
+numerical results. The capacity $c=B/\bar{S}$
+depends on both the number of FIFO servers $B$
+and the service time at the gate $\bar{S}$. The
+points in \fref{fig-double2} are obtained by
+varying both $B$ and $\bar{S}$. The figure shows
+that the bottleneck analysis provides an
+excellent approximation. Thus this section
+confirms the conclusions obtained by operational
+analysis.
+ \begin{algorithm}
+ \mycaption{Implementation of MVA Version 2 to the
+ network in \fref{fig-double3}.}
+ \begin{algorithmic}[1]
+%
+  \State $K=$: population size
+  \State $p(n)$, $n=0...K$: probability
+  that there are $n$ customers at the FIFO
+  station
+  \State $\la$: throughput
+  \State $p(0)=1$, $p(n)=0$, $n=1...K$
+  \For{$k=1:K$}
+     \State $p^*(n) = p(n-1) \bar{Z} \;/\; \min\lp n
+     ,B\rp$,
+     $n=1...k$
+     \Comment{Unnormalized $p(n|k)$, \eref{eq-qnet-dklfsjfdkl1}}
+     \State $p^*(0) = p(0) \bar{Z}/ k$
+     \Comment{Unnormalized $p(0|k)$, \eref{eq-qnet-dklfsjfdkl2}}
+     \State $\la= 1 / \sum_{n=0}^k p^*(n)$
+     \State $p(n)=p^*(n)/\la$, $n=0...k$
+  \EndFor
+\end{algorithmic}\label{algo-q-mva-cs}
+ \end{algorithm}
+\begin{figure}[htbp]
+\begin{center}
+\subfigure[Throughput,
+$B=4$]{\Ifignc{skiLaMva-B=4-s=0.16667}{0.4}{0.3}}
+\subfigure[Waiting time,
+$B=4$]{\Ifignc{skiWMva-B=4-s=0.16667}{0.4}{0.3}}
+\subfigure[Throughput,
+$B=8$]{\Ifignc{skiLaMva-B=8-s=0.16667}{0.4}{0.3}}
+\subfigure[Waiting time,
+$B=8$]{\Ifignc{skiWMva-B=8-s=0.16667}{0.4}{0.3}}
+\end{center}
+  \mycaption{Throughput $\la(K)$ in customers per minute
+  and waiting times $W(K)$ in minutes
+for the skilift example in \fref{fig-double3}
+with $B$ servers at the gate, versus number of
+customers $K$. The results are obtained by
+analytical solution of the queuing network model
+(using the MVA algorithm). The dotted lines are
+the maximum throughput $B/\bar{S}$ and the
+waiting times predicted by bottleneck analysis.
+$\bar{S}=10$sec and $\bar{Z}=10$mn.}
+  \mylabel{fig-double-sasdjdkfj3}
+\end{figure}
+
+%
+%By the throughput theorem \ref{theo-q-qnet-th},
+%$\la(K)=\eta(K-1)/\eta(K)$ where $\eta$ is the
+%normalizing constant of the network. By the
+%convolution theorem \ref{theo-gf-eta}, the
+%generating function of $\eta$ is
+%  \be
+%F_{\eta}(Y) \eqdef \sum_{K \in\Nats}\eta(K) Y^K =
+%G^1(Y)G^2(Y)
+%  \ee
+%  where
+%  $G^1, G^2$ are the generating functions of the
+%  station functions. We have, by \eref{eq-q-stat-fifo-z} and
+%  \eref{eq-q-stat-t3-z}:
+%  \bearn
+%  G^1(Y) & = &  1 + \bar{S}Y + \frac{\lp\bar{S}Y\rp^2}{2!}
+%+...+\frac{\lp\bar{S}Y\rp^{B-1}}{(B-1)!}+
+%\frac{\lp\bar{S}Y\rp^B}{B!\lp
+%1-\frac{\lp\bar{S}Y\rp}{B} \rp}
+% \\
+% G^2(Y) & = & e^{\bar{Z}Y}
+%  \eearn
+%We obtain $\eta(K)$ as in
+%\exref{ex-q-qnet-dsjkhuzewnnbasdio} using the
+%\pro{filter} function.
+%
+%
+\subsection{Conclusions}
+Doubling the capacity does reduce the waiting
+time by a factor of 2 during bursts of arrivals,
+and by a factor of 2 or more during the
+stationary regime. This is independent of whether
+the capacity increase is by increasing the number
+of servers or by reducing the service time at the
+gate.
+
+The findings assume that the arrival rate is not
+impacted by the capacity increase and does not
+account for long term effects. Over the long
+term, a reduction in waiting time might attract more
+customers and this will in turn increase the
+waiting time.
+
+There is an optimal capacity $c^*$, for any target customer population size $ K^*$ (maximum
+number of customers that the ski resort can
+accommodate on the slopes), given by $c^*\approx
+K^*/\bar{Z}$ where $\bar{Z}$ is the mean time
+between visits to the gate. If the capacity is
+below $c^*$, waiting time is large; increasing
+$c$ beyond $c^*$ brings little benefit on waiting
+time.
+\section{Proofs}
+\label{sec-q-proofs}
+\begin{petit}
+\subsection*{\thref{theo-dassa}}
+Apply \thref{theo-rcl} to $X(t)=N(t)$ and and
+ $T_n=$ the superposition of
+ arrivals and departures. The derivative of $N(t)$
+ is $0$, and the jumps are $+1$ at instants of
+ arrival, and $-1$ at instants of departures.
+ Thus $\E^0(\Delta N_0)=0$. Now $\E^0(\Delta N_0)=+1 p^0_a -1 p^0_d$
+where $p^0_a$ is the probability that an
+arbitrary point is an arrival [resp. departure].
+It follows that $p^0_a=p^0_d$ and since
+$p^0_a+p^0_d=1$, it follows that
+$p^0_a=p^0_d=0.5$, which is not so surprising
+since there should be in average as many
+departures as arrivals.
+
+Apply again the theorem to
+$X(t)=\frac{1-z^{N(t)}}{1-z}$ where $z$ is some
+arbitrary number in $(0,1)$. $X(t)$ is constant
+except at arrival or departure times, thus
+$X'(t)=0$. Further, $\Delta X_t = z^{N(t)-1}$ if
+$t$ is an arrival instant and $\Delta X_t =
+-z^{N(t)}$ if $t$ is a departure instant. Thus
+ \ben 0=\espc{z^{N(t)-1}}{t \mbox{ is an arrival instant
+ }}p^0_a -
+\espc{z^{N(t)}}{t \mbox{ is a departure instant
+ }}p^0_d
+   \een
+Now $N(t)$ is right-handside continuous so
+$N(t)-1$ is the number of customers just before
+$t$ when $t$ is an arrival epoch. Since
+$p^0_a=p^0_d$, the distributions of the number of
+customers just before an arrival and just after a
+departure are equal.
+
+\subsection*{\thref{theo-q-ff}} We apply Campbell's
+formula. Let $F(s,t)$ be the random function
+which returns $1$ if $t\geq s$ and the last
+customer who arrived before or at $-t$ is in node
+$k$ at time $s$, else returns $0$. By definition
+of intensity:
+$$
+\lambda_k=\E\left(\sum_{n\in
+\Ints}F(-A_n,0)\right)
+$$
+where $A_n$ is the point process of customer
+arrivals. Campbell's formula applied to $F(-t,0)$
+gives:
+$$
+\E(\sum_{n\in  \Ints}F(-A_n,0)=\lambda\sum_{t\in
+\Nats}\E^{-t}(F(t,0))=\lambda \sum_{t\in
+\Nats}\E^{0}(F(0,t))$$ where the last part is by
+stationarity. Thus
+$$
+\lambda_k=\lambda\E^{0} \left(\sum_{t\in
+\Nats}F(0,t)\right)=\lambda V_k
+$$
+
+(Total Response Time) Let $\bar{N}$ [resp.
+$\bar{N}_k$] be the expected number of customers
+in the service system [resp. in node $k$]. We
+have $\bar{N}=\sum_k\bar{N}_k$. Apply Little' and
+the Forced Flows laws.
+
+%
+%\subsection*{\coref{coro-q-pf-open}}
+%MSCCC:
+%
+%\bearn
+%  G(\vtheta) &=& \Phi(\vz)
+%  \\
+%  z_g & = & \bar{S}\sum_{c \in g} \theta_c
+%  \\
+%  \Phi(\vz) & = & \sum_{\vx \geq 0}\varphi(\vx)
+%  \vz^{\vx}
+%  \\
+%  & = & \sum_{\vtau \in \lc 0...T_1\rc \times ...\times \lc
+%  0...T_G\rc}\Phi_{\vtau}(\vz)
+%  \\
+%  \Phi_{\vtau}(\vz) & \eqdef &\sum_{\vx \geq 0, \forall g: \min(x_g,T_g)= \tau_g}
+%  \varphi(\vx)\vz^{\vx}
+%  \\
+%  \Phi_{\vtau}(\vz) \mathrm{bs}(\vtau) & = &
+%  \sum_{g}z_g \lp \Phi_{\vtau-\vone_g}(\vz) +
+%  \ind{\tau_g=T_g} \Phi_{\vtau}(\vz) \rb
+%  \\
+%  \Phi_{\vtau}(\vz)  & = &
+%  \prod_{g=1}^G
+%  \frac{z_g^{\tau_g}}
+%  {\tau_g!\lp 1 -\frac{z_g}{T_g}\ind{\tau_g=T_g}\rp}
+%%
+%  \mif \mathrm{bs}(\vtau) < B
+%  \\
+%  &=& \frac{1}{B- \sum_{g: \tau_g=T_g} z_g }
+%  \sum_{g: \tau_g >0} \Phi_{\vtau-\vone_g}(\vz)
+%  \mif \mathrm{bs}(\vtau) = B
+%\eearn
+%\subsection*{\thref{sec-q-def-lb}} We do not give the details
+%here, as this requires defining the station function for
+%micro-state; see \cite{baskett1975open,le1986bcmp} for details.
+
+\subsection*{\thref{theo-kw}}
+We consider a Kelly-Whittle station in isolation, i.e.
+connected to a unit rate per class station, with $K_c$
+customers of class $c$ in total. We want to show that local
+balance holds (at the micro level). The micro state of the
+station is $(\calB, \calJ)$, where $\calB_i$ is the class of
+the customer in position $i\in \calI$ of the station buffer and
+$\calJ_i$ is the phase for this customer, in the phase type
+representation of service times. If there is no customer in
+position $i$, we let $\calB_i=\calJ_i= -1$. We assume that the
+index set $\calI$ is enumerable, and that the initial number of
+occupied positions is finite, so that it remains finite for
+ever.
+
+% In a first step, we assume that the service requirements
+%are exponential, with mean $1/\mu_c$ for class $c$. The
+%micro-state is $\calB$ where $\calB_i$ is the class of the
+%customer at this location. Recall that by convention, if
+%position $i$ is empty, we have $\calB_i=0$, and we set
+%$\mu_0=1$.
+Let $\alpha^c_j$ and $\mu^c_{j,j'}$ be the matrices of initial
+probabilities and transition rates in the phase type
+representation of service rates for class $c$, with $j=1...J^c$
+and $j'= 0...J^c$. Without loss of generality we assume
+$J^C=J$. Recall that $j'= 0$ corresponds to an end of service.
+For every $c$, let the array $\theta^c_j$, $j=1...J$, be a
+solution of
+  \bearn
+  1 & = & \sum_{j=1}^{J} \theta^c_j \frac{\mu^c_{j,0}}{\bar{\mu}^c_j}
+  \\
+  \theta^c_j  & =& \alpha^c_j + \sum_{j'=1}^{J}\theta^c_{j'}
+\frac{\mu^c_{j',j}}{\bar{\mu}^c_{j'}}
+  \\
+ \mwith \bar{\mu}^c_j& = & \sum_{j' = 0}^{J}\mu_{j,j'}
+  \eearn
+so that $\theta^c_j$ is the mean number of visits to stage $j$
+during one class $c$ customer's service time. Note that the
+mean service requirement for class $c$ is
+    \be
+    \bar{S}^c  = \sum_{j= 1}^{J} \theta^c_j / \bar{\mu}^c_j
+    \ee
+We will show that the stationary probability of the station in
+isolation is proportional to
+ \be
+ F(\calB, \calJ)\eqdef \Psi(\calB) \prod_{i \in
+ \calI, \calB_i \neq -1}\frac{\theta^{\calB_i}_{\calJ_i}}{\bar{\mu}^{\calB_i}_{\calJ_i}}
+\ee where $\Psi$ is the Whittle function. Clearly, this will
+imply that $F$ is the station function. Note that the product
+is always finite.
+%
+We now show that the equations of local balance
+\eref{eq-q-qnet-lb1} and \eref{eq-q-qnet-lb2} hold. Consider
+first \eref{eq-q-qnet-lb1}. The departure rate due to a class
+$c$ arrival is simply $F(\calB, \calJ)\ind{n_c(\calB)<K_c}$, by
+definition of the station in isolation, where $n_c(\calB)\eqdef
+\sum_{i \in \calI}\ind{\calB_i=c}$ is the number of class $c$
+customers. The arrival rate due to a class $c$ departure is $0$
+if $n_c(\calB)<K_c$ (one cannot reach a state where all class
+$c$ customers are in the station by a departure) and else, by
+definition of the service rate:
+  \bearn
+ &=&\sum_{i \in
+ \calI,j=1...J}F(\mathrm{add}(\calB,i,c),\mathrm{add}(\calJ,j,c))
+ \gamma(i,\mathrm{add}(\calB,i,c))
+ \frac{\Psi(\mathrm{remove}(\mathrm{add}(\calB,i,c),i))}{\Psi(\mathrm{add}(\calB,i,c))}
+ \mu^c_{j,0}
+ \\
+ &=&
+ F(\calB, \calJ) \sum_{i \in \calI,j=1...J}
+     \frac{\theta^c_j}{\bar{\mu}^c_j} \gamma(i,\mathrm{add}(\calB,i,c))
+ \mu^c_{j,0}
+ \\
+ &=& F(\calB, \calJ) \lp\sum_{i \in \calI}
+ \gamma(i,\mathrm{add}(\calB,i,c))\rp\lp  \sum_{i \in \calI,j=1...J}
+   \frac{\theta^c_j}{\bar{\mu}^c_j}\mu^c_{j,0}\rp
+   =F(\calB, \calJ)
+ \eearn
+thus \eref{eq-q-qnet-lb1} holds. We now show
+\eref{eq-q-qnet-lb2}. The left-hand side is
+ \bearn
+ && F(\calB,\calJ)\sum_{i\in
+ \calB}\sum_{c=1}^C\sum_{j=1}^J
+\gamma(i,\calB)\frac{\Psi(\mathrm{remove}(\calB,i)}{\Psi(\calB)}
+ \bar{\mu}^c_{j}\ind{\calB_i=c}\ind{\calJ_i=j}
+ \eearn
+ and the right-hand side is $\mathrm{RHS}_a+\mathrm{RHS}_t$
+ where the former term corresponds to an arrival, the latter
+ to an internal transfer:
+ \bearn
+ \mathrm{RHS}_a & = &
+ \sum_{i \in \calI}\sum_{c=1}^C\sum_{j=1}^J
+F(\mathrm{remove}(\calB,i),\mathrm{remove}(\calJ,i)) \gamma\lp
+i,\calB\rp\alpha^c_j
+  \ind{\calB_i=c}\ind{\calJ_i=j}
+ \\
+ & = & F(\calB,\calJ) \sum_{i \in \calI}\sum_{c=1}^C\sum_{j=1}^J
+\frac{\Psi(\mathrm{remove}(\calB,i))}{\Psi(\calB)}
+\frac{\bar{\mu}^c_j}{\theta^c_j} \gamma(i,\calB)\alpha^c_j
+  \ind{\calB_i=c}\ind{\calJ_i=j}
+  \eearn
+
+
+We use the notation
+$\calB^{i',i}\eqdef\mathrm{add}(\mathrm{remove}(\calB,i),i',\calB_i)$.
+By hypothesis, $\calB^{i,i}=\calB$ and $\calB^{i',i}$ is the
+only buffer state $\calB'$ such that
+$\mathrm{remove}(\calB',i')=\mathrm{remove}(\calB,i)$ and
+$\calB'_{i'}=c$. Also note that $
+ \mathrm{add}(\mathrm{remove}(\calB,i),i,\calB_i)=\calB
+$. Thus
+ \bearn
+  \mathrm{RHS}_t &= &
+  \sum_{i,i' \in \calI}\sum_{c=1}^C\sum_{j,j'=1}^J
+  F(\calB^{i',i},
+  \mathrm{add}(\mathrm{remove}(\calJ,i),i',j'))\gamma(i',\calB^{i',i})
+  \frac{\Psi(\mathrm{remove}(\calB^{i',i},i'))}{\Psi(\calB^{i',i})}
+  \mu^c_{j',j}\\
+  &&  \times \gamma(i,\mathrm{add}(\mathrm{remove}(\calB^{i',i},i'),i,c))
+  \ind{\calB_i=c}\ind{\calJ_i=j}
+  \\
+  & = &
+  \sum_{i,i' \in \calI}\sum_{c=1}^C\sum_{j,j'=1}^J
+  F(\calB^{i',i},
+  \mathrm{add}(\mathrm{remove}(\calJ,i),i',j'))\gamma(i',\calB^{i',i})
+  \frac{\Psi(\mathrm{remove}(\calB,i))}{\Psi(\calB^{i',i})}
+  \mu^c_{j',j}\\
+  &&  \times \gamma(i,\mathrm{add}(\mathrm{remove}(\calB,i),i,c))
+   \ind{\calB_i=c}\ind{\calJ_i=j}
+   \\
+  & = &
+  F(\calB, \calJ)\sum_{i,i' \in \calI}\sum_{c=1}^C\sum_{j,j'=1}^J
+  \frac{\theta^c_{j'}\bar{\mu}_{j}}{\theta^c_{j}\bar{\mu}_{j'}}
+  \gamma(i',\mathrm{add}(\mathrm{remove}(\calB,i),i',\calB_i))
+ \frac{\Psi(\mathrm{remove}(\calB,i))}{\Psi(\calB)}
+  \mu^c_{j',j}\\
+  &&  \times \gamma(i,\calB)
+   \ind{\calB_i=c}\ind{\calJ_i=j}
+  \\
+   & = &F(\calB, \calJ)\sum_{i \in \calI}\sum_{c=1}^C\sum_{j,j'=1}^J
+  \frac{\theta^c_{j'}\bar{\mu}_{j}}{\theta^c_{j}\bar{\mu}_{j'}}
+ \frac{\Psi(\mathrm{remove}(\calB,i))}{\Psi(\calB)}
+  \mu^c_{j',j}  \ind{\calB_i=c}\ind{\calJ_i=j}\gamma(i,\calB)
+  \\
+  && \times \sum_{i' \in \calI} \gamma(i',\mathrm{add}(\mathrm{remove}(\calB,i),i',c))
+  \\
+ & = &
+ F(\calB, \calJ)\sum_{i \in \calI}\sum_{c=1}^C\sum_{j,j'=1}^J
+  \frac{\theta^c_{j'}\bar{\mu}_{j}}{\theta^c_{j}\bar{\mu}_{j'}}
+ \frac{\Psi(\mathrm{remove}(\calB,i))}{\Psi(\calB)}
+  \mu^c_{j',j}  \ind{\calB_i=c}\ind{\calJ_i=j}\gamma(i,\calB)
+  \\
+  & = &
+  F(\calB, \calJ)\sum_{i \in \calI}\sum_{c=1}^C\sum_{j=1}^J
+  \frac{\bar{\mu}_{j}}{\theta^c_{j}}
+\frac{\Psi(\mathrm{remove}(\calB,i))}{\Psi(\calB)}
+  \ind{\calB_i=c}\ind{\calJ_i=j}\gamma(i,\calB)
+  \sum_{j'=1}^J \frac{\theta^c_{j'}}{\bar{\mu}_{j'}}\mu^c_{j',j}
+ \\
+  &=&
+  F(\calB, \calJ)\sum_{i \in \calI}\sum_{c=1}^C\sum_{j=1}^J
+  \frac{\bar{\mu}_{j}}{\theta^c_{j}}
+ \frac{\Psi(\mathrm{remove}(\calB,i))}{\Psi(\calB)}
+  \ind{\calB_i=c}\ind{\calJ_i=j}\gamma(i,\calB)
+  \lp \theta^c_j - \alpha^c_j\rp
+   \eearn
+Thus, combining the two:
+%
+\bearn
+ \mathrm{RHS}_a + \mathrm{RHS}_t & = &F(\calB, \calJ)\sum_{i \in \calI}\sum_{c=1}^C\sum_{j=1}^J
+  \bar{\mu}_{j}
+ \frac{\Psi(\mathrm{remove}(\calB,i))}{\Psi(\calB)}
+  \ind{\calB_i=c}\ind{\calJ_i=j}\gamma(i,\calB)
+\eearn
+%
+which is equal to the right-hand side as required.
+%
+\end{petit}
+
+
+
+\section{Review}
+\subsection{Review Questions}
+\mq{q-qnetd-lkjdfh35}{Why are stations of category 1 called
+``insensitive" ?}{Their station function depends on the
+distribution of service time only through the mean.}
+
+ \mq{q-qnet-dsflakjhfd4345lkj}{Consider a multi-class queuing network,
+with FIFO queues, Poisson arrivals and exponential service
+times; under which condition does it satisfy the hypotheses of
+the product form theorem~?}{The service time distributions must
+be independent of the class.}
+
+ \mq{q-q-ldfskajfdh}{Explain \eref{eq-q-ps-q1} and \eref{eq-q-fifo-q1} by the product form theorem.}
+ {The M/GI/1/PS queue is an open queuing network with one class of customers and
+ one station, with visit rate equal to $\la$. The station function for a constant rate PS station
+ is $f(n)=\bar{S}^n$, thus the stationary probability of the M/GI/1/PS queue is
+ $\eta \rho^n$. By normalization, $\eta=1/(1-\rho)$, which is  \eref{eq-q-ps-q1}. Similarly for \eref{eq-q-fifo-q1}, using
+ the station function of the FIFO station with $B$ servers.}
+
+ \mq{q-q-134}{Consider the network in \fref{fig-double3} and
+assume there is only one class of customers. Assume that the
+service requirement at the bottom station is exponential
+$(\nu)$. Say of which category each station is. Write the
+station functions for both functions and verify the
+product-form theorem when the number of servers is $B=1$.
+Compute the throughput and verify the throughput theorem.} {The
+`Gate" station is a FIFO station, therefore a station of
+Category 2. Its station function is $f^1(n)=\frac{1}{\mu^n}$
+where $1/\mu$ is its mean service time. The second station is a
+station of category 1 and its station function is
+$f^2(n)=\frac{1}{n! \nu^n}$. The stationary probability is
+$p(n)=\frac{f^1(n) f^2(K-n)}{\eta(K)}$ when there are $K$
+customers. The balance equations are
+ \ben
+ p(n)(\mu + (K-n)\nu)  =   (K-n+1)\nu p(n-1)\ind{n\geq 1} + \mu
+ p(n+1)\ind{n\leq K-1}
+ \een
+The verification is by direct computation (the terms match by
+pair). For the throughput, see \exref{ex-palm-qnet}.}
+
+\mq{q-qnet-dsfalkhjl2}{In \sref{sec-qn} we mention the
+existence of a network in \cite{bramson1994instability} which
+is unstable with utilization factor less than $1$. Can it be a
+product-form multi-class queuing network~? Why or why not~?}{It
+cannot be a product-form multi-class queuing network because
+they are stable when utilization is less than 1. It violates
+the assumptions because of FIFO stations with class-dependent
+service rates.}
+\subsection{Summary of Notation}
+%
+%\paragraph{Single Server Queue}
+%\begin{table} \mylabel{tab-mg1}
+\subsection*{Single Server Queue}
+  \begin{center}
+\begin{tabular}{cl} \hline
+  % after \\ : \hline or \cline{col1-col2} \cline{col3-col4} ...
+  Notation & Definition\\ \hline
+  A/S/s/K&Kendall notation: arrival process/service process/
+  number of servers/ \\ &capacity of queue
+  including customers in service\\
+  $\lambda$ & arrival rate\\
+  $B$&number of servers\\
+  $\bar{S}, \sigma_S, \calL_S$ & mean, standard deviation and Laplace Stieltjes transform of service time \\
+  $\rho=\frac{\lambda \bar{S}}{B}$ & server utilization\\
+  $N,\bar{N},\sigma_N$ & number of customers in system, its mean and standard deviation\\
+  $N_w,\bar{N_w},\sigma_{N_w}$ & number of customers waiting, its mean and standard deviation\\
+  $R,\bar{R},\sigma_R$ & time spent in system (residence time), its mean and standard deviation\\
+   $V_k$&mean number of visits per customer to node $k$\\
+   $W,\bar{W},\sigma_W$ & waiting time, its mean and standard deviation\\
+   $\bar{Z}$&av. think time in interactive user model\\
+  \hline
+\end{tabular}
+\end{center}
+\paragraph{Queuing Networks}
+ \begin{center}
+ \begin{tabular}{cl} \hline
+  Notation & Definition\\ \hline
+  $\calB$
+    & State of buffer in insensitive station, containing the
+     list of customer classes \\
+  $c$
+     & customer class\\
+  $\calC$
+     & customer chain; does not change for a given customer\\
+  $d(\vn)$
+     & combinatorial function used by MSCCC station, \eref{eq-q-fn-phi}\\
+  $D(\vZ)$
+     & $Z$-transform of $\delta$, computed by \eref{eq-comp-phidelta}\\
+  $f^s(\vn^s)$
+     & station function, \eref{eq-q-def-stat-fun}\\
+  $G^s(\vz)$
+     & generating function of station function, \eref{eq-q-def-stat-fun-2}\\
+  $ \calG(c)$
+     & token group of class $c$ at an MSCCC station\\
+  $\la^s_c(\vK)$
+     & throughput of class $c$ observed at station $s$\\
+  $\la_{\calC}(\vK)$
+     & throughput of chain $\calC$, \sref{sec-q-pcth}\\
+    $ \vK $
+    & network population vector; $K_{\calC}$: number
+    of chain $\calC$ customers in network\\
+  $\nu^s_c$
+     & external arrival rate of class at station $s$\\
+  $\Phi(\vn)$
+     & Balance function at some Kelly-Whittle stations\\
+  $\Psi(\calB)$
+     & Whittle function at Kelly-Whittle station\\
+  $q^{s,s'}_{c,c'}$
+    & routing probability, \sref{q-qnet-routing}\\
+  $\bar{S}^s_c$
+     & mean service requirement at station $s$ for class $c$ customers\\
+  $T_g$
+    & isze of token pool $g$ at MSCCC station\\
+  $\theta^s_c$
+    & visit rate to station $s$, class $c$ (\eref{eq-q-visitRatios})\\
+  \hline
+ \end{tabular}
+\end{center}
+
+
+%\section{Exercises}
+% \m{p-throughput-of-surge}
+% %\m{p-queuing-ps-dinda}
+% \m{p-vernon-sigmetrics-2002}
+% \nfs{Exam: Exos
+% de Ch 3 de Denning}
+% \nfs{Homework montrant le changement
+% profond des qu'un bottleneck change}

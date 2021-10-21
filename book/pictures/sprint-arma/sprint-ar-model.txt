@@ -1,0 +1,44 @@
+========================================
+ITSM::(Maximum likelihood estimates)
+========================================
+
+Method: Maximum Likelihood
+
+
+ARMA Model: X(t) = .1552 X(t-1) - .06283 X(t-2) - .1814 X(t-3)
+- .07559 X(t-4)
+       + .02151 X(t-5) - .1621 X(t-6) - .05272 X(t-7) - .08837 X(t-8)
+       - .002866 X(t-9) - .1327 X(t-10) + .07271 X(t-11) + .08451 X(t-12)
+       - .08748 X(t-13) - .02503 X(t-14) - .06745 X(t-15) - .4447 X(t-16)
+       + .1784 X(t-17)
+     + Z(t)
+
+WN Variance = .168021E+15
+
+AR Coefficients
+       .155206      -.062833      -.181388      -.075593
+       .021510      -.162061      -.052716      -.088370
+      -.002866      -.132657       .072712       .084511
+      -.087481      -.025033      -.067455      -.444723
+       .178378
+
+Standard Error of AR Coefficients
+       .066693       .062089       .061915       .062878
+       .062507       .062100       .063093       .063255
+       .062527       .061864       .062377       .063410
+       .066909       .067181       .067150       .074813
+       .083074
+
+(Residual SS)/N = .168021E+15
+
+AICC = .798193E+04 BIC  = .798221E+04 FPE  = .195753E+15
+
+-2Log(Likelihood) = .794258E+04
+
+Accuracy parameter = .000520000
+
+Number of iterations = 1
+
+Number of function evaluations = 207
+
+Optimization stopped within accuracy level.
