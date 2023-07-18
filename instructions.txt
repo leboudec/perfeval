@@ -1,3 +1,3 @@
 Instructions
 
-- les fichiers sources des slides et des exos sont dans le/perfeval
+- les fichiers sources des slides et des exos sont ici
