@@ -1,4 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%% This is Leb's usual stuff  %%%%%%%%%%%%%
 %%%%%%%%                            %%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -126,13 +125,13 @@
 %%%% include graphics only with these commands %%%%%%%%%%%%%%%
 \ifnfs
 \providecommand{\insfignc}[2]{% same as insfig, no centering
- \includegraphics[width=#2\textwidth,keepaspectratio]{#1.eps}
+ \includegraphics[width=#2\textwidth,keepaspectratio]{#1}
  \footnote{\fbox{\texttt{file: #1}}}
  }
 
 \else
 \providecommand{\insfignc}[2]{% same as insfig, no centering
- \includegraphics[width=#2\textwidth,keepaspectratio]{#1.eps}
+ \includegraphics[width=#2\textwidth,keepaspectratio]{#1}
  }
 
 \fi
@@ -141,14 +140,14 @@
 \ifnfs
 
 \providecommand{\Ifignc}[3]{% same as Ifig, no centering
- \includegraphics[width=#2\textwidth,height=#3\textwidth]{#1.eps}
+ \includegraphics[width=#2\textwidth,height=#3\textwidth]{#1}
  \footnote{\fbox{\texttt{file: #1}}}
  }
 
 \else
 
 \providecommand{\Ifignc}[3]{% same as Ifig, no centering
- \includegraphics[width=#2\textwidth,height=#3\textwidth]{#1.eps}
+ \includegraphics[width=#2\textwidth,height=#3\textwidth]{#1}
  }
 
 \fi
@@ -529,20 +528,32 @@
 
 %%% from Andrea Ridolfi's style for Bremaud's book
 %% modified LEB to fit multicolumn
-\newsavebox{\coloredbox}
+% \newsavebox{\coloredbox}
+% \newenvironment{shadethm}
+% {\par\noindent\begin{lrbox}{\coloredbox}\begin{minipage}{\linewidth}\begin{theorem}}
+% {\end{theorem}\end{minipage}\end{lrbox}\noindent\psframebox[fillstyle=solid,
+% fillcolor=backgroundgray, linestyle=none,
+% framesep=10pt]{\usebox{\coloredbox}}}
+
+%% modified LEB 2026 to avoid minipage overflow
+
+\newlength{\labelthm}
+\setlength{\labelthm}{7cm}
 \newenvironment{shadethm}
-{\par\noindent\begin{lrbox}{\coloredbox}\begin{minipage}{\linewidth}\begin{theorem}}
-{\end{theorem}\end{minipage}\end{lrbox}\noindent\psframebox[fillstyle=solid,
-fillcolor=backgroundgray, linestyle=none,
-framesep=10pt]{\usebox{\coloredbox}}}
+{\par\noindent{\gray\rule{\labelthm}{1pt}}\par\vspace*{-.2\baselineskip}\begin{theorem}}
+{\end{theorem}\nobreak\par\nobreak{\gray\hfill\rule{\labelthm}{1pt}}\par}
 
 
 %%% shaded box
+%% modified LEB 2026 to avoid minipage overflow
+% \newenvironment{sh}
+% {\begin{lrbox}{\coloredbox}\begin{minipage}{\linewidth}}
+% {\end{minipage}\end{lrbox}\noindent\psframebox[fillstyle=solid,
+% fillcolor=backgroundgray, linestyle=none,
+% framesep=10pt]{\usebox{\coloredbox}}}
 \newenvironment{sh}
-{\begin{lrbox}{\coloredbox}\begin{minipage}{\linewidth}}
-{\end{minipage}\end{lrbox}\noindent\psframebox[fillstyle=solid,
-fillcolor=backgroundgray, linestyle=none,
-framesep=10pt]{\usebox{\coloredbox}}}
+{\par\noindent{\gray\rule{\labelthm}{1pt}}\par\vspace*{-.2\baselineskip}}
+{\nobreak\par\nobreak{\gray\hfill\rule{\labelthm}{1pt}}\par}
 
 %%% boxed theorem
 \newsavebox{\traitbox}

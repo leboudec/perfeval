@@ -122,9 +122,9 @@ chapter how tests can be used to disambiguate such cases.
 \hline
  Parameter Set & Compiler Option 0 & Compiler Option 1 \\ \hline
  \hline
- 1 & \input{npdConf70}\\ \hline
- 2 & \input{npdConf45}\\ \hline
- 3 & \input{npdConf10}\\ \hline
+ 1 & \input{../pictures/data/npdConf70}\\ \hline
+ 2 & \input{../pictures/data/npdConf45}\\ \hline
+ 3 & \input{../pictures/data/npdConf10}\\ \hline
 \end{tabular}
 %\begin{tabular}{c|c|c|c}
 %  % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
@@ -1026,17 +1026,17 @@ specific of homoscedasticity.
   \begin{tabular}{c|c|c|c|c|c}\hline
     % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
      Parameter Set 1 & SS & df & MS & F & Prob$>$F \\ \hline
-    \input{npdAnova70}
+    \input{../pictures/data/npdAnova70}\\
     \hline
   \hline
     % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
      Parameter Set 2 & SS & df & MS & F & Prob$>$F \\ \hline
-    \input{npdAnova45}
+    \input{../pictures/data/npdAnova45}\\
     \hline
   \hline
     % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
      Parameter Set 3 & SS & df & MS & F & Prob$>$F \\ \hline
-    \input{npdAnova10}
+    \input{../pictures/data/npdAnova10}\\
     \hline
   \end{tabular}\\
   \mycaption{ANOVA Tests for \exref{ex-vojex} (Non Paired Data)}\mylabel{tab-test-anova1}
@@ -1295,9 +1295,9 @@ $$
 The corresponding $p$-values are:\\
 
 {\footnotesize
- \pro{Parameter Set 1 \input{npdChi270}}\\
- \pro{Parameter Set 2 \input{npdChi245}}\\
- \pro{Parameter Set 3 \input{npdChi210}}\\
+ \pro{Parameter Set 1 \input{../pictures/data/npdChi270}}\\
+ \pro{Parameter Set 2 \input{../pictures/data/npdChi245}}\\
+ \pro{Parameter Set 3 \input{../pictures/data/npdChi210}}\\
 }
 
 They are all very close to the exact values (given by ANOVA in
@@ -1645,7 +1645,7 @@ statistic:
  \hline
    % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
    $i\backslash j$  & \multicolumn{2}{c}{Male}& \multicolumn{2}{c||}{Female} &\multicolumn{2}{c|}{\emph{Total}} \\ \hline
-   \input{bru} %\\
+   \input{../pictures/data/bru}\\ %\\
 %   Likes & 1 & 2 & 12 \\
 %   Dislikes & 3 & 4 & 34 \\
 %   No Answer / Neutral & 5 & 6 & 56 \\ \hline \hline
@@ -1657,11 +1657,11 @@ statistic:
 %
  Here we have $I=3$ and $J=2$, so we use a $\chi^2$ distribution with $q_2=2$
  degrees of freedom. The likelihood ratio statistic and the $p$-value are
-  \input{bru-lrs}
+  \input{../pictures/data/bru-lrs}\\
 so we accept $H_0$, i.e. affinity to Brussels sprouts is independent of gender.
 %
 Note that the Pearson Chi-squared statistic is
-  \input{bru-pcs}
+  \input{../pictures/data/bru-pcs}\\
   which is very close to $2 lrs$. \end{ex}
 %\mq{testmle-qkl8}{In Example 9.3, what is the $\chi^2$ statistic
 %$X_e$ obtained if we do not do the approximation in the last two
@@ -1933,9 +1933,9 @@ the $p$-value is
 \exref{ex-vojex} gives the following $p$-values:
 
 {\footnotesize
- \pro{Parameter Set 1 \input{npdWil70}}\\
- \pro{Parameter Set 2 \input{npdWil45}}\\
- \pro{Parameter Set 3 \input{npdWil10}}\\
+ \pro{Parameter Set 1 \input{../pictures/data/npdWil70}}\\
+ \pro{Parameter Set 2 \input{../pictures/data/npdWil45}}\\
+ \pro{Parameter Set 3 \input{../pictures/data/npdWil10}}\\
 }
 
 The results are the same as with ANOVA. $H_0$ (same distribution)
