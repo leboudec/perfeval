@@ -274,3 +274,5 @@ TSWLatexianTemp*
 
 # Makeindex log files
 *.lpz
+exos/.DS_Store
+.DS_Store
