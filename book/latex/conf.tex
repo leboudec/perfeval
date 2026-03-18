@@ -287,12 +287,12 @@ comes from an exponential distribution, $\mbox{ gap } \approx
 
 \begin{petit}
 If $x_i$ is iid and comes from a distribution with PDF $f()$,
-then, for large $n$, $\mbox{CoV}$ and $\mbox{MAD}$ converge to
+then, for large $n$, $\mbox{CoV}$ and $\mbox{gap}$ converge to
 their theoretical counterparts:
  \bearn
  \mbox{CoV} & \to &  \mbox{CoV}_{\mbox{th}} =
     \frac{\sqrt{\int_0^{\infty}(x-\mu)^2 f(x) dx}}{\mu}\\
- \mbox{MAD} & \to & \mbox{ gap }_{\mbox{th}}=
+ \mbox{gap} & \to & \mbox{ gap }_{\mbox{th}}=
     \frac{\int_0^{\infty}\abs{x-\mu} f(x) dx}{2 \mu}
  \eearn
  with $\mu=\int_0^{\infty}x f(x) dx$.
