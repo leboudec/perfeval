@@ -1,3 +1,4 @@
+%!TEX root = ./perf.tex
 \begin{minipage}[b]{0.50\textwidth}
 %LAISSER TOMBER VISUAL DISPLAY POUR L'INSTANT
 %
@@ -365,8 +366,10 @@ $(p_i, \ell_i)$ with
  \bracket{
  p_i =  \frac{i}{n}
  \\
- \ell_i  =  \frac{\sum_{j=1}^n x_j\ind{x_j \leq x_i}}{\sum_{j=1}^n x_j}
+ \ell_i  =  \frac{x_{(1)} + ...+ x_{(i)} }{nm}
+ \label{eq-calcul-lorenz}
  }\ee
+where $x_{(1)} \leq x_{(2)}\leq \ldots \leq x_{(n)}$ is obtained by sorting $x_i$ in increasing order and $m = \frac{x_{1} + ...+ x_{n} }{n}$ is the sample mean.
 See \fref{fig-lorenz} for examples. We can make
 the Lorenz curve a continuous mapping $\ell=L(p)$
 by linear interpolation and by setting $L(0)= 0$.
@@ -382,21 +385,40 @@ $[0,1]\times [0,1]$ (called the ``line of perfect
 equality"). In the worst case, the Lorenz curve
 follows the bottom and right edges of the square
 (called the ``line of perfect inequality")
-(\fref{fig-gini}). In practice the Lorenz curve
-is computed by sorting $x_i$ in increasing order
-($x_{(1)} \leq x_{(2)}\leq \ldots \leq x_{(n)}$)
-and letting
- \be
-l_i=\frac{x_{(1)} + ...+ x_{(i)} }{nm}
-\label{eq-calcul-lorenz}\ee where $m$ is the
-sample mean. It follows that $0 \leq l_i \leq
-\frac{i}{n}$, i.e.
-  \ben
-0\leq L(p) \leq p
-  \een
-i.e. and the Lorenz curve is always between the
-lines of perfect equality and perfect inequality.
+(\fref{fig-gini}). 
+%In practice the Lorenz curve
+%is computed by sorting $x_i$ in increasing order
+%($x_{(1)} \leq x_{(2)}\leq \ldots \leq x_{(n)}$)
+%and letting
+ %\be
+%l_i=\frac{x_{(1)} + ...+ x_{(i)} }{nm}
+%\label{eq-calcul-lorenz}\ee 
+% Note that $0 \leq l_i \leq
+% \frac{i}{n}$, thus
+%   \be
+% 0\leq L(p) \leq p
+%   \ee
+% and the Lorenz curve is always between the
+% lines of perfect equality and perfect inequality.
 
+We claim that, for all $i$, $l_i \leq
+ \frac{i}{n}$ and that if there is equality for some $i$, then all $x_i$'s must be equal. To see why, rewrite $l_i$ as
+ \ben
+ l_i= \frac{x_{(1)} + ...+ x_{(i)} }{x_{(1)} + ...+ x_{(n)}}
+ =\frac{1}{1+\frac{x_{(i+1)} + ...+ x_{(n)}}{x_{(1)} + ...+ x_{(i)}}}
+ \een
+ Now $x_{(1)} + ...+ x_{(i)}\leq i x_{(i)}$ and $x_{(i+1)} + ...+ x_{(n)}\geq (n-i) x_{(i)}$ hence 
+\ben
+l_i \leq \frac{1}{1+\frac{(n-i)x_{(i)}}{ix_{(i)}}}=\frac{i}n
+\een
+Furthermore, if we have equality in the previous equation, then we must have $x_{(1)} + ...+ x_{(i)}= i x_{(i)}$ and $x_{(i+1)} + ...+ x_{(n)}= (n-i) x_{(i)}$. It follows that $x_{(1)} = ...= x_{(i)}$ and $x_{(i+1)} = ...= x_{(n)}=  x_{(i)}$ hence all $x_{(i)}$'s are equal and so are all $x_i$'s, which proves the claim. 
+
+In summary, we have 
+  \be
+0\leq L(p) \leq p
+  \ee
+i.e. the Lorenz curve always lies between the
+lines of perfect equality and perfect inequality, and it never meets the line of perfect equality except when all $x_i$'s are equal.
 \begin{figure}\begin{center}
  \subfigure[Execution times in \fref{fig-conf-c1}, old code]
  {\Ifignc{lorenzsgbdold}{0.45}{0.45}}
