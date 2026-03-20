@@ -276,3 +276,4 @@ TSWLatexianTemp*
 *.lpz
 exos/.DS_Store
 .DS_Store
+book/latex/perf.pdf
