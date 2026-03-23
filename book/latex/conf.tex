@@ -374,8 +374,7 @@ See \fref{fig-lorenz} for examples. We can make
 the Lorenz curve a continuous mapping $\ell=L(p)$
 by linear interpolation and by setting $L(0)= 0$.
 The resulting $L()$ is a continuous mapping from
-$[0,1]$ onto $[0,1]$, monotone non decreasing,
-convex, with $L(0)= 0$ and $L(1)=1$.
+$[0,1]$ onto $[0,1]$, monotone non decreasing, piecewise linear, with $L(0)= 0$ and $L(1)=1$. It is also convex because the slopes of the segments, $x_{(i)}$, constitute an increasing sequence.
 
 The Lorenz curve $\ell=L(p)$ can be interpreted
 as a global measure of fairness (or variability).
@@ -401,23 +400,25 @@ follows the bottom and right edges of the square
 % and the Lorenz curve is always between the
 % lines of perfect equality and perfect inequality.
 
-We claim that, for all $i$, $l_i \leq
- \frac{i}{n}$ and that if there is equality for some $i$, then all $x_i$'s must be equal. To see why, rewrite $l_i$ as
- \ben
- l_i= \frac{x_{(1)} + ...+ x_{(i)} }{x_{(1)} + ...+ x_{(n)}}
- =\frac{1}{1+\frac{x_{(i+1)} + ...+ x_{(n)}}{x_{(1)} + ...+ x_{(i)}}}
- \een
- Now $x_{(1)} + ...+ x_{(i)}\leq i x_{(i)}$ and $x_{(i+1)} + ...+ x_{(n)}\geq (n-i) x_{(i)}$ hence 
-\ben
-l_i \leq \frac{1}{1+\frac{(n-i)x_{(i)}}{ix_{(i)}}}=\frac{i}n
-\een
-Furthermore, if we have equality in the previous equation, then we must have $x_{(1)} + ...+ x_{(i)}= i x_{(i)}$ and $x_{(i+1)} + ...+ x_{(n)}= (n-i) x_{(i)}$. It follows that $x_{(1)} = ...= x_{(i)}$ and $x_{(i+1)} = ...= x_{(n)}=  x_{(i)}$ hence all $x_{(i)}$'s are equal and so are all $x_i$'s, which proves the claim. 
+% We claim that, for all $i$, $l_i \leq
+%  \frac{i}{n}$ and that if there is equality for some $i$, then all $x_i$'s must be equal. To see why, rewrite $l_i$ as
+%  \ben
+%  l_i= \frac{x_{(1)} + ...+ x_{(i)} }{x_{(1)} + ...+ x_{(n)}}
+%  =\frac{1}{1+\frac{x_{(i+1)} + ...+ x_{(n)}}{x_{(1)} + ...+ x_{(i)}}}
+%  \een
+%  Now $x_{(1)} + ...+ x_{(i)}\leq i x_{(i)}$ and $x_{(i+1)} + ...+ x_{(n)}\geq (n-i) x_{(i)}$ hence 
+% \ben
+% l_i \leq \frac{1}{1+\frac{(n-i)x_{(i)}}{ix_{(i)}}}=\frac{i}n
+% \een
+% Furthermore, if we have equality in the previous equation, then we must have $x_{(1)} + ...+ x_{(i)}= i x_{(i)}$ and $x_{(i+1)} + ...+ x_{(n)}= (n-i) x_{(i)}$. It follows that $x_{(1)} = ...= x_{(i)}$ and $x_{(i+1)} = ...= x_{(n)}=  x_{(i)}$ hence all $x_{(i)}$'s are equal and so are all $x_i$'s, which proves the claim. 
 
-In summary, we have 
+Note that $L$ is convex and $L(0)=L(1)=0$, it follows that 
   \be
-0\leq L(p) \leq p
+0\leq L(p) \leq p, \mfa p\in [0,1]
   \ee
-i.e. the Lorenz curve always lies between the
+because a convex function lies below its chords. Furthermore, if $L(p)=p$ for some $p\in (0,1)$ then $L(p)=p$ for all $p\in [0,1]$; this is because a non constant convex function such as $L(p)-p$ can have at most two zeroes. Such a case occurs only when all $x_i$'s are equal (to see why, consider that the $i$th slope of $L$, which is $\frac{x_{(i)}}{nm}$, must be equal to $1$ for all $i$). 
+
+In summary the Lorenz curve always lies between the
 lines of perfect equality and perfect inequality, and it never meets the line of perfect equality except when all $x_i$'s are equal.
 \begin{figure}\begin{center}
  \subfigure[Execution times in \fref{fig-conf-c1}, old code]
