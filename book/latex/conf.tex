@@ -1000,7 +1000,7 @@ interval for the mean; in addition it gives a confidence
 interval for the standard deviation. This result is often used
 in practice, perhaps not rightfully, as the gaussian
 assumptions are not always satisfied.
-\begin{theorem}
+\begin{shadethm}
 \mylabel{theo-conf-normal} Let $X_1, ...,X_n$ be a sequence of
 iid random variables with common distribution $N_{\mu,
 \sigma^2}$. Let
@@ -1041,7 +1041,7 @@ Then\begin{itemize}
 %    $\chi^2_{n-1}(\zeta)=\frac{1-\gamma}{2}$ and
 %    $\chi^2_{n-1}(\xi)=\frac{1+\gamma}{2}$.
     \end{itemize}
-\end{theorem}
+\end{shadethm}
 
 The distributions $\chi^2$ and $t_n$  are defined as follows.
 \nt{Chi-Square} ($\chi^2_n$)\index{$\chi^2_n$} is the
@@ -1066,9 +1066,9 @@ for mean and standard deviation: $[\hat{\mu}_n-
 \hat{\sigma}_n]$ and
 $[0.86\hat{\sigma}_n,1.14\hat{\sigma}_n]$.
 
-\mq{q-conf-kasdj}{Does the confidence interval for the mean in
-\thref{theo-conf-normal} depend on the estimator of the
-variance~? Conversely~?}{Yes; No}
+\mq{q-conf-kasdj}{Can the confidence interval for the mean in
+\thref{theo-conf-normal} be derived solely from the sample size $n$ and the value of the point estimator of the mean $\hat{\mu}_n$? Can the confidence interval for the variance in
+\thref{theo-conf-normal} be derived solely from the sample size $n$ and the value of the point estimator of the variance $\hat{\sigma}_n$?}{1. No, we also need the value of $\hat{\sigma}_n$. 2 Yes.}
 
 
 We can compare the confidence interval for the
@@ -1127,7 +1127,7 @@ errf((2.0855 -1)sqrt(n))-errf((1-0.5853) sqrt(n))
 options of \exref{ex-conf-1} computed with three
 different methods: assuming data would be normal
 (\thref{theo-conf-normal}) (left); the general
-method in and with the bootstrap method (right).
+method in \thref{theo-conf-ln} and with the bootstrap method (right).
 %Though the normal assumption is not valid, as
 %shown in \sref{sec-conf-verify}, the result
 %obtained with it correct as it does not differ
@@ -2161,7 +2161,7 @@ Pareto distribution. We generate $R$ replay
 experiments: for each $r$ between $1$ and $R$, we
 draw $n$ samples $X^r_i$ $i=1,...,n$ with
 replacement from the list $(x_1, ..., x_n)$ and
-let $T^r=\frac{i=1}{n}X^r_i$. $T^r$ is the $r$th
+let $T^r=\frac1n\sum_{i=1}^{n}X^r_i$. $T^r$ is the $r$th
 bootstrap replicate of $T$; we do a qqplot of the
 $T^r, r=1,...,R$. If the distribution of $T$ is
 normal, the qqplot should look normal as well.
