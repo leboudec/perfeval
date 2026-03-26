@@ -837,6 +837,7 @@ confidence interval is to bound this uncertainty.
 It is defined relative to a \nt{confidence level}
 $\gamma$; typically $\gamma=0.95$ or $0.99$:
 \begin{definition}
+\label{def:ci}
 A \imp{confidence interval} at level $\gamma$
 for the fixed but unknown parameter $m$ is an
 interval
@@ -1147,11 +1148,13 @@ where data is iid.
 
 \paragraph{The Bootstrap}
  \mylabel{sec-conf-bootstrap}
+
 Consider a sample $\vec{x}=(x_1,...,x_n)$, which we assume to
 be a realization of an iid sequence $X_1, ..., X_n$. We know
 nothing about the common distribution $F()$ of the $X_i$s. We
 are interested in some quantity $t(\vec{x})$ derived from the
-data, for which we want to find a confidence interval (in this
+data, which we assume to be an estimate of an attribute $t_F$ of the 
+unknown distribution, and for which we want to find a confidence interval (in this
 context $t(\vec{x})$ is called a \nt{statistic}). For example,
 if the statistic of interest is the Lorenz curve gap, then by
 \sref{sec-var}:
@@ -1159,11 +1162,52 @@ if the statistic of interest is the Lorenz curve gap, then by
  t(\vec{x}) = \frac{1}{2
   \sum_{i=1}^n x_i}\sum_{j=1}^n \abs{x_j-\frac{1}{n}\sum_{i=1}^n x_i}
  \een
-The \nt{bootstrap method} uses the sample
-$\vec{x}=(x_1,...,x_n)$ as an approximation of the true,
-unknown distribution. It is justified by the Glivenko-Cantelli
+ and $t_F$ is the theoretical Lorenz curve gap as defined in the text after \eref{eq-def-l-th}.
+
+%Here, we replace the confidence interval given in Definition~\ref{def:ci} by a prediction interval for the statistic $t(\vec{X})$, where $\vec{X}=(X_1,...,X_n)$ is an iid sample drawn from the distribution $F$. 
+
+Assume for a second that an oracle would give us the distribution of $t(\vec{X})-t_F$ when $\vec{X}=(X_1,...,X_n)$ is an iid sample drawn from the distribution $F$. Then let $\alpha_F$ [resp. $\beta_F$] be the $\frac{1-\gamma}{2}$ [resp. $\frac{1+\gamma}{2}$] percentile of the distribution of $t(\vec{X})-t_F$, where $\gamma$ is a given confidence level (e.g. $\gamma =0.95$). We have thus
+\ben
+\P(-\alpha_F \leq t(\vec{X})-t_F\leq \beta_F)= \gamma
+\een 
+It follows that a confidence interval for $t_F$ at level $\gamma$ is given by
+\ben
+[t(\vec{x})-\beta_F, \;t(\vec{x})+\alpha_F]
+\een
+
+With the \nt{bootstrap method}, we replace the unknown distribution $F$ by the empirical distribution of the sample
+$\vec{x}=(x_1,...,x_n)$. It is justified by the Glivenko-Cantelli
 theorem which says that the ECDF converges with probability 1
-to the true CDF $F()$ when $n$ gets large.
+to the true CDF $F()$ when $n$ gets large. Specifically, the method draws an iid sample $\vec{X'}=(X_1',...,X_n')$ from the empirical distribution of the sample
+$\vec{x}$; this means drawing $n$ times from the list
+$(x_1,...,x_n)$ \imp{with replacement}. Next we compute some bounds $\alpha_{\vec{x}}$ and $\beta_{\vec{x}}$ such that
+\ben
+\P(-\alpha_{\vec{x}} \leq t(\vec{X}')-t(\vec{x})\leq \beta_{\vec{x}})= \gamma
+\een  
+In the above, $\vec{X}'$ is random and $\vec{x}$ is not. Then the bootstrap method takes $\alpha_{\vec{x}}, \beta_{\vec{x}}, t(\vec{x})$ as approximations for $\alpha_F, \beta_F, t_F$; the resulting approximate confidence interval for $t_F$ is
+\ben
+[t(\vec{x})-\beta_{\vec{x}}, \;t(\vec{x})+\alpha_{\vec{x}}]
+\een
+Observe that the lower bound $t(\vec{x})-\beta_{\vec{x}}$ is a $\frac{1-\gamma}{2}-$percentile of the distribution of $\vec{X}'$ (and similarly the upper bound $t(\vec{x})+\alpha_{\vec{x}}$ is a $\frac{1+\gamma}{2}-$percentile of the distribution of $\vec{X}'$). The method estimates them using percentiles of many independent replications of $\vec{X}'$.  
+
+
+% Consider a sample $\vec{x}=(x_1,...,x_n)$, which we assume to
+% be a realization of an iid sequence $X_1, ..., X_n$. We know
+% nothing about the common distribution $F()$ of the $X_i$s. We
+% are interested in some quantity $t(\vec{x})$ derived from the
+% data, for which we want to find a confidence interval (in this
+% context $t(\vec{x})$ is called a \nt{statistic}). For example,
+% if the statistic of interest is the Lorenz curve gap, then by
+% \sref{sec-var}:
+%  \ben
+%  t(\vec{x}) = \frac{1}{2
+%   \sum_{i=1}^n x_i}\sum_{j=1}^n \abs{x_j-\frac{1}{n}\sum_{i=1}^n x_i}
+%  \een
+% The \nt{bootstrap method} uses the sample
+% $\vec{x}=(x_1,...,x_n)$ as an approximation of the true,
+% unknown distribution. It is justified by the Glivenko-Cantelli
+% theorem which says that the ECDF converges with probability 1
+% to the true CDF $F()$ when $n$ gets large.
 
 The method is described formally in
 \aref{algo-bs}.
@@ -1193,7 +1237,7 @@ $r=1,...,R$. Each bootstrap replicate
 $\vec{X}^r=(X^r_1,...,X^r_n)$ is a random vector of size $n$,
 like the original data. All $X^r_i$ are independent copies of
 the same random variable, obtained by drawing from the list
-$(x_1,...,x_n)$ \imp{with replacement}. For example, if all
+$(x_1,...,x_n)$ with replacement. For example, if all
 $x_k$ are distinct, we have $\P(X^r_i=x_k)=\frac{1}{n}$,
 $k=1,...,n$.
 
