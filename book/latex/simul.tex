@@ -861,6 +861,21 @@ $x_n$; the seed is $x_0$. Like for any iterative algorithm, the
 sequence is periodic, but for appropriate choices of $a$ and
 $m$, the period may be very large.
 
+
+\begin{figure}
+ \begin{center}
+ \subfigure[]{\Ifignc{rng-qq}{0.6}{0.3}}
+ \subfigure[]{\Ifignc{rng-acf}{0.6}{0.3}}
+ \subfigure[]{\Ifignc{rng-lag}{0.60}{0.58}}
+ \end{center}%
+ \nfs{rngTest.m}
+ \mycaption{$1 000$ successive numbers for the generator in \exref{ex-lcg}.
+ (a) QQplot against the uniform distribution in $(0,1)$, showing a perfect match.
+ (b) autocorrelation function, showing no significant correlation at any lag
+ (c) lag plots at various lags, showing independence.}
+ \mylabel{fig-rng0}
+\end{figure}
+
 \begin{ex}{Linear Congruence}\mylabel{ex-lcg}
 A widespread generator (for example the default in ns2) has
 $a=16'807$ and $m=2^{31}-1$. The sequence is $x_n= \frac{s a^n
@@ -870,19 +885,6 @@ follows that for any value of the seed $s$, the period of $x_n$
 is exactly $m-1$. \fref{fig-rng0} shows that the sequence $x_n$
 indeed looks random.
 \end{ex}
-\begin{figure}
- \begin{center}
- \subfigure[]{\Ifignc{rng-qq}{0.6}{0.3}}
- \subfigure[]{\Ifignc{rng-acf}{0.6}{0.3}}
- \subfigure[]{\Ifignc{rng-lag}{0.6}{0.6}}
- \end{center}%
- \nfs{rngTest.m}
- \mycaption{$1 000$ successive numbers for the generator in \exref{ex-lcg}.
- (a) QQplot against the uniform distribution in $(0,1)$, showing a perfect match.
- (b) autocorrelation function, showing no significant correlation at any lag
- (c) lag plots at various lags, showing independence.}
- \mylabel{fig-rng0}
-\end{figure}
 
 
 The period of a random number generator should be much larger
