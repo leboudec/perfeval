@@ -342,7 +342,11 @@ It can be used to model error terms that have a heavier tail
  f(x)= \frac{\lambda}{2}e^{-\lambda\abs{ x}}
  \ee
 %
-The next theorem explains what we do when we fit
+Note that the parameter $\lambda$ is a scale parameter, more precisely, if $X
+\sim \mbox{
+ Laplace}(\lambda)$ we can write $X=\frac1{\lambda} Y$ for some $Y
+\sim \mbox{
+ Laplace}(1)$. The next theorem explains what we do when we fit
 the explanatory model $y_i= f_i(\vec{\beta})$ to
 our data by minimizing the $\ell^1$ norm of the
 error: we implicitly assume that the error terms
@@ -758,7 +762,7 @@ identifiable.
 an almost immediate consequence of
 \thref{theo-ladlls}.
 
-\begin{theorem} Consider the model in Definition~\ref{def:ls:lin}; let $\vec{y}$ be
+\begin{shadethm} Consider the model in Definition~\ref{def:ls:lin}; let $\vec{y}$ be
 the $I\times1$ column vector of the data. The
 maximum likelihood estimator of $\vec{\beta}$ is
 obtained by solving the linear program:
@@ -777,7 +781,7 @@ The maximum likelihood estimator of the noise parameter
 $\la$ is $\lp \frac{1}{I}\sum_{i=1}^I\abs{y_i
 -\lp X \vec{\beta}\rp_i} \rp^{-1}$.
  \label{theo-lr-l1}
-\end{theorem}
+\end{shadethm}
 
 In view of \exref{ex-mean-median}, there is
 little hope to obtain nice closed form formulas
@@ -879,7 +883,7 @@ qq-plot} of the residuals $r_i$, $i=1...I$ is
 obtained by plotting $F^{-1}(\frac{i}{I+1})$
 versus the residuals $r_{(i)}$ sorted in
 increasing order. Here $F$ is the CDF of the
-Laplace distribution with rate $\lambda=1$. A
+Laplace distribution with rate $\lambda=1$ (since $\lambda$ is a scale parameter for the Laplace distribution, it is sufficient to use $\lambda=1$). A
 direct computation gives
  \bearn
  F^{-1}(q) & = &\ln \lp 2q \rp
@@ -1000,7 +1004,7 @@ other values of $\mu$ correspond to re-scaling by
 $e^{\mu}$ therefore the mean is
 $e^{\frac{\sigma^2}{2}+\mu}$. In the figure we
 take the mean equal to $1$, thus we must have
-$\mu=-\frac{\sigma^2}{2}$}.
+$\mu=-\frac{\sigma^2}{2}$.}
 
 \begin{figure}[htbp]
   \insfig{lognormalShape}{1.0}
